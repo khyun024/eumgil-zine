@@ -341,12 +341,12 @@
     if (mv && Math.abs(p - lastPrint) > 20) { lastPrint = p; el('circle', { cx:q.x + (Math.round(p / 20) % 2 ? 5 : -5), cy:q.y, r:2, fill:C.ink, opacity:.5 }, prints); if (prints.childNodes.length > 400) prints.removeChild(prints.firstChild); }
     // 신호
     let best = null, bd = 1e9; TOWERS.forEach(t => { const d = Math.hypot(q.x - t.p[0], q.y - t.p[1]); if (d < bd) { bd = d; best = t; } });
-    const strength = Math.max(0, Math.min(5, Math.round((1 - bd / SIG_R) * 5 + .4)));
+    const strength = bd < SIG_R ? Math.max(1, Math.min(5, Math.round((1 - bd / SIG_R) * 4 + 1.6))) : 0;
     document.querySelectorAll('.signal .bars i').forEach((b, i) => b.classList.toggle('on', i < strength));
     const nl = bd < SIG_R ? best : null;
     if (nl !== live) { live = nl; Object.values(towerEls).forEach(g => g.classList.toggle('live', live && g.dataset.id === live.id)); }
     $('#sigText').innerHTML = live ? `<b>${esc(live.name)}</b> · 수신 ${strength}/5 · 게임 ${live.games.length}편` : (onLoop ? '우회로 위 · 집과 도구가 있다' : '수신 없음 · 길을 따라 내려가세요');
-    $('#signal').classList.toggle('can', !!live && strength >= 3);
+    $('#signal').classList.toggle('can', !!live && strength >= 2);
     const nh = Math.hypot(q.x - HOUSE[0], q.y - HOUSE[1]) < 80; if (nh !== nearHouse) { nearHouse = nh; if (nh) toast(stamps.size >= 6 ? '집에 불이 켜졌다. 클릭하면 안내서가 열린다' : '파프리 스튜디오. 클릭하면 도구 여덟이 열린다'); }
     // 카메라: 산책자를 화면 40% 높이에 둔다
     const vh = view.getBoundingClientRect().height || 1, scale = vh / 1500, ty = -(q.y * scale - innerHeight * .42); const maxTy = Math.min(0, innerHeight - vh);
@@ -399,7 +399,7 @@
   function render() { TOWERS.forEach(t => towerEls[t.id].classList.toggle('done', stamps.has(t.id))); $('#stampCnt').textContent = stamps.size; document.querySelectorAll('#trail .chk').forEach(c => c.classList.toggle('on', stamps.has(c.dataset.id))); houseG.classList.toggle('lit', stamps.size >= 6); $('#houseHint').textContent = stamps.size >= 6 ? '불이 켜졌다 ✶ 클릭' : `나무 ${stamps.size} / 6 · 심으면 불이 켜진다`; }
   // 탑까지 걷기: 길 위에서 탑에 가장 가까운 지점으로
   function walkTo(t) { let best = 0, bd = 1e9; for (let l = 0; l < RL; l += 3) { const q = road.getPointAtLength(l), d = Math.hypot(q.x - t.p[0], q.y - t.p[1]); if (d < bd) { bd = d; best = l; } } if (onLoop) { onLoop = false; p = jLen; } target = best; }
-  function tune() { if (live && $('#signal').classList.contains('can')) openMemo(live); else if (nearHouse) openHouse(); else toast('수신이 약하다. 탑에 더 가까이'); }
+  function tune() { if (live) openMemo(live); else if (nearHouse) openHouse(); else toast('수신이 약하다. 탑에 더 가까이'); }
 
   // ── 입력 ─────────────────────────────────────────────
   map.addEventListener('click', e => { const t = e.target.closest('.tower'); if (t) { const tw = TOWERS.find(x => x.id === t.dataset.id); if (live && live.id === tw.id) openMemo(tw); else walkTo(tw); return; } if (e.target.closest('.house')) { if (nearHouse) openHouse(); else { onLoop = true; p = 0; target = LL * .12; showJunction(false); } } });
