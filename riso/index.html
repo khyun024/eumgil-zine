@@ -54,6 +54,24 @@
   .bob{animation:bob 2.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
   @keyframes bob{50%{transform:translateY(-3px)}}
   .worn{fill:none;stroke:var(--ink);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:.55;stroke-dasharray:3 6}
+  .rev{opacity:0;transition:opacity .8s ease;pointer-events:none}
+  .rev.on{opacity:1;pointer-events:auto}
+  .rev.ink{transition-delay:.25s}
+  #roadGrey{transition:stroke-dasharray .25s linear}
+  #loopHint{opacity:0;transition:opacity .8s}
+  #loopHint.on{opacity:.35}
+  .tip{transform-box:fill-box;transform-origin:center}
+  body.overview .signal,body.overview .junction{visibility:hidden}
+  #view{transition:transform .9s cubic-bezier(.5,0,.2,1)}
+  body.overview #view{transition:transform 1.4s cubic-bezier(.5,0,.2,1)}
+  .donebar{position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:9;display:none;gap:12px;align-items:center;background:var(--paper-2);border:1px solid var(--ink);padding:8px 14px;box-shadow:4px 4px 0 var(--grey);font-size:12px}
+  .donebar.on{display:flex}
+  .donebar b{font-family:var(--f-serif);font-weight:400;font-size:20px}
+  .progress{position:fixed;right:22px;top:18px;z-index:5;width:6px;height:calc(100vh - 36px);border:1px solid var(--ink);background:var(--paper-2)}
+  body.sidebar-open .progress{right:362px}
+  .progress i{position:absolute;left:0;right:0;top:0;background:var(--grey);height:0;transition:height .2s}
+  .progress b{position:absolute;left:-4px;width:12px;height:12px;border-radius:50%;background:var(--ink);transform:translateY(-50%)}
+  body.overview .progress{visibility:hidden}
   @media (prefers-reduced-motion:reduce){.tower.live .ring,.smoke,.twinkle,.flow,.bob{animation:none}.tower .tree{transition:none}}
 
   /* ── 명판 · 수신 표시 ─────────────────── */
@@ -140,6 +158,8 @@
     .plate p{display:none}
     .cover .poster{grid-template-columns:1fr}
     .cover .mini{display:none}
+    .progress{display:none}
+    .donebar{left:12px;right:12px;transform:none;flex-wrap:wrap}
   }
 </style>
 
@@ -191,6 +211,8 @@
 </section>
 <div class="junction" id="junction"><span>갈림길. 파란 고리는 우회로입니다.</span><button class="lnk" id="jLoop">우회로로 →</button><button class="lnk" id="jStay">그냥 내려간다 ↓</button></div>
 
+<div class="donebar" id="done"><b>지도 완성</b><span id="doneStat"></span><button class="lnk on" id="doneView">완성된 지도 보기 ⤢</button><button class="lnk" id="doneWalk">다시 걷기 ↓</button><a class="lnk play" href="../zine/">책장 넘기기 ➹</a></div>
+<div class="progress" aria-hidden="true"><i id="progFill"></i><b id="progDot"></b></div>
 <footer class="ctl">
   <span class="hintk"><span class="k">↓</span> <span class="k">↑</span> 걷기 · <span class="k">Enter</span> 주파수 맞추기 · <span class="k">→</span> 갈림길에서 우회로 · <span class="k">S</span> 사이드바 · 탑 클릭 = 자동 걷기</span>
   <div class="pad"><button data-dir="-1" aria-label="위로">▲</button><button data-dir="1" aria-label="아래로">▼</button><button id="padEnter" aria-label="주파수">↵</button></div>
@@ -203,7 +225,7 @@
     <div class="txt">
       <div><span class="lab">2026 서울문화예술교육지원사업 ✶ 파프리 스튜디오</span></div>
       <h1>에움길<br><em>송전탑</em></h1>
-      <p>〈수상한 산책클럽〉의 여섯 거점이 송전탑이 되었습니다. 회색 길을 따라 내려가며 탑의 신호를 잡고, 주파수를 맞춰 그 자리의 게임을 엽니다. 파란 고리는 우회로. 집을 지나 도구 여덟을 만나고 다시 길로 돌아옵니다.</p>
+      <p>〈수상한 산책클럽〉의 여섯 거점이 송전탑이 되었습니다. 길은 걷는 만큼 앞으로 그려집니다. 내려가며 탑의 신호를 잡고, 주파수를 맞춰 그 자리의 게임을 엽니다. 파란 고리는 우회로. 길 끝에 닿으면 완성된 지도 한 장이 됩니다.</p>
       <div class="foot"><span style="color:var(--ink-2);font-size:11.5px">Six towers, one detour. Walk down, tune in.</span><button class="lnk on" id="bStart">길로 내려가기 ↓</button></div>
     </div>
     <div class="mini" id="mini"></div>
@@ -276,16 +298,21 @@
 
   // ── 길 ────────────────────────────────────────────────
   const roadD = 'M' + ROAD_PTS.map(p => p.join(' ')).join(' L');
-  el('path', { d:roadD, fill:'none', stroke:C.grey, 'stroke-width':30, 'stroke-linejoin':'miter', 'stroke-linecap':'butt', opacity:.95 }, L);
-  const loopBg = el('path', { d:LOOP_D, fill:'none', stroke:C.blue, 'stroke-width':22, 'stroke-linecap':'round', 'stroke-linejoin':'round' }, L);
-  el('path', { d:LOOP_D, fill:'none', stroke:'#fff', 'stroke-width':1.2, 'stroke-linecap':'round', opacity:.5, class:'flow' }, L);
+  const roadGrey = el('path', { id:'roadGrey', d:roadD, fill:'none', stroke:C.grey, 'stroke-width':30, 'stroke-linejoin':'miter', 'stroke-linecap':'butt', opacity:.95, pathLength:1000, 'stroke-dasharray':'0 1000' }, L);
+  el('path', { id:'loopHint', d:LOOP_D, fill:'none', stroke:C.blue, 'stroke-width':4, 'stroke-dasharray':'8 12', 'stroke-linecap':'round' }, L);
+  const loopBg = el('path', { d:LOOP_D, fill:'none', stroke:C.blue, 'stroke-width':22, 'stroke-linecap':'round', 'stroke-linejoin':'round', pathLength:1000, 'stroke-dasharray':'0 1000' }, L);
+  const loopFlow = el('path', { d:LOOP_D, fill:'none', stroke:'#fff', 'stroke-width':1.2, 'stroke-linecap':'round', opacity:.5, class:'flow', pathLength:1000, 'stroke-dasharray':'0 1000' }, L);
   const road = el('path', { d:roadD, fill:'none', stroke:'none' }, L), loop = el('path', { d:LOOP_D, fill:'none', stroke:'none' }, L);
   const worn = el('path', { d:roadD, class:'worn', pathLength:1000, 'stroke-dasharray':'0 1000' }, L);
   const RL = road.getTotalLength(), LL = loop.getTotalLength();
+  const tip = el('g', { class:'tip' }, L); el('circle', { r:9, fill:C.grey }, tip); el('circle', { r:3, fill:C.ink }, tip);
   let jLen = 0; { let bd = 1e9; for (let l = 0; l < RL; l += 2) { const q = road.getPointAtLength(l), d = Math.hypot(q.x - ROAD_PTS[JUNCTION_I][0], q.y - ROAD_PTS[JUNCTION_I][1]); if (d < bd) { bd = d; jLen = l; } } }
 
+  // 드러나기: 지형 요소마다 y를 기록한다(길이 그 높이에 닿으면 찍힌다)
+  const REV = [];
+  [...L.children].forEach(n => { if (n === roadGrey || n === loopBg || n === loopFlow || n === road || n === loop || n === worn || n === tip || n.id === 'loopHint' || n.tagName === 'rect') return; let y = 0; try { const b = n.getBBox(); y = b.y + b.height * .35; } catch (e) {} n.classList.add('rev'); n.dataset.y = y; REV.push(n); });
   // ── 집(파프리 스튜디오) ─────────────────────────────
-  const houseG = el('g', { class:'house', transform:`translate(${HOUSE[0]} ${HOUSE[1]})`, tabindex:'0', role:'button' }, map);
+  const houseG = el('g', { class:'house rev ink', 'data-y':HOUSE[1] + 140, transform:`translate(${HOUSE[0]} ${HOUSE[1]})`, tabindex:'0', role:'button' }, map); REV.push(houseG);
   el('rect', { x:-42, y:-30, width:44, height:40, fill:HOUSEH, stroke:C.ink, 'stroke-width':1.2 }, houseG);
   el('path', { d:'M-46 -30 L-20 -56 L6 -30 Z', fill:'#8C8C8C', stroke:C.ink, 'stroke-width':1.2 }, houseG);
   el('rect', { x:4, y:-22, width:34, height:32, fill:C.brick }, houseG);
@@ -300,7 +327,7 @@
   // ── 송전탑(거점) ──────────────────────────────────────
   const towerEls = {}, treeEls = {};
   TOWERS.forEach(t => {
-    const g = el('g', { class:'tower', 'data-id':t.id, transform:`translate(${t.p[0]} ${t.p[1]})`, tabindex:'0', role:'button' }, map);
+    const g = el('g', { class:'tower rev ink', 'data-id':t.id, 'data-y':t.p[1] + 40, transform:`translate(${t.p[0]} ${t.p[1]})`, tabindex:'0', role:'button' }, map); REV.push(g);
     for (let i = 0; i < 3; i++) el("circle", { r:SIG_R * .5, class:"ring" }, g);
     const tw = el('g', { fill:'none', stroke:C.ink, 'stroke-width':2.2, 'stroke-linejoin':'round' }, g);
     el('path', { d:'M-16 0 L-6 -78 L6 -78 L16 0 Z', 'stroke-width':2 }, tw);
@@ -323,7 +350,8 @@
   const prints = el('g', {}, map);
 
   // ── 상태 ─────────────────────────────────────────────
-  let onLoop = false, p = 0, target = null, moving = 0, steps = 0, lastPrint = 0, camY = 0, lastT = 0, live = null, nearHouse = false;
+  let onLoop = false, p = 0, target = null, moving = 0, steps = 0, lastPrint = 0, camY = 0, lastT = 0, live = null, nearHouse = false, reach = 0, loopReach = 0, done = false, overview = false;
+  const AHEAD = 150;
   const keys = { d:false, u:false };
   let stamps = new Set(); try { stamps = new Set(JSON.parse(localStorage.getItem('eumgil-riso-trees') || '[]')); } catch (e) {}
   const t0 = Date.now();
@@ -336,6 +364,16 @@
     if (onLoop) { if (p >= LL) { onLoop = false; p = jLen + 4; toast('우회로를 돌아 길로 내려왔다'); } if (p < 0) { onLoop = false; p = jLen; } }
     else { p = Math.max(0, Math.min(RL, p)); if (!onLoop && mv && Math.abs(p - jLen) < 2) showJunction(true); }
     if (mv) { steps += Math.abs(sp) / 8; if (!onLoop) { const ml = +worn.dataset.max || 0; if (p > ml) { worn.dataset.max = p; worn.setAttribute('stroke-dasharray', `${p / RL * 1000} 1000`); } } closeMemo(); if (Math.abs(p - jLen) > 30 || onLoop) showJunction(false); }
+    // 길이 앞으로 자란다
+    if (!onLoop) reach = Math.max(reach, Math.min(RL, p + AHEAD)); else loopReach = Math.max(loopReach, Math.min(LL, p + AHEAD));
+    roadGrey.setAttribute('stroke-dasharray', `${reach / RL * 1000} 1000`);
+    loopBg.setAttribute('stroke-dasharray', `${loopReach / LL * 1000} 1000`); loopFlow.setAttribute('stroke-dasharray', `${loopReach / LL * 1000} 1000`);
+    if (reach >= jLen && loopReach < LL) $('#loopHint').classList.add('on'); else $('#loopHint').classList.remove('on');
+    const tp = road.getPointAtLength(reach); tip.setAttribute('transform', `translate(${tp.x} ${tp.y})`); tip.style.opacity = reach >= RL ? 0 : 1;
+    const lineY = Math.max(tp.y, onLoop ? loop.getPointAtLength(loopReach).y + 120 : 0);
+    REV.forEach(n => { if (!n.classList.contains('on') && (+n.dataset.y <= lineY + 20 || (loopReach > 0 && n === houseG && loopReach > LL * .1))) n.classList.add('on'); });
+    $('#progFill').style.height = (reach / RL * 100) + '%'; $('#progDot').style.top = (Math.min(RL, p) / RL * 100) + '%';
+    if (!done && reach >= RL - 1 && p >= RL - 2) { done = true; $('#doneStat').textContent = `${Math.round(steps)} 걸음 · 나무 ${stamps.size} / 6`; $('#done').classList.add('on'); toast('길 끝에 닿았다. 완성된 지도를 볼 수 있다'); setTimeout(() => setOverview(true), 1600); }
     const q = pos(); WK.setAttribute('transform', `translate(${q.x} ${q.y})`);
     // 발자국
     if (mv && Math.abs(p - lastPrint) > 20) { lastPrint = p; el('circle', { cx:q.x + (Math.round(p / 20) % 2 ? 5 : -5), cy:q.y, r:2, fill:C.ink, opacity:.5 }, prints); if (prints.childNodes.length > 400) prints.removeChild(prints.firstChild); }
@@ -348,14 +386,23 @@
     $('#sigText').innerHTML = live ? `<b>${esc(live.name)}</b> · 수신 ${strength}/5 · 게임 ${live.games.length}편` : (onLoop ? '우회로 위 · 집과 도구가 있다' : '수신 없음 · 길을 따라 내려가세요');
     $('#signal').classList.toggle('can', !!live && strength >= 2);
     const nh = Math.hypot(q.x - HOUSE[0], q.y - HOUSE[1]) < 80; if (nh !== nearHouse) { nearHouse = nh; if (nh) toast(stamps.size >= 6 ? '집에 불이 켜졌다. 클릭하면 안내서가 열린다' : '파프리 스튜디오. 클릭하면 도구 여덟이 열린다'); }
-    // 카메라: 산책자를 화면 40% 높이에 둔다
-    const vh = view.getBoundingClientRect().height || 1, scale = vh / 1500, ty = -(q.y * scale - innerHeight * .42); const maxTy = Math.min(0, innerHeight - vh);
-    camY += (Math.max(maxTy, Math.min(0, ty)) - camY) * (reduced ? 1 : .1); view.style.transform = `translateX(-50%) translateY(${camY}px)`;
+    // 카메라: 산책자를 화면 40% 높이에 둔다 (완성 보기에서는 전체를 맞춘다)
+    if (!overview) { const vh = view.offsetHeight || 1, scale = vh / 1500, ty = -(q.y * scale - innerHeight * .42); const maxTy = Math.min(0, innerHeight - vh);
+      camY += (Math.max(maxTy, Math.min(0, ty)) - camY) * (reduced ? 1 : .1); view.style.transform = `translateX(-50%) translateY(${camY}px)`; }
     $('#steps').textContent = Math.round(steps);
     const s = Math.floor((Date.now() - t0) / 1000); $('#clock').textContent = `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
     requestAnimationFrame(frame);
   }
 
+  // ── 완성된 지도 보기 ─────────────────────────────────
+  function setOverview(on) {
+    overview = on; document.body.classList.toggle('overview', on); closeMemo(); showJunction(false);
+    if (on) { REV.forEach(n => n.classList.add('on')); roadGrey.setAttribute('stroke-dasharray', '1000 1000'); reach = RL; loopBg.setAttribute('stroke-dasharray', '1000 1000'); loopFlow.setAttribute('stroke-dasharray', '1000 1000'); loopReach = LL; $('#loopHint').classList.remove('on'); tip.style.opacity = 0;
+      const vh = view.offsetHeight || 1, sc = Math.min(1, (innerHeight - 90) / vh); view.style.transformOrigin = '50% 0'; view.style.transform = `translateX(-50%) translateY(70px) scale(${sc})`; $('#doneView').textContent = '가까이 보기 ⤡'; }
+    else { view.style.transform = `translateX(-50%) translateY(${camY}px)`; $('#doneView').textContent = '완성된 지도 보기 ⤢'; }
+  }
+  $('#doneView').addEventListener('click', () => setOverview(!overview));
+  $('#doneWalk').addEventListener('click', () => { setOverview(false); onLoop = false; p = 0; target = null; camY = 0; toast('다시 위에서부터'); });
   // ── 갈림길 ───────────────────────────────────────────
   function showJunction(on) { $('#junction').classList.toggle('on', on); }
   function enterLoop() { onLoop = true; p = 0; target = null; showJunction(false); toast('우회로로 들어섰다'); }
@@ -408,7 +455,8 @@
   addEventListener('keydown', e => {
     if (e.target.matches('input,textarea,iframe')) return;
     if (coverOn()) { if (e.key !== 'Tab') { e.preventDefault(); start(); } return; }
-    if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S' && !e.shiftKey && false) { keys.d = true; target = null; e.preventDefault(); }
+    if (overview && ['ArrowDown', 'ArrowUp', 'Enter', 'Escape'].includes(e.key)) { setOverview(false); e.preventDefault(); return; }
+    if (e.key === 'ArrowDown') { keys.d = true; target = null; e.preventDefault(); }
     else if (e.key === 'ArrowUp') { keys.u = true; target = null; e.preventDefault(); }
     else if (e.key === 'ArrowRight' && $('#junction').classList.contains('on')) { enterLoop(); e.preventDefault(); }
     else if (e.key === 'Enter') tune();
@@ -416,7 +464,7 @@
     else if (e.key === 's' || e.key === 'S') document.body.classList.toggle('sidebar-open');
   });
   addEventListener('keyup', e => { if (e.key === 'ArrowDown') keys.d = false; if (e.key === 'ArrowUp') keys.u = false; });
-  addEventListener('wheel', e => { if (coverOn() || e.target.closest('.memo, .side')) return; e.preventDefault(); target = null; p += e.deltaY * .35; if (!onLoop) p = Math.max(0, Math.min(RL, p)); }, { passive:false });
+  addEventListener('wheel', e => { if (coverOn() || e.target.closest('.memo, .side')) return; e.preventDefault(); if (overview) { if (e.deltaY < -20) setOverview(false); return; } target = null; p += e.deltaY * .35; if (!onLoop) p = Math.max(0, Math.min(RL, p)); }, { passive:false });
   document.querySelectorAll('.pad [data-dir]').forEach(b => { const k = b.dataset.dir === '1' ? 'd' : 'u'; const on = ev => { ev.preventDefault(); keys[k] = true; target = null; }; const off = () => { keys[k] = false; }; b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off); b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off); });
   $('#padEnter').addEventListener('click', tune); $('#tuneBtn').addEventListener('click', tune);
   $('#rollBtn').addEventListener('click', () => document.body.classList.toggle('sidebar-open'));
@@ -426,11 +474,11 @@
   let toastT; function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2600); }
 
   // ── 표지 미니 지도 · 시작 ─────────────────────────────
-  { const mini = map.cloneNode(true); mini.removeAttribute('id'); mini.querySelectorAll('[id]').forEach(n => n.setAttribute('id', 'm-' + n.getAttribute('id'))); mini.querySelectorAll('[fill^="url(#"]').forEach(n => n.setAttribute('fill', n.getAttribute('fill').replace('url(#', 'url(#m-'))); mini.querySelectorAll('[href^="#"]').forEach(n => n.setAttribute('href', '#m-' + n.getAttribute('href').slice(1))); mini.querySelectorAll('.ring,.smoke').forEach(n => n.remove()); $('#mini').appendChild(mini); }
+  { const mini = map.cloneNode(true); mini.removeAttribute('id'); mini.querySelectorAll('[id]').forEach(n => n.setAttribute('id', 'm-' + n.getAttribute('id'))); mini.querySelectorAll('[fill^="url(#"]').forEach(n => n.setAttribute('fill', n.getAttribute('fill').replace('url(#', 'url(#m-'))); mini.querySelectorAll('[href^="#"]').forEach(n => n.setAttribute('href', '#m-' + n.getAttribute('href').slice(1))); mini.querySelectorAll('.ring,.smoke').forEach(n => n.remove()); mini.querySelectorAll('.rev').forEach(n => n.classList.add('on')); mini.querySelectorAll('[stroke-dasharray="0 1000"]').forEach(n => n.setAttribute('stroke-dasharray', '1000 1000')); mini.querySelectorAll('.tip').forEach(n => n.remove()); $('#mini').appendChild(mini); }
   function start() { const c = $('#cover'); if (c.classList.contains('gone')) return; c.classList.add('gone'); if (innerWidth >= 1100) setTimeout(() => document.body.classList.add('sidebar-open'), 1400); toast('↓ 키나 스크롤로 길을 따라 내려가세요'); }
   $('#bStart').addEventListener('click', start); $('#cover').addEventListener('click', e => { if (!e.target.closest('button')) start(); });
   render(); requestAnimationFrame(frame);
-  window.__riso = { walkTo:(id) => walkTo(TOWERS.find(x => x.id === id)), plant, start, tune, enterLoop, openHouse, state:() => ({ p, onLoop, live: live && live.id, nearHouse }) };
+  window.__riso = { walkTo:(id) => walkTo(TOWERS.find(x => x.id === id)), plant, start, tune, enterLoop, openHouse, setOverview, jump:(v) => { p = v; target = null; }, state:() => ({ p, onLoop, live: live && live.id, nearHouse, reach, done, overview, revealed: REV.filter(n => n.classList.contains('on')).length, total: REV.length }) };
   if (reduced) start(); else setTimeout(start, 12000);
 })();
 </script>
