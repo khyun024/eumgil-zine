@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>에움길 산책 지도</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Nanum+Myeongjo:wght@400;700&display=swap">
+<style>
+  :root{
+    --kraft:#E9E2CF; --sheet:#F3EEE1; --sheet-2:#E4DCC6; --tape:rgba(226,206,140,.72);
+    --ink:#111; --ink-2:#4A473F; --line:#B9B19C; --violet:#8F89CC; --violet-2:#5A54A3; --red:#B8321F; --green:#2E7D4F;
+    --f-serif:'Times New Roman','Nanum Myeongjo','Noto Serif KR',serif;
+    --f-mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--kraft);color:var(--ink);font-family:var(--f-mono);font-size:12.5px;line-height:1.6;overflow:hidden;word-break:keep-all}
+  button{font:inherit;color:inherit;cursor:pointer;background:none;border:0;padding:0}
+  a{color:inherit}
+  h1,h2,h3{font-family:var(--f-serif);font-weight:400;margin:0;line-height:1.1;text-wrap:balance}
+  .lab{display:inline-block;background:var(--ink);color:var(--kraft);padding:.2em .5em .25em;border-radius:6px;line-height:1.25;font-size:12px;letter-spacing:-.01em}
+  .lab.v{background:var(--violet-2)} .lab.g{background:var(--green)}
+  .lnk{font-family:var(--f-mono);font-size:12.5px;padding:2px 0;border-bottom:1px solid transparent;text-decoration:none;line-height:1.3;white-space:nowrap}
+  .lnk:hover{border-bottom-color:var(--ink)}
+  .lnk.on{background:var(--ink);color:var(--kraft);padding:2px 7px;border-radius:5px}
+  .lnk.play{background:var(--violet-2);color:#fff;padding:3px 9px;border-radius:5px}
+  .lnk.play:hover{background:var(--ink)}
+  .lnk:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--violet-2);outline-offset:2px}
+  .tape{position:absolute;width:80px;height:20px;background:var(--tape);pointer-events:none;mix-blend-mode:multiply}
+  .grain{position:fixed;inset:0;pointer-events:none;z-index:40;opacity:.2;mix-blend-mode:multiply;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.2 0 0 0 0 0.18 0 0 0 0 0.12 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+  #pen{position:fixed;inset:0;z-index:39;pointer-events:none}
+
+  /* ── 무대와 지도 종이 ─────────────────── */
+  #stage{position:fixed;inset:0;perspective:2200px;overflow:hidden}
+  #sheet3d{position:absolute;left:50%;top:50%;width:min(100vw - 24px, calc((100vh - 24px) * 1.6));aspect-ratio:1.6;transform:translate(-50%,-50%) rotate(-.6deg);transform-style:preserve-3d;transition:transform 1.1s cubic-bezier(.5,0,.2,1)}
+  body.sidebar-open #sheet3d{left:calc(50% - 170px);width:min(100vw - 380px, calc((100vh - 24px) * 1.6))}
+  #sheet3d.flipped{transform:translate(-50%,-50%) rotate(-.6deg) rotateY(180deg)}
+  .face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+  .face.back{transform:rotateY(180deg);background:#EFE9DA;border:1px solid var(--ink);padding:clamp(16px,3vw,40px);overflow:auto}
+  .face.back h2{font-size:clamp(26px,3.6vw,40px);margin:8px 0 12px}
+  .face.back .cols{display:grid;grid-template-columns:1fr 1fr;gap:20px 32px;margin-top:14px}
+  .face.back h3{font-size:12.5px;font-weight:600;font-family:var(--f-mono);margin:12px 0 4px}
+  .face.back table{border-collapse:collapse;width:100%;font-size:11.5px}
+  .face.back td,.face.back th{border-bottom:1px solid var(--ink);padding:3px 6px;text-align:left;vertical-align:top}
+  .face.back th{color:var(--ink-2);font-weight:500}
+  .face.back .stamp-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+  #map{display:block;width:100%;height:100%;user-select:none;-webkit-user-select:none}
+  #map text{font-family:var(--f-mono);fill:var(--ink)}
+  #map .serif{font-family:var(--f-serif)}
+  .unfold #map{animation:unfold 1.3s cubic-bezier(.4,0,.2,1) both}
+  @keyframes unfold{0%{transform:scaleX(.03) rotate(3deg);opacity:0}30%{opacity:1}100%{transform:none}}
+  .spot{cursor:pointer}
+  .spot .paper{transition:transform .25s ease}
+  .spot:hover .paper,.spot.on .paper{transform:translateY(-5px)}
+  .spot.appear .paper{animation:stick .55s cubic-bezier(.3,1.4,.5,1) both}
+  @keyframes stick{from{opacity:0;transform:scale(.2) rotate(-20deg)}to{opacity:1;transform:none}}
+  .spot .nm{font-size:12px;text-anchor:middle}
+  .spot .sub{font-size:10.5px;fill:var(--ink-2) !important;text-anchor:middle}
+  .stamp{opacity:0;transform:scale(2.2) rotate(-30deg);transform-box:fill-box;transform-origin:center}
+  .stamp.on{animation:stampin .45s cubic-bezier(.3,1.6,.5,1) both}
+  @keyframes stampin{to{opacity:.88;transform:scale(1) rotate(-14deg)}}
+  .route{fill:none;stroke:var(--ink-2);stroke-width:1;stroke-dasharray:2 8;stroke-linecap:round;opacity:.8}
+  .route.worn{stroke:var(--ink);stroke-dasharray:none;stroke-width:1.2;opacity:.5}
+  .studio{cursor:pointer}
+  .studio:hover .core{transform:scale(1.04);transform-box:fill-box;transform-origin:center}
+  /* 움직이는 것들 */
+  .smoke{animation:smoke 3.2s ease-out infinite;transform-box:fill-box;transform-origin:center bottom}
+  .smoke:nth-child(2){animation-delay:1.1s}.smoke:nth-child(3){animation-delay:2.2s}
+  @keyframes smoke{0%{transform:translateY(0) scale(.4);opacity:.7}100%{transform:translateY(-38px) scale(1.4);opacity:0}}
+  .blink{animation:blink 2.6s steps(1) infinite}
+  @keyframes blink{0%,60%{opacity:1}62%,66%{opacity:.15}68%,100%{opacity:1}}
+  .cctv{animation:pan 6s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:22% 50%}
+  @keyframes pan{from{transform:rotate(-22deg)}to{transform:rotate(22deg)}}
+  .crack{stroke-dasharray:140;stroke-dashoffset:140;animation:crack 5s ease-in-out infinite alternate}
+  @keyframes crack{to{stroke-dashoffset:0}}
+  .bob{animation:bob 2.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+  @keyframes bob{50%{transform:translateY(-3px)}}
+  @media (prefers-reduced-motion:reduce){.smoke,.blink,.cctv,.crack,.bob,.spot.appear,.unfold #map,.stamp.on{animation:none}.stamp.on{opacity:.88;transform:rotate(-14deg)}}
+
+  /* ── 좌상 명판 · 걸음 수 ─────────────── */
+  .plate{position:fixed;left:20px;top:18px;z-index:5;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+  .plate p{margin:0;color:var(--ink-2);font-size:11.5px}
+  .counter{font-variant-numeric:tabular-nums}
+
+  /* ── 우측 두루마리 사이드바 ──────────── */
+  .side{position:fixed;right:0;top:0;bottom:0;width:340px;z-index:6;transform:translateX(100%);transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+  body.sidebar-open .side{transform:none}
+  .side .roll{position:absolute;left:-30px;top:14px;bottom:14px;width:30px;background:var(--kraft);border:1px solid var(--ink);border-right:0;border-radius:15px 0 0 15px;display:flex;align-items:center;justify-content:center;cursor:pointer;writing-mode:vertical-rl;font-size:11px;letter-spacing:.1em}
+  .side .roll::before{content:"";position:absolute;left:8px;top:10px;bottom:10px;border-left:1px dashed var(--ink)}
+  .side .inner{position:absolute;inset:14px 14px 14px 0;background:var(--sheet);border:1px solid var(--ink);overflow:auto;padding:18px 20px 24px;transform:rotate(.4deg)}
+  .side .inner .tape{right:-20px;top:24px;transform:rotate(28deg)}
+  .side h2{font-size:24px;margin:8px 0 4px}
+  .side h3{font-size:12px;font-weight:600;font-family:var(--f-mono);margin:18px 0 4px;padding-bottom:3px;border-bottom:1px solid var(--ink)}
+  .side ul{list-style:none;margin:0;padding:0}
+  .side li{padding:3px 0;border-bottom:1px dotted var(--line);display:flex;gap:8px;align-items:baseline}
+  .side li button{text-align:left;flex:1}
+  .side li button:hover{text-decoration:underline}
+  .side .chk{width:11px;height:11px;border:1px solid var(--ink);flex:none;position:relative;top:1px}
+  .side .chk.on{background:var(--red);border-color:var(--red)}
+  .side .cohort{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .side .cohort div{border:1px solid var(--ink);padding:6px 8px;font-size:11.5px;background:var(--kraft)}
+  .side .cohort b{display:block;font-family:var(--f-serif);font-weight:400;font-size:22px;line-height:1}
+  .side p{margin:0 0 8px;font-size:12px}
+  .side .more{display:none}.side.expanded .more{display:block}
+  .side .video{aspect-ratio:16/9;border:1px solid var(--ink);display:grid;place-items:center;font-size:11px;color:var(--ink-2);background:repeating-linear-gradient(135deg,transparent 0 7px,rgba(17,17,17,.14) 7px 8px);margin:6px 0}
+
+  /* ── 거점 메모지(게임 창) ─────────────── */
+  .memo{position:fixed;z-index:7;width:min(520px,calc(100vw - 40px));max-height:calc(100vh - 60px);background:var(--sheet);border:1px solid var(--ink);display:none;flex-direction:column;transform:rotate(-1.2deg);filter:drop-shadow(3px 4px 0 rgba(17,17,17,.2))}
+  .memo.open{display:flex}
+  .memo .tape.a{left:-22px;top:18px;transform:rotate(-36deg)}.memo .tape.b{right:-24px;bottom:30px;transform:rotate(26deg)}
+  .tabs{display:flex;gap:4px;padding:10px 14px 0;flex-wrap:wrap}
+  .tab{font-size:11.5px;padding:3px 10px;border:1px solid var(--ink);border-bottom:0;background:var(--kraft);transform:rotate(-1deg);position:relative;top:1px}
+  .tab.on{background:var(--sheet);transform:none;font-weight:600}
+  .memo-body{padding:12px 20px 16px;overflow:auto;border-top:1px solid var(--ink)}
+  .memo-body h2{font-size:26px;margin:6px 0 6px}
+  .memo-body .meta{color:var(--ink-2);font-size:11.5px;margin-bottom:8px}
+  .memo-body p{margin:0 0 8px;max-width:52ch}
+  .gamebox{position:relative;aspect-ratio:4/3;border:1px solid var(--ink);background:repeating-linear-gradient(135deg,transparent 0 7px,rgba(17,17,17,.12) 7px 8px);margin:10px 0;display:grid;place-items:center;overflow:hidden}
+  .gamebox iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff}
+  .gamebox .cta{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;font-size:11.5px;color:var(--ink-2);padding:12px}
+  .gamebox .cta .lnk.play{font-family:var(--f-serif);font-size:22px;padding:8px 16px;border-radius:8px}
+  .memo-actions{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:6px}
+  .memo-foot{border-top:1px dashed var(--ink);padding:8px 20px 10px;font-family:var(--f-serif);font-size:15px;min-height:38px;color:var(--ink-2)}
+  .memo-foot .cur{display:inline-block;width:8px;border-bottom:1px solid var(--ink);animation:blink 1s steps(1) infinite}
+  .memo .close{position:absolute;right:12px;top:8px}
+  .memo .stamped{position:absolute;right:26px;top:36px;width:74px;transform:rotate(-14deg);opacity:.85;pointer-events:none}
+
+  /* ── 하단 조작 ───────────────────────── */
+  .ctl{position:fixed;left:20px;bottom:18px;z-index:5;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .ctl .k{border:1px solid var(--ink-2);padding:0 5px;font-size:10.5px;border-radius:3px;color:var(--ink-2)}
+  .pad{display:none;gap:6px}
+  .pad button{width:44px;height:44px;border:1px solid var(--ink);border-radius:8px;background:var(--sheet);font-size:18px}
+  .pad button:active{background:var(--ink);color:var(--kraft)}
+  .toast{position:fixed;left:50%;bottom:70px;transform:translateX(-50%) rotate(-1deg);z-index:20;background:var(--ink);color:var(--kraft);padding:6px 12px;border-radius:6px;opacity:0;transition:opacity .3s;pointer-events:none;font-size:12px}
+  .toast.on{opacity:1}
+
+  /* ── 표지 ─────────────────────────────── */
+  .cover{position:fixed;inset:0;z-index:30;background:var(--kraft);display:flex;flex-direction:column;justify-content:space-between;transition:opacity .8s;overflow:hidden}
+  .cover.gone{opacity:0;pointer-events:none}
+  .cover .top{padding:24px 22px 0;max-width:560px}
+  .cover .top p{margin:8px 0 0;max-width:52ch}
+  .cover .en{color:var(--ink-2)}
+  .cover .start{position:absolute;right:22px;top:24px;display:flex;gap:16px;align-items:center}
+  .r3{display:flex;flex-direction:column;gap:1.6vh;color:rgba(17,17,17,.88);margin-bottom:5vh}
+  .r3-row{display:block;position:relative;width:100vw;overflow:hidden;white-space:nowrap;cursor:pointer}
+  .r3-track{display:inline-block;white-space:nowrap;will-change:transform}
+  .r3-chunk{display:inline-block;padding-right:5vw;font-family:var(--f-serif);line-height:1.12;font-size:clamp(26px,5.2vw,68px);letter-spacing:.02em}
+  .cover .folded{position:absolute;left:58%;top:16%;width:min(30vw,340px);aspect-ratio:1.6;background:var(--sheet);border:1px solid var(--ink);transform:rotate(4deg);filter:drop-shadow(2px 3px 0 rgba(17,17,17,.18))}
+  .cover .folded::before,.cover .folded::after{content:"";position:absolute;top:0;bottom:0;border-left:1px dashed var(--ink);left:33%}
+  .cover .folded::after{left:66%}
+  .cover .folded .tape{left:-20px;top:16px;transform:rotate(-34deg)}
+  .cover .folded span{position:absolute;left:12px;bottom:10px;font-size:11px;color:var(--ink-2)}
+
+  @media (max-width:760px){
+    #stage{overflow:auto;-webkit-overflow-scrolling:touch}
+    #sheet3d,body.sidebar-open #sheet3d{position:relative;left:0;top:0;width:170vw;transform:rotate(-.4deg);margin:22vh 12px 34vh}
+    #sheet3d.flipped{transform:rotate(-.4deg) rotateY(180deg)}
+    .side{width:min(340px,86vw)}
+    .memo{left:12px !important;right:12px;top:auto !important;bottom:78px;width:auto;max-height:64vh;transform:none}
+    .pad{display:flex}
+    .ctl .hintk{display:none}
+    .plate p{display:none}
+    .cover .folded{left:52%;top:20%;width:40vw}
+    .r3-chunk{font-size:clamp(22px,7vw,40px)}
+  }
+</style>
+
+<div id="stage">
+  <div id="sheet3d">
+    <div class="face front">
+      <svg id="map" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid meet" aria-label="에움길 산책 지도">
+        <defs>
+          <path id="fig" d="M-2.3 2.4 L0 -2.6 L2.3 2.4" fill="none" stroke="#111" stroke-width="0.9" stroke-linejoin="round"/>
+          <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" stroke="#111" stroke-width="1" opacity=".3"/></pattern>
+          <marker id="ah" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="10" markerHeight="10" orient="auto"><path d="M1 1 L10 6 L1 11" fill="none" stroke="#111" stroke-width="1"/></marker>
+          <g id="cat"><path d="M-14 0 C-12 -6 -2 -7 4 -4 L6 -9 L9 -3 L13 -8 L13 -1 C15 3 8 5 2 4 L-4 5 L-8 3 L-13 6 C-17 6 -16 2 -14 0 Z" fill="#111"/><circle cx="9" cy="-2" r=".9" fill="#E9E2CF"/></g>
+          <g id="bus"><rect x="-22" y="-10" width="44" height="16" rx="2" fill="#111"/><rect x="-18" y="-7" width="8" height="6" fill="#E9E2CF"/><rect x="-7" y="-7" width="8" height="6" fill="#E9E2CF"/><rect x="4" y="-7" width="8" height="6" fill="#E9E2CF"/><circle cx="-13" cy="7" r="3" fill="#111"/><circle cx="13" cy="7" r="3" fill="#111"/></g>
+          <g id="bird"><path d="M-8 0 Q-4 -5 0 0 Q4 -5 8 0" fill="none" stroke="#111" stroke-width="1.2"/></g>
+        </defs>
+        <g id="paper"></g>
+        <g id="deco"></g>
+        <g id="routes"></g>
+        <g id="prints"></g>
+        <g id="movers"></g>
+        <g id="spots"></g>
+        <g id="walker"></g>
+      </svg>
+    </div>
+    <div class="face back" id="back">
+      <span class="lab">지도 뒷면 · 크레딧</span>
+      <h2>함께 걸은 사람들</h2>
+      <p style="max-width:60ch">2026 서울문화예술교육지원사업 〈수상한 산책클럽〉 에-움-길 우회로 404. 주최·주관 파프리 스튜디오, 후원 서울문화재단. 이태원·용산 골목을 다섯 번 걷고 채집한 규칙을 스물한 편의 장소특정형 웹 게임으로 옮겼습니다.</p>
+      <div class="cols">
+        <div>
+          <h3>산책 이끔이</h3>
+          <table><tr><td>이광현</td><td>기획 총괄 · 주강사 · 웹 도구 개발</td></tr><tr><td>이우경</td><td>주강사 · 연구원 (소리산책·움직임산책)</td></tr><tr><td>백서윤(림윤)</td><td>주강사 · 연구원 (이미지산책·보드게임·홍보)</td></tr><tr><td>명지서</td><td>행정운영</td></tr><tr><td>김영주(룹앤테일)</td><td>자문</td></tr><tr><td>박정윤</td><td>사진·영상</td></tr></table>
+          <h3>기수</h3>
+          <table><tr><th>기수</th><th>대상</th><th>기간</th></tr><tr><td>1기</td><td>청소년 3명</td><td>6/6 ~ 7/4 토 17:00</td></tr><tr><td>3기</td><td>청년 6명</td><td>6/6 ~ 7/4 토 14:00</td></tr><tr><td>2기</td><td>청년 6명</td><td>7/5 ~ 8/2 일 16:00</td></tr><tr><td>4기</td><td>청년 6명</td><td>7/5 ~ 8/2 일 19:00</td></tr></table>
+        </div>
+        <div>
+          <h3>산책자의 말</h3>
+          <p style="font-family:var(--f-serif);font-size:15px;line-height:1.4">“목적지 없이 걸어본 게 정말 오랜만이었다.”<br>“그 공간에서만, 그 시간에서만, 우리들끼리만 할 수 있다는 것이 게임의 의미를 증폭시켰다.”<br>“평소 같으면 신경 쓰였을 사람들의 시선이 놀이의 일부처럼 느껴졌다.”</p>
+          <h3>모은 도장</h3>
+          <div class="stamp-row" id="backStamps"></div>
+          <h3>다른 버전</h3>
+          <p><a class="lnk" href="../zine/">에움길 진 (v2)</a> · <a class="lnk" href="../archipelago/">에움길 군도 (v1)</a> · <a class="lnk" href="https://khyun024.github.io/suspicious-walk-club/" target="_blank" rel="noopener">게임과 도구 ↗</a></p>
+        </div>
+      </div>
+      <p style="margin-top:18px"><button class="lnk on" id="flipBack">지도 앞면으로 ⇄</button></p>
+    </div>
+  </div>
+</div>
+<canvas id="pen" aria-hidden="true"></canvas>
+<div class="grain" aria-hidden="true"></div>
+
+<header class="plate">
+  <span class="lab">수상한 산책클럽 <span style="opacity:.85">✶ 에움길 산책 지도</span></span>
+  <p><span class="counter" id="steps">0</span> 걸음 · <span class="counter" id="clock">00:00</span> · 도장 <span class="counter" id="stampCnt">0</span> / 6</p>
+</header>
+
+<aside class="side" id="side">
+  <button class="roll" id="rollBtn" aria-label="사이드바 열고 닫기">수상한 산책클럽 ✶ 더 보기</button>
+  <div class="inner"><i class="tape"></i>
+    <span class="lab">2026 · 파프리 스튜디오</span>
+    <h2>수상한 산책클럽</h2>
+    <p>에-움-길 우회로 404. 방향키로 산책자를 움직여 거점에 들르고, 그 자리에서 만든 게임을 플레이하세요. 여섯 거점의 도장을 모으면 파프리 스튜디오에서 안내서가 열립니다.</p>
+    <button class="lnk on" id="moreBtn">더 자세히 보기 ▾</button>
+    <div class="more">
+      <h3>프로그램 소개</h3>
+      <div class="video">홍보영상 자리 (16:9)</div>
+      <p><b>기획 개요.</b> 이태원·용산 골목을 소리, 이미지, 움직임으로 다시 걷고, 발견한 규칙을 보드게임과 AI 바이브코딩으로 장소특정형 웹 게임으로 옮긴 뒤, 서로의 게임을 따라 동네를 걷는 5회 과정.</p>
+      <p><b>세부 교육 프로그램.</b> 1 소리산책 → 2 이미지산책 → 3 움직임산책 → 4 게임산책 → 5 에움길 안내서. 같은 과정을 네 기수에 반복.</p>
+      <p><a class="lnk" href="https://www.instagram.com/" target="_blank" rel="noopener">파프리 인스타 ↗</a> <span style="color:var(--ink-2)">(주소 확인 필요)</span></p>
+      <h3>산책 이끔이들</h3>
+      <ul><li><span>이광현</span><span style="color:var(--ink-2)">기획 총괄 · 주강사 · 웹 도구</span></li><li><span>이우경</span><span style="color:var(--ink-2)">소리산책 · 움직임산책</span></li><li><span>백서윤</span><span style="color:var(--ink-2)">이미지산책 · 보드게임 · 홍보</span></li></ul>
+    </div>
+    <h3>산책자들</h3>
+    <div class="cohort"><div><b>1기</b>청소년 3명 · 6/6~7/4</div><div><b>2기</b>청년 6명 · 7/5~8/2</div><div><b>3기</b>청년 6명 · 6/6~7/4</div><div><b>4기</b>청년 6명 · 7/5~8/2</div></div>
+    <h3>우리의 발자취</h3>
+    <ul id="trail"></ul>
+    <p style="margin-top:14px"><a class="lnk play" href="https://khyun024.github.io/suspicious-walk-club/" target="_blank" rel="noopener">모든 게임 플레이하기 ↗</a></p>
+  </div>
+</aside>
+
+<section class="memo" id="memo" aria-live="polite">
+  <i class="tape a"></i><i class="tape b"></i>
+  <button class="lnk close" id="memoClose">닫기 ✕</button>
+  <svg class="stamped" id="memoStamp" viewBox="0 0 100 100" hidden><circle cx="50" cy="50" r="46" fill="none" stroke="#B8321F" stroke-width="2"/><circle cx="50" cy="50" r="30" fill="none" stroke="#B8321F"/><text x="50" y="47" text-anchor="middle" font-family="Times New Roman, serif" font-size="12" fill="#B8321F">다녀감</text><text x="50" y="62" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#B8321F" id="memoStampDate"></text></svg>
+  <div class="tabs" id="tabs"></div>
+  <div class="memo-body" id="memoBody"></div>
+  <div class="memo-foot" id="memoFoot"></div>
+</section>
+
+<footer class="ctl">
+  <span class="hintk"><span class="k">←</span> <span class="k">→</span> 걷기 · <span class="k">Enter</span> 들르기 · <span class="k">S</span> 사이드바 · 거점 클릭 = 자동 걷기 · 스튜디오 클릭 = 지도 뒤집기</span>
+  <div class="pad"><button data-dir="-1" aria-label="뒤로">◀</button><button data-dir="1" aria-label="앞으로">▶</button><button id="padEnter" aria-label="들르기">↵</button></div>
+  <button class="lnk" id="resetBtn">도장 지우기</button>
+</footer>
+<div class="toast" id="toast"></div>
+
+<div class="cover" id="cover">
+  <div class="top">
+    <span class="lab">에움길 산책 지도 ✶ 2026</span>
+    <p>2026 서울문화예술교육지원사업 〈수상한 산책클럽〉. 파프리 스튜디오를 가운데 두고 이태원 골목의 여섯 거점이 놓여 있습니다. 산책자를 움직여 거점에 들르면 그 자리에서 만든 게임이 열립니다.<br><span class="en">Six spots around PAPRI Studio. Walk, stop, play.</span></p>
+  </div>
+  <div class="start"><span style="color:var(--ink-2);font-size:11.5px">클릭 · 아무 키</span><button class="lnk on" id="bStart">지도 펼치기 ➹</button></div>
+  <div class="folded"><i class="tape"></i><span>접힌 지도 · 1 : 걸음</span></div>
+  <div class="r3">
+    <a class="r3-row" data-speed="80"><span class="r3-track"><span class="r3-chunk">❪ ❪ 비탈길 ❫ ❫ ☆ 회나무로 13나길 ✶ KOHE 앞 ⚭ 고양이 골목 ✹ CCTV 관제실 ➹ 골목 안 연탄불</span><span class="r3-chunk r3-dup"></span></span></a>
+    <a class="r3-row" data-speed="60"><span class="r3-track"><span class="r3-chunk">➹ 거점 여섯 ☆ 도장 여섯 ✶ 스물한 편의 게임 ⚭ Six spots, six stamps, twenty-one games</span><span class="r3-chunk r3-dup"></span></span></a>
+  </div>
+</div>
+
+<script>
+(() => {
+  const BASE = 'https://khyun024.github.io/suspicious-walk-club/';
+  const NS = 'http://www.w3.org/2000/svg', $ = s => document.querySelector(s);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const el = (n, a = {}, p) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; };
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+  function rng(seed) { let h = 1779033703 ^ seed.length; for (let i = 0; i < seed.length; i++) { h = Math.imul(h ^ seed.charCodeAt(i), 3432918353); h = h << 13 | h >>> 19; } return () => { h = Math.imul(h ^ h >>> 16, 2246822507); h = Math.imul(h ^ h >>> 13, 3266489909); return ((h ^= h >>> 16) >>> 0) / 4294967296; }; }
+  function torn(x, y, w, h, seed, amp = 6, step = 40) { const r = rng(seed), pts = []; for (let t = 0; t < w; t += step) pts.push([x + t, y + (r() - .5) * amp]); for (let t = 0; t < h; t += step) pts.push([x + w + (r() - .5) * amp, y + t]); for (let t = w; t > 0; t -= step) pts.push([x + t, y + h + (r() - .5) * amp]); for (let t = h; t > 0; t -= step) pts.push([x + (r() - .5) * amp, y + t]); return pts.map(p => p.join(',')).join(' '); }
+
+  // ── 거점 데이터 (와이어프레임의 거점 1~6) ────────────────
+  const G = (title, author, cohort, desc, rule, url) => ({ title, author, cohort, desc, rule, url });
+  const SPOTS = [
+    { id:'slope', n:1, name:'이태원 비탈길', short:'비탈길', p:[820, 150], glyph:'contour', foot:'비탈길에서는 소리가 먼저 올라온다. 귀로 들은 단서를 따라 그림자를 추리했다.',
+      games:[ G('비탈길의 그림자', '참여자 [확인]', '3기', '오디오 기반 야외 추리 게임. 골목을 오르내리며 들리는 소리로 장면을 짚는다.', '귀로 들은 단서를 따라 골목의 그림자를 추리한다', null),
+              G('손동작 콜라주', '파프리 스튜디오', '이끔이', '손 모양으로 능선을 잘라 붙이는 카메라 놀이.', '손으로 프레임을 만들어 능선을 잘라낸다', BASE + 'games/itaewon/hand.html') ] },
+    { id:'kohe', n:2, name:'이태원 KOHE 앞', short:'KOHE 앞', p:[1180, 300], glyph:'sign', foot:'KOHE 간판 아래에서 장소의 빈 곳을 기억으로 메웠다.',
+      games:[ G('KOHE 장소 수리반', '참여자 [확인]', '4기', '기억으로 장소의 균열을 메우는 게임.', '장소의 빈 곳을 떠오르는 기억으로 채워 수리한다', null) ] },
+    { id:'cctv', n:3, name:'이태원 CCTV 관제실', short:'CCTV 관제실', p:[1170, 770], glyph:'cctv', foot:'카메라가 도는 각도를 세다가 우리가 감시 놀이의 규칙이 되었다.',
+      games:[ G('감시 놀이', '파프리 스튜디오', '이끔이', '관제실 카메라의 시선을 피하고 훔쳐보는 놀이.', '카메라가 보는 동안 움직이지 않는다', BASE + 'games/itaewon/cctv.html') ] },
+    { id:'cat', n:4, name:'이태원 고양이 골목', short:'고양이 골목', p:[700, 630], glyph:'cat', foot:'고양이가 지나는 길이 도시를 해킹하는 첫 번째 지름길이었다.',
+      games:[ G('도시 해킹', '파프리 스튜디오', '이끔이', '골목의 규칙을 뒤집어 다른 길을 만드는 게임.', '고양이가 다니는 길만 따라 걷는다', BASE + 'games/itaewon/index.html'),
+              G('숲속 미생물 탐험기', '파프리 스튜디오', '이끔이', '골목 아래 보이지 않는 것들을 찾는 탐험.', '가장 작은 것부터 찾는다', BASE + 'games/itaewon/microbe.html') ] },
+    { id:'briq', n:5, name:'이태원 골목 안 연탄불', short:'골목 안', p:[340, 780], glyph:'briquette', foot:'소음이 커질수록 불씨가 약해졌다. 조용한 곳을 찾아 골목 안으로 들어갔다.',
+      games:[ G('연탄불', '참여자 [확인]', '3기', '주변 소음으로 불씨가 약해지는 마이크 게임.', '소음이 커질수록 불씨가 약해진다. 조용한 곳을 찾아라', null) ] },
+    { id:'gilje', n:6, name:'회나무로 13나길', short:'회나무로 13나길', p:[360, 300], glyph:'crack', foot:'금 간 보도블록만 밟으며 골목 끝까지 갔다. 스튜디오 바로 앞 길이다.',
+      games:[ G('회나무로 13나길 길제', '참여자 [확인]', '2기', '보도블록 균열을 따라 걷는 산책 의식 게임.', '금 간 보도블록만 밟으며 골목 끝까지 간다', null),
+              G('초현실 카메라 놀이', '파프리 스튜디오', '이끔이', '도형 카메라로 골목의 수상한 장면을 포착한다.', '보이는 것을 도형으로만 찍는다', BASE + 'games/surreal/index.html') ] },
+  ];
+  const STUDIO = { p:[800, 490] };
+  const ROUTE_PTS = [STUDIO.p, SPOTS[0].p, SPOTS[1].p, SPOTS[2].p, SPOTS[3].p, SPOTS[4].p, SPOTS[5].p];
+
+  // ── 종이와 밑그림 ─────────────────────────────────────────
+  const map = $('#map');
+  {
+    const P = document.getElementById('paper');
+    el('polygon', { points:torn(10, 10, 1580, 980, 'sheet', 14, 70), fill:'#111', opacity:.14, transform:'translate(9 11)' }, P);
+    el('polygon', { points:torn(10, 10, 1580, 980, 'sheet', 14, 70), fill:'#F3EEE1' }, P);
+    const grid = el('g', { stroke:'#B9B19C', 'stroke-width':.5, opacity:.5 }, P);
+    for (let x = 100; x < 1600; x += 100) el('line', { x1:x, y1:10, x2:x, y2:990 }, grid);
+    for (let y = 100; y < 1000; y += 100) el('line', { x1:10, y1:y, x2:1590, y2:y }, grid);
+    el('path', { d:'M60 520 A760 760 0 0 1 1540 520', fill:'none', stroke:'#B9B19C', 'stroke-width':.8 }, P);
+    el('path', { d:'M200 700 A640 640 0 0 1 1400 700', fill:'none', stroke:'#B9B19C', 'stroke-width':.6, 'stroke-dasharray':'2 8' }, P);
+    [[40,30,-30],[1440,26,26],[36,930,28],[1450,936,-24]].forEach(([x,y,a]) => el('rect', { x, y, width:130, height:32, fill:'rgba(226,206,140,.72)', transform:`rotate(${a} ${x + 65} ${y + 16})` }, P));
+    // 도로(연한 띠) 두 줄과 하단 큰길
+    el('path', { d:'M120 900 H1480', stroke:'#B9B19C', 'stroke-width':10, opacity:.5 }, P);
+    el('path', { d:'M120 900 H1480', stroke:'#F3EEE1', 'stroke-width':1, 'stroke-dasharray':'12 12' }, P);
+    // 라벨 스티커
+    [['800 60 -2', '❪ ❪ 이태원 · 용산 ❫ ❫ 2026 ✶ 1 : 걸음'], ['1330 940 3', '➹ 산책자 21명 · 이끔이 3명']].forEach(([tr, txt]) => { const [x, y, a] = tr.split(' ').map(Number); const g = el('g', { transform:`translate(${x} ${y}) rotate(${a})` }, P); const w = txt.length * 9 + 20; el('rect', { x:-w / 2, y:-13, width:w, height:26, rx:6, fill:'#111' }, g); const t = el('text', { x:0, y:0, 'text-anchor':'middle', 'dominant-baseline':'central', 'font-size':13, style:'fill:#E9E2CF' }, g); t.textContent = txt; });
+    // 인용 쪽지
+    const q = el('g', { transform:'rotate(-3 1330 560)' }, P); el('polygon', { points:torn(1220, 540, 250, 76, 'q1', 5, 26), fill:'#E9E2CF', stroke:'#111', 'stroke-width':.7 }, q); const t1 = el('text', { class:'serif', x:1234, y:568, 'font-size':16 }, q); t1.textContent = '“목적지 없이 걸어본 게'; const t2 = el('text', { class:'serif', x:1234, y:592, 'font-size':16 }, q); t2.textContent = '정말 오랜만이었다.”';
+    el('rect', { x:1320, y:532, width:60, height:14, fill:'rgba(226,206,140,.72)', transform:'rotate(-6 1350 539)' }, q);
+  }
+
+  // ── 산책로(닫힌 곡선) ─────────────────────────────────────
+  function catmullClosed(pts, tension = .5) { const n = pts.length; let d = `M${pts[0][0]} ${pts[0][1]} `; for (let i = 0; i < n; i++) { const p0 = pts[(i - 1 + n) % n], p1 = pts[i], p2 = pts[(i + 1) % n], p3 = pts[(i + 2) % n]; const c1 = [p1[0] + (p2[0] - p0[0]) / 6 * tension * 2, p1[1] + (p2[1] - p0[1]) / 6 * tension * 2], c2 = [p2[0] - (p3[0] - p1[0]) / 6 * tension * 2, p2[1] - (p3[1] - p1[1]) / 6 * tension * 2]; d += `C${c1[0]} ${c1[1]} ${c2[0]} ${c2[1]} ${p2[0]} ${p2[1]} `; } return d + 'Z'; }
+  const routeD = catmullClosed(ROUTE_PTS, .5);
+  const R = document.getElementById('routes');
+  const worn = el('path', { d:routeD, class:'route worn', 'pathLength':1000, 'stroke-dasharray':'0 1000' }, R);
+  const route = el('path', { d:routeD, class:'route' }, R);
+  const LEN = route.getTotalLength();
+  const ptAt = l => route.getPointAtLength(((l % LEN) + LEN) % LEN);
+  const stopLen = {};
+  [['studio', STUDIO.p], ...SPOTS.map(s => [s.id, s.p])].forEach(([id, p]) => { let best = 0, bd = 1e9; for (let l = 0; l < LEN; l += 2) { const q = ptAt(l), d = Math.hypot(q.x - p[0], q.y - p[1]); if (d < bd) { bd = d; best = l; } } stopLen[id] = best; });
+  // 화살표(진행 방향 표시)
+  for (let i = 0; i < 7; i++) { const l = stopLen[i === 0 ? 'studio' : SPOTS[i - 1].id] + 90, q = ptAt(l), q2 = ptAt(l + 2), a = Math.atan2(q2.y - q.y, q2.x - q.x) * 180 / Math.PI; el('path', { d:'M-6 -5 L5 0 L-6 5', fill:'none', stroke:'#111', 'stroke-width':1, transform:`translate(${q.x} ${q.y}) rotate(${a})`, opacity:.6 }, R); }
+
+  // ── 거점 스크랩 ───────────────────────────────────────────
+  const GLYPH = {
+    contour: g => { ['M-38 14 C-20 -4 4 -10 40 6', 'M-38 24 C-18 8 6 2 40 16', 'M-38 4 C-24 -14 0 -22 40 -6'].forEach((d, i) => el('path', { d, fill:'none', stroke:'#111', 'stroke-width':1, opacity:1 - i * .25 }, g)); el('use', { href:'#fig', x:-6, y:-8, transform:'scale(1.6) translate(0 -3)' }, g); },
+    sign: g => { el('rect', { x:-40, y:-18, width:80, height:30, fill:'#111', rx:2 }, g); const t = el('text', { x:0, y:-1, 'text-anchor':'middle', 'dominant-baseline':'central', 'font-size':17, style:'fill:#E9E2CF', 'letter-spacing':4, class:'blink' }, g); t.textContent = 'KOHE'; el('path', { d:'M-30 12 V26 M30 12 V26', stroke:'#111', 'stroke-width':1.2 }, g); },
+    cctv: g => { el('path', { d:'M0 24 V4', stroke:'#111', 'stroke-width':1.4 }, g); const c = el('g', { class:'cctv' }, g); el('path', { d:'M-8 4 L-28 -8 L-30 -14 L-4 -2 Z', fill:'#111' }, c); el('rect', { x:-6, y:-6, width:34, height:12, rx:2, fill:'#111' }, c); el('circle', { cx:26, cy:0, r:3.5, fill:'#E9E2CF' }, c); el('circle', { cx:26, cy:0, r:1.4, fill:'#B8321F', class:'blink' }, c); },
+    cat: g => { el('path', { d:'M-40 18 H40', stroke:'#111', 'stroke-width':1, 'stroke-dasharray':'3 4' }, g); el('use', { href:'#cat', class:'bob' }, el('g', { transform:'translate(0 12)' }, g)); el('use', { href:'#cat', transform:'translate(-24 10) scale(.55)' , opacity:.6 }, g); },
+    briquette: g => { el('ellipse', { cx:0, cy:16, rx:16, ry:5, fill:'#111' }, g); el('rect', { x:-16, y:0, width:32, height:16, fill:'#111' }, g); el('ellipse', { cx:0, cy:0, rx:16, ry:5, fill:'#333' }, g); for (let i = 0; i < 7; i++) { const a = i / 7 * Math.PI * 2; el('circle', { cx:Math.cos(a) * 9, cy:Math.sin(a) * 2.6, r:1.6, fill:'#B8321F', class:'blink' }, g); } for (let i = 0; i < 3; i++) el('circle', { cx:-4 + i * 4, cy:-6, r:4, fill:'#4A473F', class:'smoke', opacity:.5 }, g); },
+    crack: g => { for (let i = 0; i < 3; i++) for (let j = 0; j < 2; j++) el('rect', { x:-42 + i * 28, y:-14 + j * 22, width:26, height:20, fill:'none', stroke:'#111', 'stroke-width':.8 }, g); el('path', { d:'M-38 -8 L-20 2 L-6 -6 L8 10 L24 4 L40 16', fill:'none', stroke:'#111', 'stroke-width':1.6, class:'crack' }, g); },
+  };
+  const spotEls = {}, stampEls = {};
+  const SP = document.getElementById('spots');
+  SPOTS.forEach((s, i) => {
+    const [x, y] = s.p, r = rng(s.id), rot = (r() - .5) * 8;
+    const g = el('g', { class:'spot', 'data-id':s.id, tabindex:'0', role:'button', transform:`translate(${x} ${y})` }, SP);
+    g.style.animationDelay = (0.25 + i * 0.16) + 's';
+    const paper = el('g', { class:'paper' }, g);
+    el('polygon', { points:torn(-64, -52, 128, 104, 'sp' + s.id, 6, 20), fill:'#111', opacity:.14, transform:`translate(5 6) rotate(${rot})` }, paper);
+    el('polygon', { points:torn(-64, -52, 128, 104, 'sp' + s.id, 6, 20), fill:'#F3EEE1', stroke:'#111', 'stroke-width':.9, transform:`rotate(${rot})` }, paper);
+    el('rect', { x:-50, y:-60, width:60, height:14, fill:'rgba(226,206,140,.72)', transform:'rotate(-28 -20 -53)' }, paper);
+    const gl = el('g', { transform:`translate(0 -12) rotate(${rot})` }, paper); GLYPH[s.glyph](gl);
+    const n = el('text', { class:'nm', x:0, y:36 }, paper); n.textContent = `${s.n} ${s.short}`;
+    const sub = el('text', { class:'sub', x:0, y:50 }, paper); sub.textContent = `${s.games.length}편`;
+    const st = el('g', { class:'stamp' }, el('g', { transform:'translate(34 -30)' }, paper));
+    el('circle', { r:22, fill:'none', stroke:'#B8321F', 'stroke-width':1.6 }, st); el('circle', { r:14, fill:'none', stroke:'#B8321F', 'stroke-width':.8 }, st);
+    const stt = el('text', { class:'serif', y:4, 'text-anchor':'middle', 'font-size':10, style:'fill:#B8321F' }, st); stt.textContent = '다녀감';
+    spotEls[s.id] = g; stampEls[s.id] = st;
+    const tt = el('title', {}, g); tt.textContent = s.name;
+  });
+  // 스튜디오
+  const studioG = el('g', { class:'studio spot', 'data-id':'studio', tabindex:'0', role:'button', transform:`translate(${STUDIO.p[0]} ${STUDIO.p[1]})` }, SP);
+  {
+    const core = el('g', { class:'core paper' }, studioG);
+    el('circle', { r:74, fill:'#111', opacity:.14, transform:'translate(5 6)' }, core);
+    el('circle', { r:74, fill:'#E9E2CF', stroke:'#111', 'stroke-width':1.2 }, core);
+    el('circle', { r:62, fill:'none', stroke:'#111', 'stroke-width':.6, 'stroke-dasharray':'2 4' }, core);
+    // 평면도 조각
+    [-22, -8, 6].forEach(y => { el('path', { d:`M-34 ${y} H26`, stroke:'#111', 'stroke-width':.9 }, core); el('path', { d:`M-34 ${y + 4} H26`, stroke:'#111', 'stroke-width':.9 }, core); });
+    el('path', { d:'M-30 -24 V12 M22 -24 V12', stroke:'#111', 'stroke-width':.9 }, core);
+    el('rect', { x:-42, y:-12, width:6, height:6, fill:'#111' }, core);
+    const t = el('text', { class:'serif', y:34, 'text-anchor':'middle', 'font-size':17 }, core); t.textContent = '파프리 스튜디오';
+    const t2 = el('text', { y:50, 'text-anchor':'middle', 'font-size':10, style:'fill:#4A473F' }, core); t2.textContent = '회나무로 13나길 40';
+    const lock = el('text', { y:-46, 'text-anchor':'middle', 'font-size':10.5, style:'fill:#4A473F', id:'studioHint' }, core); lock.textContent = '도장 6개를 모으면 안내서가 열린다';
+    const tt = el('title', {}, studioG); tt.textContent = '파프리 스튜디오 · 클릭하면 지도가 뒤집힌다';
+  }
+
+  // ── 움직이는 것들 ────────────────────────────────────────
+  const MV = document.getElementById('movers');
+  if (!reduced) {
+    // 고양이: 산책로를 반대 방향으로 천천히 돈다
+    const cat = el('use', { href:'#cat' }, MV); const am = el('animateMotion', { dur:'95s', repeatCount:'indefinite', rotate:'auto', keyPoints:'1;0', keyTimes:'0;1', calcMode:'linear' }, cat); el('mpath', { href:'#routePath' }, am);
+    route.setAttribute('id', 'routePath');
+    // 인영: 여러 명이 산책로를 돈다
+    [37, 52, 64, 80].forEach((dur, i) => { const u = el('use', { href:'#fig', transform:'scale(1.6)' }, MV); const a = el('animateMotion', { dur:dur + 's', repeatCount:'indefinite', begin:(i * 4) + 's' }, u); el('mpath', { href:'#routePath' }, a); });
+    // 버스: 하단 큰길을 25초마다 지난다
+    const bus = el('use', { href:'#bus' }, MV); el('animateMotion', { dur:'25s', repeatCount:'indefinite', path:'M-60 892 H1660' }, bus);
+    // 새: 화면을 가로지른다
+    [[ 'M-30 120 C400 60 900 180 1650 90', 34, 0 ], [ 'M-30 200 C500 140 1000 240 1650 160', 41, 9 ]].forEach(([d, dur, b]) => { const bird = el('use', { href:'#bird' }, MV); el('animateMotion', { dur:dur + 's', repeatCount:'indefinite', path:d, begin:b + 's' }, bird); const flap = el('animateTransform', { attributeName:'transform', type:'scale', values:'1 1;1 .3;1 1', dur:'.5s', repeatCount:'indefinite', additive:'sum' }, bird); });
+    // 해: 시간에 따라 천천히 호를 그린다(실제 시각)
+    const sun = el('g', {}, MV); el('circle', { r:14, fill:'none', stroke:'#111', 'stroke-width':1.2 }, sun); for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; el('line', { x1:Math.cos(a) * 19, y1:Math.sin(a) * 19, x2:Math.cos(a) * 25, y2:Math.sin(a) * 25, stroke:'#111', 'stroke-width':1 }, sun); }
+    const placeSun = () => { const h = new Date().getHours() + new Date().getMinutes() / 60, f = Math.max(0, Math.min(1, (h - 6) / 14)); sun.setAttribute('transform', `translate(${100 + f * 1400} ${520 - Math.sin(f * Math.PI) * 460})`); sun.style.opacity = f <= 0 || f >= 1 ? .25 : 1; }; placeSun(); setInterval(placeSun, 60000);
+  } else route.setAttribute('id', 'routePath');
+
+  // ── 산책자 ───────────────────────────────────────────────
+  const WK = document.getElementById('walker'), PR = document.getElementById('prints');
+  el('circle', { r:14, fill:'none', stroke:'#111', 'stroke-width':.9, 'stroke-dasharray':'3 3' }, WK);
+  el('circle', { r:6.5, fill:'#111' }, WK);
+  const nose = el('line', { x1:8, y1:0, x2:20, y2:0, stroke:'#111', 'stroke-width':1.2 }, WK);
+  const nameTag = el('g', { transform:'translate(0 -30)' }, WK); el('rect', { x:-22, y:-11, width:44, height:20, rx:5, fill:'#111' }, nameTag); const nt = el('text', { 'text-anchor':'middle', 'dominant-baseline':'central', 'font-size':11, style:'fill:#E9E2CF' }, nameTag); nt.textContent = '산책자';
+
+  let followT = 12, p = stopLen.studio, target = null, dir = 1, held = 0, steps = 0, lastPrint = p, worn_max = 0, atStop = null, idleT = 0;
+  const keys = { l:false, r:false };
+  let lastT = 0, SPEED = 3.2;
+  let stamps = new Set(); try { stamps = new Set(JSON.parse(localStorage.getItem('eumgil-v3-stamps') || '[]')); } catch (e) {}
+  const t0 = Date.now();
+
+  function nearest() { let best = null, bd = 1e9; Object.entries(stopLen).forEach(([id, l]) => { let d = Math.abs(((p - l) % LEN + LEN) % LEN); d = Math.min(d, LEN - d); if (d < bd) { bd = d; best = id; } }); return bd < 26 ? best : null; }
+  function dropPrint(from, to) { const step = to > from ? 22 : -22; while (Math.abs(lastPrint - to) >= 22) { lastPrint += step; const q = ptAt(lastPrint), q2 = ptAt(lastPrint + 2), a = Math.atan2(q2.y - q.y, q2.x - q.x), sd = (Math.round(lastPrint / 22) % 2 ? 1 : -1) * 4; el('ellipse', { cx:q.x + Math.cos(a + Math.PI / 2) * sd, cy:q.y + Math.sin(a + Math.PI / 2) * sd, rx:3.6, ry:2, fill:'none', stroke:'#111', 'stroke-width':.7, opacity:.75, transform:`rotate(${a * 180 / Math.PI} ${q.x} ${q.y})` }, PR); if (PR.childNodes.length > 500) PR.removeChild(PR.firstChild); steps++; } }
+  function frame(now = performance.now()) {
+    const dt = Math.min(3, lastT ? (now - lastT) / 16.7 : 1); lastT = now; SPEED = 3.2 * dt;
+    let moving = 0;
+    if (target != null) { let d = ((target - p) % LEN + LEN) % LEN; if (d > LEN / 2) d -= LEN; if (Math.abs(d) < SPEED) { p = target; target = null; } else { p += Math.sign(d) * SPEED; moving = Math.sign(d); } }
+    else if (keys.r) { p += SPEED; moving = 1; } else if (keys.l) { p -= SPEED; moving = -1; }
+    if (moving) { dir = moving; dropPrint(p - moving * SPEED, p); idleT = 0; if (atStop) { atStop = null; } worn_max = Math.max(worn_max, (p % LEN + LEN) % LEN); worn.setAttribute('stroke-dasharray', `${worn_max / LEN * 1000} 1000`); }
+    else { idleT++; if (idleT === 18) { const n = nearest(); if (n && n !== atStop) { atStop = n; if (n !== 'studio') openMemo(n); else toast('파프리 스튜디오. 클릭하면 지도가 뒤집힙니다'); } } }
+    const q = ptAt(p), q2 = ptAt(p + 2 * dir), a = Math.atan2(q2.y - q.y, q2.x - q.x) * 180 / Math.PI;
+    WK.setAttribute('transform', `translate(${q.x} ${q.y})`); nose.setAttribute('transform', `rotate(${a})`);
+    if (innerWidth < 760 && (moving || followT > 0)) { followT = moving ? 12 : followT - 1; const bb = WK.getBoundingClientRect(), st = $('#stage'); st.scrollLeft += (bb.x + bb.width / 2 - innerWidth / 2) * .12; st.scrollTop += (bb.y + bb.height / 2 - innerHeight / 2) * .12; }
+    $('#steps').textContent = steps;
+    const s = Math.floor((Date.now() - t0) / 1000); $('#clock').textContent = `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+    requestAnimationFrame(frame);
+  }
+
+  // ── 메모지(게임 창) ─────────────────────────────────────
+  const memo = $('#memo'), tabs = $('#tabs'), body = $('#memoBody'), foot = $('#memoFoot');
+  let curSpot = null, curTab = 0, typeT = null;
+  function openMemo(id, tab = 0) {
+    const s = SPOTS.find(x => x.id === id); if (!s) return; curSpot = s; curTab = tab;
+    Object.values(spotEls).forEach(g => g.classList.toggle('on', g.dataset.id === id));
+    // 위치: 거점 옆(화면 좌표)
+    const bb = spotEls[id].getBoundingClientRect(); const left = bb.right + 24 + 520 < innerWidth - (document.body.classList.contains('sidebar-open') ? 350 : 0) ? bb.right + 18 : Math.max(12, bb.left - 540); memo.style.left = left + 'px'; memo.style.top = Math.max(60, Math.min(innerHeight - 420, bb.top - 40)) + 'px';
+    tabs.innerHTML = s.games.map((g, i) => `<button class="tab ${i === tab ? 'on' : ''}" data-i="${i}">${i === 0 ? '첫번째 산책' : i === 1 ? '두번째 산책' : (i + 1) + '번째 산책'}</button>`).join('');
+    const g = s.games[tab];
+    body.innerHTML = `<span class="lab">거점 ${s.n} · ${esc(s.name)}</span>
+      <h2>〈${esc(g.title)}〉</h2>
+      <div class="meta">산책자 · ${esc(g.author)} · ${esc(g.cohort)}</div>
+      <p><b>게임 소개.</b> ${esc(g.desc)}</p>
+      <p style="font-family:var(--f-serif);font-size:15px">“${esc(g.rule)}”</p>
+      <div class="gamebox" id="gamebox">${g.url ? `<div class="cta"><button class="lnk play" id="playBtn">게임 플레이 하기 ➹</button><span>이 자리에서 바로 열립니다. 도장이 찍힙니다.</span></div>` : `<div class="cta"><span class="lab v">링크 수합 중</span><span>참여자 게임 결과물을 받으면 여기서 바로 플레이할 수 있습니다.</span><button class="lnk" id="playBtn">그래도 도장 찍기</button></div>`}</div>
+      <div class="memo-actions">${g.url ? `<a class="lnk" href="${g.url}" target="_blank" rel="noopener">새 창에서 열기 ↗</a>` : ''}<button class="lnk" id="nextSpot">다음 거점으로 걷기 →</button></div>`;
+    $('#memoStamp').hidden = !stamps.has(id); if (stamps.has(id)) $('#memoStampDate').textContent = new Date().toISOString().slice(0, 10).replace(/-/g, '.');
+    memo.classList.add('open'); typewrite(`거점 ${s.n}에서는 무슨 일이 있었을까? ${s.foot}`);
+  }
+  function typewrite(text) { clearInterval(typeT); let i = 0; foot.innerHTML = '<span class="cur"></span>'; typeT = setInterval(() => { i++; foot.innerHTML = esc(text.slice(0, i)) + '<span class="cur"></span>'; if (i >= text.length) clearInterval(typeT); }, reduced ? 0 : 28); }
+  function closeMemo() { memo.classList.remove('open'); clearInterval(typeT); Object.values(spotEls).forEach(g => g.classList.remove('on')); }
+  tabs.addEventListener('click', e => { const t = e.target.closest('.tab'); if (t && curSpot) openMemo(curSpot.id, +t.dataset.i); });
+  body.addEventListener('click', e => {
+    if (e.target.closest('#playBtn')) { const g = curSpot.games[curTab]; if (g.url) { const box = $('#gamebox'); box.innerHTML = `<iframe src="${g.url}" allow="camera; microphone; accelerometer; gyroscope; autoplay" title="${esc(g.title)}"></iframe>`; } else { $('#gamebox .cta').innerHTML = '<span class="lab g">도장 찍음</span>'; } stamp(curSpot.id); }
+    if (e.target.closest('#nextSpot')) { const i = SPOTS.findIndex(x => x.id === curSpot.id); closeMemo(); walkTo(SPOTS[(i + 1) % SPOTS.length].id); }
+  });
+  $('#memoClose').addEventListener('click', closeMemo);
+  function stamp(id) { if (stamps.has(id)) return; stamps.add(id); try { localStorage.setItem('eumgil-v3-stamps', JSON.stringify([...stamps])); } catch (e) {} renderStamps(); $('#memoStamp').hidden = false; $('#memoStampDate').textContent = new Date().toISOString().slice(0, 10).replace(/-/g, '.'); toast(`도장 ${stamps.size} / 6`); if (stamps.size === 6) setTimeout(() => toast('여섯 도장을 모았다. 파프리 스튜디오로 가면 안내서가 열린다'), 900); }
+  function renderStamps() { SPOTS.forEach(s => stampEls[s.id].classList.toggle('on', stamps.has(s.id))); $('#stampCnt').textContent = stamps.size; document.querySelectorAll('#trail .chk').forEach(c => c.classList.toggle('on', stamps.has(c.dataset.id))); $('#studioHint').textContent = stamps.size >= 6 ? '안내서가 열렸다 ✶ 클릭' : `도장 ${stamps.size} / 6 · 모으면 안내서가 열린다`; $('#backStamps').innerHTML = SPOTS.map(s => `<span class="lab ${stamps.has(s.id) ? '' : ''}" style="${stamps.has(s.id) ? 'background:#B8321F' : 'background:#B9B19C'}">${s.n} ${esc(s.short)}</span>`).join(''); }
+  function walkTo(id) { target = stopLen[id]; atStop = null; }
+
+  // ── 스튜디오: 지도 뒤집기 / 안내서 ─────────────────────
+  const sheet = $('#sheet3d');
+  function studioClick() { closeMemo(); if (stamps.size >= 6) { const b = $('#back'); if (!b.querySelector('#guideRow')) { const d = document.createElement('p'); d.id = 'guideRow'; d.style.marginTop = '14px'; d.innerHTML = '<span class="lab g">에움길 안내서 열림</span> <a class="lnk play" href="../zine/" style="margin-left:8px">스물한 편 책장 넘기기 ➹</a> <a class="lnk play" href="' + BASE + '" target="_blank" rel="noopener" style="margin-left:8px">플레이하기 ↗</a>'; b.insertBefore(d, b.querySelector('.cols')); } } sheet.classList.add('flipped'); }
+  $('#flipBack').addEventListener('click', () => sheet.classList.remove('flipped'));
+
+  // ── 입력 ─────────────────────────────────────────────────
+  map.addEventListener('click', e => { const s = e.target.closest('.spot'); if (!s) return; if (s.dataset.id === 'studio') { if (nearest() === 'studio') studioClick(); else walkTo('studio'); return; } if (nearest() === s.dataset.id) openMemo(s.dataset.id); else { closeMemo(); walkTo(s.dataset.id); } });
+  map.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { const s = e.target.closest('.spot'); if (s) { e.preventDefault(); s.dispatchEvent(new MouseEvent('click', { bubbles:true })); } } });
+  const coverOn = () => !$('#cover').classList.contains('gone');
+  addEventListener('keydown', e => {
+    if (e.target.matches('input,textarea,iframe')) return;
+    if (coverOn()) { if (e.key !== 'Tab') { e.preventDefault(); start(); } return; }
+    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') { keys.r = true; target = null; e.preventDefault(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') { keys.l = true; target = null; e.preventDefault(); }
+    else if (e.key === 'Enter') { const n = nearest(); if (n === 'studio') studioClick(); else if (n) openMemo(n); }
+    else if (e.key === 'Escape') { closeMemo(); sheet.classList.remove('flipped'); }
+    else if (e.key === 's' || e.key === 'S') document.body.classList.toggle('sidebar-open');
+  });
+  addEventListener('keyup', e => { if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.r = false; if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.l = false; });
+  document.querySelectorAll('.pad [data-dir]').forEach(b => { const k = b.dataset.dir === '1' ? 'r' : 'l'; const on = e => { e.preventDefault(); keys[k] = true; target = null; }; const off = () => { keys[k] = false; }; b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off); b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off); });
+  $('#padEnter').addEventListener('click', () => { const n = nearest(); if (n === 'studio') studioClick(); else if (n) openMemo(n); });
+  $('#rollBtn').addEventListener('click', () => document.body.classList.toggle('sidebar-open'));
+  $('#moreBtn').addEventListener('click', () => { const s = $('#side'); s.classList.toggle('expanded'); $('#moreBtn').textContent = s.classList.contains('expanded') ? '접기 ▴' : '더 자세히 보기 ▾'; });
+  $('#resetBtn').addEventListener('click', () => { stamps.clear(); try { localStorage.removeItem('eumgil-v3-stamps'); } catch (e) {} renderStamps(); toast('도장을 지웠다'); });
+  { const ul = $('#trail'); SPOTS.forEach(s => { const li = document.createElement('li'); li.innerHTML = `<span class="chk" data-id="${s.id}"></span><button data-go="${s.id}">거점 ${s.n} · ${esc(s.name)}</button><span style="color:var(--ink-2)">${s.games.length}편</span>`; ul.appendChild(li); }); ul.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) { closeMemo(); walkTo(b.dataset.go); if (innerWidth < 760) document.body.classList.remove('sidebar-open'); } }); }
+  let toastT; function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2600); }
+
+  // ── 펜 선 ───────────────────────────────────────────────
+  const pen = $('#pen'), pctx = pen.getContext('2d'); let pprev = null, pTick = false;
+  function penResize() { const DPR = Math.max(1, devicePixelRatio || 1); pen.width = Math.floor(innerWidth * DPR); pen.height = Math.floor(innerHeight * DPR); pen.style.width = innerWidth + 'px'; pen.style.height = innerHeight + 'px'; pctx.setTransform(DPR, 0, 0, DPR, 0, 0); pctx.lineCap = 'round'; pctx.lineJoin = 'round'; pctx.strokeStyle = '#111'; pctx.lineWidth = 1.3; }
+  penResize(); addEventListener('resize', penResize);
+  if (!reduced) { document.addEventListener('mousemove', e => { if (pTick) return; pTick = true; requestAnimationFrame(() => { if (pprev) { pctx.beginPath(); pctx.moveTo(pprev.x, pprev.y); pctx.lineTo(e.clientX, e.clientY); pctx.stroke(); } pprev = { x:e.clientX, y:e.clientY }; pTick = false; }); }, { passive:true }); document.addEventListener('mouseleave', () => { pprev = null; }); setInterval(() => { pctx.save(); pctx.setTransform(1, 0, 0, 1, 0, 0); pctx.globalCompositeOperation = 'destination-out'; pctx.fillStyle = 'rgba(0,0,0,.04)'; pctx.fillRect(0, 0, pen.width, pen.height); pctx.restore(); }, 400); }
+
+  // ── 표지 마키 ─────────────────────────────────────────────
+  document.querySelectorAll('.r3-row').forEach(row => { const track = row.querySelector('.r3-track'), a = row.querySelector('.r3-chunk'), b = row.querySelector('.r3-dup'); b.textContent = a.textContent; let x = 0, v = 0, running = false, raf = null, last = null; const base = +row.dataset.speed || 70; const cw = () => a.getBoundingClientRect().width + parseFloat(getComputedStyle(a).paddingRight || 0); const step = t => { if (last == null) last = t; const dt = Math.max(0, (t - last) / 1000); last = t; x -= v * dt; const w = cw(); if (x <= -w) x += w; if (x > 0) x -= w; track.style.transform = `translateX(${x}px)`; if (!running) { v *= .86; if (Math.abs(v) < 2) { v = 0; last = null; raf = null; return; } } raf = requestAnimationFrame(step); }; row.addEventListener('mouseenter', () => { if (reduced) return; running = true; v = base; if (!raf) raf = requestAnimationFrame(step); }); row.addEventListener('mouseleave', () => { running = false; if (!raf) raf = requestAnimationFrame(step); }); });
+
+  // ── 시작 ─────────────────────────────────────────────────
+  function start() { const c = $('#cover'); if (c.classList.contains('gone')) return; c.classList.add('gone'); $('#stage').classList.add('unfold'); Object.values(spotEls).forEach(g => g.classList.add('appear')); studioG.classList.add('appear'); studioG.style.animationDelay = '.1s'; if (innerWidth >= 1100) setTimeout(() => document.body.classList.add('sidebar-open'), 1600); }
+  $('#bStart').addEventListener('click', start); $('#cover').addEventListener('click', e => { if (!e.target.closest('.r3-row')) start(); });
+  renderStamps(); requestAnimationFrame(frame);
+  window.__walk = { walkTo, openMemo, stamp, start, studioClick, nearest: () => nearest() };
+  if (reduced) start(); else setTimeout(start, 9000);
+})();
+</script>
+</html>
