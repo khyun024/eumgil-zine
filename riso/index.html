@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>에움길 송전탑</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Nanum+Myeongjo:wght@400;700&display=swap">
+<style>
+  :root{
+    --paper:#F2F0EB; --paper-2:#FAF9F6; --ink:#151515; --ink-2:#5C5B57;
+    --grey:#A9AEB8; --blue:#6E7BD6; --blue-2:#4F5CB8; --green:#4E9C48; --green-2:#2F7A34; --lime:#C8DC3C; --olive:#8A8433; --brick:#B84A2A;
+    --f-serif:'Times New Roman','Nanum Myeongjo','Noto Serif KR',serif; --f-mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f-mono);font-size:12.5px;line-height:1.6;overflow:hidden;word-break:keep-all}
+  button{font:inherit;color:inherit;cursor:pointer;background:none;border:0;padding:0}
+  a{color:inherit}
+  h1,h2,h3{font-family:var(--f-serif);font-weight:400;margin:0;line-height:1.1;text-wrap:balance}
+  .lab{display:inline-block;background:var(--ink);color:var(--paper);padding:.2em .5em .25em;border-radius:6px;line-height:1.25;font-size:12px}
+  .lab.b{background:var(--blue-2)} .lab.g{background:var(--green-2)} .lab.o{background:var(--brick)}
+  .lnk{font-family:var(--f-mono);font-size:12.5px;padding:2px 0;border-bottom:1px solid transparent;text-decoration:none;line-height:1.3;white-space:nowrap}
+  .lnk:hover{border-bottom-color:var(--ink)}
+  .lnk.on{background:var(--ink);color:var(--paper);padding:2px 7px;border-radius:5px}
+  .lnk.play{background:var(--blue-2);color:#fff;padding:3px 9px;border-radius:5px}
+  .lnk.play:hover{background:var(--ink)}
+  .lnk:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--blue-2);outline-offset:2px}
+  .grain{position:fixed;inset:0;pointer-events:none;z-index:40;opacity:.16;mix-blend-mode:multiply;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.15 0 0 0 0 0.15 0 0 0 0 0.12 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+  /* ── 무대: 세로로 긴 지도, 산책자를 따라 내려간다 ─── */
+  #stage{position:fixed;inset:0;overflow:hidden}
+  #view{position:absolute;left:50%;top:0;width:min(100vw - 24px, 760px);transform:translateX(-50%);will-change:transform}
+  body.sidebar-open #view{left:calc(50% - 170px)}
+  #map{display:block;width:100%;height:auto;user-select:none;-webkit-user-select:none}
+  #map text{font-family:var(--f-mono);fill:var(--ink)}
+  .tower{cursor:pointer}
+  .tower .ring{fill:none;stroke:var(--ink);stroke-width:1;opacity:0;transform-box:fill-box;transform-origin:center}
+  .tower.live .ring{animation:ring 2.4s ease-out infinite}
+  .tower.live .ring:nth-child(2){animation-delay:.8s}.tower.live .ring:nth-child(3){animation-delay:1.6s}
+  @keyframes ring{0%{transform:scale(.2);opacity:.8}100%{transform:scale(1);opacity:0}}
+  .tower .nm{font-size:11px;text-anchor:middle}
+  .tower.done .tree{opacity:1;transform:none}
+  .tower .tree{opacity:0;transform:translateY(10px) scale(.6);transform-box:fill-box;transform-origin:center bottom;transition:transform .6s cubic-bezier(.3,1.4,.5,1),opacity .4s}
+  .house{cursor:pointer}
+  .house .win{fill:#3a3a3a}
+  .house.lit .win{fill:#F2C94C}
+  .smoke{animation:smoke 3.4s ease-out infinite;transform-box:fill-box;transform-origin:center bottom;opacity:0}
+  .smoke:nth-child(2){animation-delay:1.2s}.smoke:nth-child(3){animation-delay:2.3s}
+  @keyframes smoke{0%{transform:translateY(0) scale(.5);opacity:.5}100%{transform:translateY(-34px) translateX(6px) scale(1.3);opacity:0}}
+  .twinkle{animation:tw 3s ease-in-out infinite}
+  @keyframes tw{50%{opacity:.35}}
+  .flow{stroke-dasharray:6 10;animation:flow 6s linear infinite}
+  @keyframes flow{to{stroke-dashoffset:-32}}
+  .bob{animation:bob 2.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+  @keyframes bob{50%{transform:translateY(-3px)}}
+  .worn{fill:none;stroke:var(--ink);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:.55;stroke-dasharray:3 6}
+  @media (prefers-reduced-motion:reduce){.tower.live .ring,.smoke,.twinkle,.flow,.bob{animation:none}.tower .tree{transition:none}}
+
+  /* ── 명판 · 수신 표시 ─────────────────── */
+  .plate{position:fixed;left:20px;top:18px;z-index:5;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+  .plate p{margin:0;color:var(--ink-2);font-size:11.5px}
+  .signal{position:fixed;left:20px;top:78px;z-index:5;background:var(--paper-2);border:1px solid var(--ink);padding:8px 12px;width:230px;display:flex;flex-direction:column;gap:4px}
+  .signal .bars{display:flex;gap:3px;align-items:flex-end;height:22px}
+  .signal .bars i{width:10px;background:#D5D3CC;display:block}
+  .signal .bars i.on{background:var(--green-2)}
+  .signal .bars i:nth-child(1){height:6px}.signal .bars i:nth-child(2){height:10px}.signal .bars i:nth-child(3){height:14px}.signal .bars i:nth-child(4){height:18px}.signal .bars i:nth-child(5){height:22px}
+  .signal .t{font-size:11px;color:var(--ink-2)}
+  .signal .t b{color:var(--ink);font-weight:500}
+  .signal .tune{margin-top:4px;display:none}
+  .signal.can .tune{display:inline-block}
+
+  /* ── 우측 사이드바 ────────────────────── */
+  .side{position:fixed;right:0;top:0;bottom:0;width:340px;z-index:6;transform:translateX(100%);transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+  body.sidebar-open .side{transform:none}
+  .side .roll{position:absolute;left:-30px;top:14px;bottom:14px;width:30px;background:var(--paper);border:1px solid var(--ink);border-right:0;border-radius:15px 0 0 15px;display:flex;align-items:center;justify-content:center;cursor:pointer;writing-mode:vertical-rl;font-size:11px;letter-spacing:.1em}
+  .side .inner{position:absolute;inset:14px 14px 14px 0;background:var(--paper-2);border:1px solid var(--ink);overflow:auto;padding:18px 20px 24px}
+  .side h2{font-size:24px;margin:8px 0 4px}
+  .side h3{font-size:12px;font-weight:600;margin:18px 0 4px;padding-bottom:3px;border-bottom:1px solid var(--ink)}
+  .side ul{list-style:none;margin:0;padding:0}
+  .side li{padding:3px 0;border-bottom:1px dotted #CFCCC2;display:flex;gap:8px;align-items:baseline}
+  .side li button{text-align:left;flex:1}
+  .side li button:hover{text-decoration:underline}
+  .side .chk{width:11px;height:11px;border:1px solid var(--ink);flex:none;position:relative;top:1px}
+  .side .chk.on{background:var(--green-2);border-color:var(--green-2)}
+  .side .cohort{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .side .cohort div{border:1px solid var(--ink);padding:6px 8px;font-size:11.5px;background:var(--paper)}
+  .side .cohort b{display:block;font-family:var(--f-serif);font-weight:400;font-size:22px;line-height:1}
+  .side p{margin:0 0 8px;font-size:12px}
+  .side .more{display:none}.side.expanded .more{display:block}
+  .side .video{aspect-ratio:16/9;border:1px solid var(--ink);display:grid;place-items:center;font-size:11px;color:var(--ink-2);background:repeating-linear-gradient(0deg,transparent 0 4px,rgba(78,156,72,.35) 4px 6px);margin:6px 0}
+
+  /* ── 거점 메모(게임 창) ───────────────── */
+  .memo{position:fixed;z-index:7;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,calc(100vw - 40px));max-height:calc(100vh - 60px);background:var(--paper-2);border:1px solid var(--ink);display:none;flex-direction:column;box-shadow:6px 6px 0 var(--grey)}
+  .memo.open{display:flex}
+  .tabs{display:flex;gap:4px;padding:10px 14px 0;flex-wrap:wrap}
+  .tab{font-size:11.5px;padding:3px 10px;border:1px solid var(--ink);border-bottom:0;background:var(--paper);position:relative;top:1px}
+  .tab.on{background:var(--paper-2);font-weight:600}
+  .memo-body{padding:12px 20px 16px;overflow:auto;border-top:1px solid var(--ink)}
+  .memo-body h2{font-size:26px;margin:6px 0 6px}
+  .memo-body .meta{color:var(--ink-2);font-size:11.5px;margin-bottom:8px}
+  .memo-body p{margin:0 0 8px;max-width:52ch}
+  .gamebox{position:relative;aspect-ratio:4/3;border:1px solid var(--ink);background:repeating-linear-gradient(90deg,transparent 0 5px,rgba(78,156,72,.28) 5px 7px);margin:10px 0;display:grid;place-items:center;overflow:hidden}
+  .gamebox iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff}
+  .gamebox .cta{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;font-size:11.5px;color:var(--ink-2);padding:12px;background:var(--paper-2);border:1px solid var(--ink);margin:12px}
+  .gamebox .cta .lnk.play{font-family:var(--f-serif);font-size:22px;padding:8px 16px;border-radius:8px}
+  .memo-actions{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:6px}
+  .memo-foot{border-top:1px dashed var(--ink);padding:8px 20px 10px;font-family:var(--f-serif);font-size:15px;min-height:38px;color:var(--ink-2)}
+  .memo .close{position:absolute;right:12px;top:8px}
+  .memo .planted{position:absolute;right:20px;top:34px;width:64px;pointer-events:none}
+
+  /* ── 조작 ─────────────────────────────── */
+  .ctl{position:fixed;left:20px;bottom:18px;z-index:5;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .ctl .k{border:1px solid var(--ink-2);padding:0 5px;font-size:10.5px;border-radius:3px;color:var(--ink-2)}
+  .pad{display:none;gap:6px}
+  .pad button{width:44px;height:44px;border:1px solid var(--ink);border-radius:8px;background:var(--paper-2);font-size:18px}
+  .pad button:active{background:var(--ink);color:var(--paper)}
+  .toast{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);z-index:20;background:var(--ink);color:var(--paper);padding:6px 12px;border-radius:6px;opacity:0;transition:opacity .3s;pointer-events:none;font-size:12px}
+  .toast.on{opacity:1}
+  .junction{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);z-index:8;background:var(--blue-2);color:#fff;padding:8px 14px;border-radius:8px;display:none;gap:12px;align-items:center;font-size:12px}
+  .junction.on{display:flex}
+  .junction .lnk{color:#fff;border-bottom-color:#fff}
+
+  /* ── 표지 ─────────────────────────────── */
+  .cover{position:fixed;inset:0;z-index:30;background:var(--paper);transition:opacity .8s;overflow:hidden}
+  .cover.gone{opacity:0;pointer-events:none}
+  .cover .poster{position:absolute;inset:18px;border:1px solid var(--ink);padding:clamp(18px,3vw,40px);display:grid;grid-template-columns:1fr minmax(0,1fr);gap:24px;align-items:end;background:var(--paper)}
+  .cover .txt{display:flex;flex-direction:column;justify-content:space-between;height:100%}
+  .cover h1{font-size:clamp(56px,11vw,150px);line-height:.92;letter-spacing:-.02em;margin:auto 0 16px}
+  .cover h1 em{font-style:normal;color:var(--blue-2)}
+  .cover p{margin:0 0 12px;max-width:46ch;font-size:12.5px}
+  .cover .foot{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+  .cover .mini{height:100%;min-height:0;display:flex;align-items:center;justify-content:center}
+  .cover .mini svg{max-height:calc(100vh - 100px);width:auto;max-width:100%}
+  @media (max-width:760px){
+    body.sidebar-open #view{left:50%}
+    .side{width:min(340px,86vw)}
+    .signal{width:calc(100vw - 40px)}
+    .pad{display:flex}
+    .ctl .hintk{display:none}
+    .plate p{display:none}
+    .cover .poster{grid-template-columns:1fr}
+    .cover .mini{display:none}
+  }
+</style>
+
+<div id="stage"><div id="view"><svg id="map" viewBox="0 0 1000 1500" aria-label="에움길 송전탑 지도"></svg></div></div>
+<div class="grain" aria-hidden="true"></div>
+
+<header class="plate">
+  <span class="lab">수상한 산책클럽 <span style="opacity:.85">✶ 에움길 송전탑</span></span>
+  <p><span id="steps">0</span> 걸음 · <span id="clock">00:00</span> · 심은 나무 <span id="stampCnt">0</span> / 6</p>
+</header>
+<div class="signal" id="signal">
+  <div class="bars"><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="t" id="sigText">수신 없음 · 길을 따라 내려가세요</div>
+  <button class="lnk on tune" id="tuneBtn">주파수 맞추기 ↵</button>
+</div>
+
+<aside class="side" id="side">
+  <button class="roll" id="rollBtn" aria-label="사이드바">수상한 산책클럽 ✶ 더 보기</button>
+  <div class="inner">
+    <span class="lab">2026 · 파프리 스튜디오</span>
+    <h2>수상한 산책클럽</h2>
+    <p>에-움-길 우회로 404. 회색 길을 따라 내려가면 송전탑 여섯이 서 있습니다. 탑 가까이 가면 신호가 잡히고, 주파수를 맞추면 그 자리에서 만든 게임이 열립니다. 게임을 열 때마다 나무 한 그루가 자라고, 여섯 그루가 자라면 집에 불이 켜집니다.</p>
+    <button class="lnk on" id="moreBtn">더 자세히 보기 ▾</button>
+    <div class="more">
+      <h3>프로그램 소개</h3>
+      <div class="video">홍보영상 자리 (16:9)</div>
+      <p><b>기획 개요.</b> 이태원·용산 골목을 소리, 이미지, 움직임으로 다시 걷고, 발견한 규칙을 보드게임과 AI 바이브코딩으로 장소특정형 웹 게임으로 옮긴 뒤, 서로의 게임을 따라 동네를 걷는 5회 과정.</p>
+      <p><b>세부 교육 프로그램.</b> 1 소리산책 → 2 이미지산책 → 3 움직임산책 → 4 게임산책 → 5 에움길 안내서.</p>
+      <p><a class="lnk" href="https://www.instagram.com/" target="_blank" rel="noopener">파프리 인스타 ↗</a> <span style="color:var(--ink-2)">(주소 확인 필요)</span></p>
+      <h3>산책 이끔이들</h3>
+      <ul><li><span>이광현</span><span style="color:var(--ink-2)">기획 총괄 · 주강사 · 웹 도구</span></li><li><span>이우경</span><span style="color:var(--ink-2)">소리산책 · 움직임산책</span></li><li><span>백서윤</span><span style="color:var(--ink-2)">이미지산책 · 보드게임 · 홍보</span></li></ul>
+    </div>
+    <h3>산책자들</h3>
+    <div class="cohort"><div><b>1기</b>청소년 3명 · 6/6~7/4</div><div><b>2기</b>청년 6명 · 7/5~8/2</div><div><b>3기</b>청년 6명 · 6/6~7/4</div><div><b>4기</b>청년 6명 · 7/5~8/2</div></div>
+    <h3>송전탑</h3>
+    <ul id="trail"></ul>
+    <h3>우회로</h3>
+    <p>파란 고리가 우회로입니다. 갈림길에서 <span class="lab b">우회로로</span>를 누르면 집(파프리 스튜디오)을 지나 도구 여덟 개를 만나고 다시 길로 돌아옵니다.</p>
+    <p style="margin-top:14px"><a class="lnk play" href="https://khyun024.github.io/suspicious-walk-club/" target="_blank" rel="noopener">모든 게임 플레이하기 ↗</a></p>
+  </div>
+</aside>
+
+<section class="memo" id="memo" aria-live="polite">
+  <button class="lnk close" id="memoClose">닫기 ✕</button>
+  <svg class="planted" id="memoTree" viewBox="0 0 60 60" hidden><path d="M30 8 C16 10 10 30 18 38 C10 44 20 54 30 50 C40 54 50 44 42 38 C50 30 44 10 30 8Z" fill="#2F7A34"/><rect x="28" y="48" width="4" height="10" fill="#151515"/></svg>
+  <div class="tabs" id="tabs"></div>
+  <div class="memo-body" id="memoBody"></div>
+  <div class="memo-foot" id="memoFoot"></div>
+</section>
+<div class="junction" id="junction"><span>갈림길. 파란 고리는 우회로입니다.</span><button class="lnk" id="jLoop">우회로로 →</button><button class="lnk" id="jStay">그냥 내려간다 ↓</button></div>
+
+<footer class="ctl">
+  <span class="hintk"><span class="k">↓</span> <span class="k">↑</span> 걷기 · <span class="k">Enter</span> 주파수 맞추기 · <span class="k">→</span> 갈림길에서 우회로 · <span class="k">S</span> 사이드바 · 탑 클릭 = 자동 걷기</span>
+  <div class="pad"><button data-dir="-1" aria-label="위로">▲</button><button data-dir="1" aria-label="아래로">▼</button><button id="padEnter" aria-label="주파수">↵</button></div>
+  <button class="lnk" id="resetBtn">나무 지우기</button>
+</footer>
+<div class="toast" id="toast"></div>
+
+<div class="cover" id="cover">
+  <div class="poster">
+    <div class="txt">
+      <div><span class="lab">2026 서울문화예술교육지원사업 ✶ 파프리 스튜디오</span></div>
+      <h1>에움길<br><em>송전탑</em></h1>
+      <p>〈수상한 산책클럽〉의 여섯 거점이 송전탑이 되었습니다. 회색 길을 따라 내려가며 탑의 신호를 잡고, 주파수를 맞춰 그 자리의 게임을 엽니다. 파란 고리는 우회로. 집을 지나 도구 여덟을 만나고 다시 길로 돌아옵니다.</p>
+      <div class="foot"><span style="color:var(--ink-2);font-size:11.5px">Six towers, one detour. Walk down, tune in.</span><button class="lnk on" id="bStart">길로 내려가기 ↓</button></div>
+    </div>
+    <div class="mini" id="mini"></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const BASE = 'https://khyun024.github.io/suspicious-walk-club/';
+  const NS = 'http://www.w3.org/2000/svg', $ = s => document.querySelector(s);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const el = (n, a = {}, p) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; };
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+  function rng(seed) { let h = 1779033703 ^ seed.length; for (let i = 0; i < seed.length; i++) { h = Math.imul(h ^ seed.charCodeAt(i), 3432918353); h = h << 13 | h >>> 19; } return () => { h = Math.imul(h ^ h >>> 16, 2246822507); h = Math.imul(h ^ h >>> 13, 3266489909); return ((h ^= h >>> 16) >>> 0) / 4294967296; }; }
+  const C = { ink:'#151515', grey:'#A9AEB8', blue:'#6E7BD6', green:'#4E9C48', green2:'#2F7A34', lime:'#C8DC3C', olive:'#8A8433', brick:'#B84A2A', paper:'#F2F0EB' };
+
+  // ── 데이터 ─────────────────────────────────────────────
+  const G = (title, author, cohort, desc, rule, url) => ({ title, author, cohort, desc, rule, url });
+  const TOWERS = [
+    { id:'slope', n:1, name:'이태원 비탈길', p:[640, 150], foot:'비탈길에서는 소리가 먼저 올라온다. 귀로 들은 단서를 따라 그림자를 추리했다.', games:[ G('비탈길의 그림자', '참여자 [확인]', '3기', '오디오 기반 야외 추리 게임.', '귀로 들은 단서를 따라 골목의 그림자를 추리한다', null), G('손동작 콜라주', '파프리 스튜디오', '이끔이', '손 모양으로 능선을 잘라 붙이는 카메라 놀이.', '손으로 프레임을 만들어 능선을 잘라낸다', BASE + 'games/itaewon/hand.html') ] },
+    { id:'kohe', n:2, name:'이태원 KOHE 앞', p:[900, 330], foot:'KOHE 간판 아래에서 장소의 빈 곳을 기억으로 메웠다.', games:[ G('KOHE 장소 수리반', '참여자 [확인]', '4기', '기억으로 장소의 균열을 메우는 게임.', '장소의 빈 곳을 떠오르는 기억으로 채워 수리한다', null) ] },
+    { id:'gilje', n:3, name:'회나무로 13나길', p:[175, 770], foot:'금 간 보도블록만 밟으며 골목 끝까지 갔다. 스튜디오 바로 앞 길이다.', games:[ G('회나무로 13나길 길제', '참여자 [확인]', '2기', '보도블록 균열을 따라 걷는 산책 의식 게임.', '금 간 보도블록만 밟으며 골목 끝까지 간다', null), G('초현실 카메라 놀이', '파프리 스튜디오', '이끔이', '도형 카메라로 골목의 수상한 장면을 포착한다.', '보이는 것을 도형으로만 찍는다', BASE + 'games/surreal/index.html') ] },
+    { id:'cat', n:4, name:'이태원 고양이 골목', p:[760, 930], foot:'고양이가 지나는 길이 도시를 해킹하는 첫 번째 지름길이었다.', games:[ G('도시 해킹', '파프리 스튜디오', '이끔이', '골목의 규칙을 뒤집어 다른 길을 만드는 게임.', '고양이가 다니는 길만 따라 걷는다', BASE + 'games/itaewon/index.html'), G('숲속 미생물 탐험기', '파프리 스튜디오', '이끔이', '골목 아래 보이지 않는 것들을 찾는 탐험.', '가장 작은 것부터 찾는다', BASE + 'games/itaewon/microbe.html') ] },
+    { id:'briq', n:5, name:'이태원 골목 안 연탄불', p:[300, 1180], foot:'소음이 커질수록 불씨가 약해졌다. 조용한 곳을 찾아 골목 안으로 들어갔다.', games:[ G('연탄불', '참여자 [확인]', '3기', '주변 소음으로 불씨가 약해지는 마이크 게임.', '소음이 커질수록 불씨가 약해진다. 조용한 곳을 찾아라', null) ] },
+    { id:'cctv', n:6, name:'이태원 CCTV 관제실', p:[840, 1250], foot:'카메라가 도는 각도를 세다가 우리가 감시 놀이의 규칙이 되었다.', games:[ G('감시 놀이', '파프리 스튜디오', '이끔이', '관제실 카메라의 시선을 피하고 훔쳐보는 놀이.', '카메라가 보는 동안 움직이지 않는다', BASE + 'games/itaewon/cctv.html') ] },
+  ];
+  const TOOLS = [['사운드 저니', BASE], ['도형 카메라', BASE + 'camera/'], ['캐릭터 메이커', BASE + 'character.html'], ['산책 기록', BASE + 'walk.html'], ['관찰 빙고', BASE], ['산책 교향곡', BASE], ['옥상 파쿠르', BASE + 'parkour.html'], ['B-SCENE', BASE]];
+  const HOUSE = [560, 470];
+  const ROAD_PTS = [[345, 60], [470, 600], [270, 880], [560, 1440]];     // 회색 지그재그 길
+  const JUNCTION_I = 1;                                                   // 두 번째 꺾임에서 우회로가 갈라진다
+  const LOOP_D = 'M470 600 C560 590 590 530 600 470 C610 400 700 380 780 400 C880 420 940 380 930 320 C920 260 850 250 800 280 C740 310 690 300 660 260 C630 220 570 210 540 240 C500 280 540 330 590 330 C640 330 660 290 640 250';
+  const SIG_R = 230;
+
+  const map = $('#map'), view = $('#view');
+  // ── 패턴 ──────────────────────────────────────────────
+  const defs = el('defs', {}, map);
+  const pat = (id, w, h, draw) => { const p = el('pattern', { id, width:w, height:h, patternUnits:'userSpaceOnUse' }, defs); draw(p); return `url(#${id})`; };
+  const VSTR = pat('vstr', 6, 6, p => el('rect', { x:0, y:0, width:2.6, height:6, fill:C.green }, p));
+  const HSTR = pat('hstr', 6, 6, p => el('rect', { x:0, y:0, width:6, height:2.4, fill:C.lime }, p));
+  const HSTR2 = pat('hstr2', 6, 6, p => el('rect', { x:0, y:0, width:6, height:2.2, fill:C.green }, p));
+  const CROSS = pat('cross', 22, 22, p => el('path', { d:'M11 4 V18 M4 11 H18', stroke:C.green, 'stroke-width':3 }, p));
+  const CROSSL = pat('crossl', 22, 22, p => el('path', { d:'M11 4 V18 M4 11 H18', stroke:C.lime, 'stroke-width':3 }, p));
+  const OLIVE = pat('oliveh', 5, 5, p => { el('rect', { width:5, height:5, fill:C.olive }, p); el('rect', { width:5, height:1.6, fill:'#6E6A22' }, p); });
+  const HOUSEH = pat('househ', 4, 4, p => { el('rect', { width:4, height:4, fill:'#8C8C8C' }, p); el('path', { d:'M0 2 H4', stroke:'#4b4b4b', 'stroke-width':1 }, p); });
+
+  const blob = (cx, cy, rx, ry, seed, n = 14) => { const r = rng(seed), pts = []; for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2, k = .78 + r() * .44; pts.push([cx + Math.cos(a) * rx * k, cy + Math.sin(a) * ry * k]); } let d = ''; for (let i = 0; i < n; i++) { const p0 = pts[(i - 1 + n) % n], p1 = pts[i], p2 = pts[(i + 1) % n], p3 = pts[(i + 2) % n]; const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6], c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6]; d += (i ? '' : `M${p1[0]} ${p1[1]} `) + `C${c1[0]} ${c1[1]} ${c2[0]} ${c2[1]} ${p2[0]} ${p2[1]} `; } return d + 'Z'; };
+  const hill = (cx, cy, w, h, seed) => { const r = rng(seed); let d = `M${cx - w / 2} ${cy}`; const n = 7; for (let i = 1; i <= n; i++) { const x = cx - w / 2 + w * i / n, y = cy - h * (0.35 + 0.65 * Math.sin(Math.PI * i / n) * (0.7 + r() * .5)); d += ` Q${cx - w / 2 + w * (i - .5) / n} ${y - h * .25 * r()} ${x} ${i === n ? cy : y}`; } return d + ' Z'; };
+
+  // ── 지형 ──────────────────────────────────────────────
+  const L = el('g', {}, map);
+  el('rect', { x:0, y:0, width:1000, height:1500, fill:C.paper }, L);
+  // 언덕(초록 세로 줄무늬)
+  el('path', { d:hill(300, 330, 300, 160, 'h1'), fill:VSTR }, L);
+  el('path', { d:hill(720, 700, 330, 170, 'h2'), fill:VSTR }, L);
+  el('path', { d:hill(690, 640, 240, 90, 'h2b'), fill:HSTR }, L);
+  // 라임 가로 줄무늬 구름
+  el('path', { d:blob(175, 830, 160, 60, 'b1'), fill:HSTR }, L);
+  el('path', { d:blob(300, 1150, 120, 44, 'b3'), fill:HSTR }, L);
+  el('path', { d:blob(760, 1290, 130, 70, 'b4'), fill:HSTR }, L);
+  el('path', { d:blob(560, 1050, 110, 55, 'b5'), fill:HSTR2, opacity:.9 }, L);
+  // 십자 무늬(신호 = 소리)
+  const crossField = (cx, cy, rx, ry, seed, fill) => el('path', { d:blob(cx, cy, rx, ry, seed, 10), fill, class:'twinkle' }, L);
+  crossField(280, 560, 60, 110, 'c1', CROSS); crossField(690, 1020, 70, 120, 'c2', CROSS); crossField(720, 1120, 40, 40, 'c3', CROSSL);
+  // 올리브 못
+  el('ellipse', { cx:135, cy:335, rx:42, ry:26, fill:OLIVE }, L);
+  // 나무 무리(진초록 실루엣)
+  const tree = (x, y, s, col, p = L) => { const g = el('g', { transform:`translate(${x} ${y}) scale(${s})` }, p); el('path', { d:'M0 -40 C-14 -38 -20 -18 -12 -10 C-20 -4 -10 6 0 2 C10 6 20 -4 12 -10 C20 -18 14 -38 0 -40Z', fill:col }, g); el('rect', { x:-2, y:0, width:4, height:14, fill:C.ink }, g); return g; };
+  tree(600, 950, 1.1, C.green2); tree(640, 990, .9, C.green2); tree(575, 1000, .8, C.green2);
+  tree(150, 1240, .9, C.blue); tree(175, 1250, .9, C.green); tree(200, 1240, .9, C.lime);
+
+  // ── 길 ────────────────────────────────────────────────
+  const roadD = 'M' + ROAD_PTS.map(p => p.join(' ')).join(' L');
+  el('path', { d:roadD, fill:'none', stroke:C.grey, 'stroke-width':30, 'stroke-linejoin':'miter', 'stroke-linecap':'butt', opacity:.95 }, L);
+  const loopBg = el('path', { d:LOOP_D, fill:'none', stroke:C.blue, 'stroke-width':22, 'stroke-linecap':'round', 'stroke-linejoin':'round' }, L);
+  el('path', { d:LOOP_D, fill:'none', stroke:'#fff', 'stroke-width':1.2, 'stroke-linecap':'round', opacity:.5, class:'flow' }, L);
+  const road = el('path', { d:roadD, fill:'none', stroke:'none' }, L), loop = el('path', { d:LOOP_D, fill:'none', stroke:'none' }, L);
+  const worn = el('path', { d:roadD, class:'worn', pathLength:1000, 'stroke-dasharray':'0 1000' }, L);
+  const RL = road.getTotalLength(), LL = loop.getTotalLength();
+  let jLen = 0; { let bd = 1e9; for (let l = 0; l < RL; l += 2) { const q = road.getPointAtLength(l), d = Math.hypot(q.x - ROAD_PTS[JUNCTION_I][0], q.y - ROAD_PTS[JUNCTION_I][1]); if (d < bd) { bd = d; jLen = l; } } }
+
+  // ── 집(파프리 스튜디오) ─────────────────────────────
+  const houseG = el('g', { class:'house', transform:`translate(${HOUSE[0]} ${HOUSE[1]})`, tabindex:'0', role:'button' }, map);
+  el('rect', { x:-42, y:-30, width:44, height:40, fill:HOUSEH, stroke:C.ink, 'stroke-width':1.2 }, houseG);
+  el('path', { d:'M-46 -30 L-20 -56 L6 -30 Z', fill:'#8C8C8C', stroke:C.ink, 'stroke-width':1.2 }, houseG);
+  el('rect', { x:4, y:-22, width:34, height:32, fill:C.brick }, houseG);
+  el('path', { d:'M2 -22 L21 -44 L40 -22 Z', fill:C.brick }, houseG);
+  el('rect', { x:-30, y:-18, width:10, height:10, class:'win' }, houseG); el('rect', { x:14, y:-12, width:8, height:10, class:'win' }, houseG);
+  el('rect', { x:-8, y:-54, width:6, height:14, fill:C.ink }, houseG);
+  for (let i = 0; i < 3; i++) el('circle', { cx:-5 + i * 2, cy:-58, r:5, fill:'#9a9a9a', class:'smoke' }, houseG);
+  const ht = el('text', { y:26, 'text-anchor':'middle', 'font-size':11 }, houseG); ht.textContent = '파프리 스튜디오';
+  const hh = el('text', { y:40, 'text-anchor':'middle', 'font-size':10, style:'fill:#5C5B57', id:'houseHint' }, houseG); hh.textContent = '나무 6그루를 심으면 불이 켜진다';
+  const htt = el('title', {}, houseG); htt.textContent = '파프리 스튜디오 · 우회로 위의 집';
+
+  // ── 송전탑(거점) ──────────────────────────────────────
+  const towerEls = {}, treeEls = {};
+  TOWERS.forEach(t => {
+    const g = el('g', { class:'tower', 'data-id':t.id, transform:`translate(${t.p[0]} ${t.p[1]})`, tabindex:'0', role:'button' }, map);
+    for (let i = 0; i < 3; i++) el("circle", { r:SIG_R * .5, class:"ring" }, g);
+    const tw = el('g', { fill:'none', stroke:C.ink, 'stroke-width':2.2, 'stroke-linejoin':'round' }, g);
+    el('path', { d:'M-16 0 L-6 -78 L6 -78 L16 0 Z', 'stroke-width':2 }, tw);
+    el('path', { d:'M-16 0 L16 0 M-14 -18 L14 -18 M-12 -36 L12 -36 M-10 -54 L10 -54 M-24 -62 H24 M-20 -50 H20', 'stroke-width':1.6 }, tw);
+    el('path', { d:'M-14 -18 L12 -36 M14 -18 L-12 -36 M-12 -36 L10 -54 M12 -36 L-10 -54 M-16 0 L14 -18 M16 0 L-14 -18', 'stroke-width':1.2 }, tw);
+    el('path', { d:'M-24 -62 L-20 -50 M24 -62 L20 -50 M-6 -78 L6 -78 M0 -78 V-92', 'stroke-width':1.6 }, tw);
+    el('circle', { cy:-95, r:3, fill:C.ink }, g);
+    const tr = tree(-36, 6, .8, C.green2, g); tr.setAttribute('class', 'tree');
+    treeEls[t.id] = tr;
+    const nm = el('text', { class:'nm', y:22 }, g); nm.textContent = `${t.n} ${t.name.replace('이태원 ', '')}`;
+    const tt = el('title', {}, g); tt.textContent = t.name;
+    towerEls[t.id] = g;
+  });
+
+  // ── 산책자 ──────────────────────────────────────────
+  const WK = el('g', {}, map);
+  el('circle', { r:13, fill:'none', stroke:C.ink, 'stroke-width':1, 'stroke-dasharray':'3 3' }, WK);
+  el('use', { href:'#walkfig' }, WK);
+  const fig = el('g', { id:'walkfig' }, defs); el('circle', { cy:-9, r:4, fill:C.ink }, fig); el('path', { d:'M0 -5 V6 M0 6 L-5 15 M0 6 L5 15 M-6 0 L0 -2 L6 2', fill:'none', stroke:C.ink, 'stroke-width':2.4, 'stroke-linecap':'round' }, fig);
+  const prints = el('g', {}, map);
+
+  // ── 상태 ─────────────────────────────────────────────
+  let onLoop = false, p = 0, target = null, moving = 0, steps = 0, lastPrint = 0, camY = 0, lastT = 0, live = null, nearHouse = false;
+  const keys = { d:false, u:false };
+  let stamps = new Set(); try { stamps = new Set(JSON.parse(localStorage.getItem('eumgil-riso-trees') || '[]')); } catch (e) {}
+  const t0 = Date.now();
+  const pos = () => onLoop ? loop.getPointAtLength(Math.max(0, Math.min(LL, p))) : road.getPointAtLength(Math.max(0, Math.min(RL, p)));
+  function frame(now = performance.now()) {
+    const dt = Math.min(3, lastT ? (now - lastT) / 16.7 : 1); lastT = now; const sp = 3.4 * dt;
+    let mv = 0;
+    if (target != null) { const d = target - p; if (Math.abs(d) < sp) { p = target; target = null; } else { p += Math.sign(d) * sp; mv = Math.sign(d); } }
+    else if (keys.d) { p += sp; mv = 1; } else if (keys.u) { p -= sp; mv = -1; }
+    if (onLoop) { if (p >= LL) { onLoop = false; p = jLen + 4; toast('우회로를 돌아 길로 내려왔다'); } if (p < 0) { onLoop = false; p = jLen; } }
+    else { p = Math.max(0, Math.min(RL, p)); if (!onLoop && mv && Math.abs(p - jLen) < 2) showJunction(true); }
+    if (mv) { steps += Math.abs(sp) / 8; if (!onLoop) { const ml = +worn.dataset.max || 0; if (p > ml) { worn.dataset.max = p; worn.setAttribute('stroke-dasharray', `${p / RL * 1000} 1000`); } } closeMemo(); if (Math.abs(p - jLen) > 30 || onLoop) showJunction(false); }
+    const q = pos(); WK.setAttribute('transform', `translate(${q.x} ${q.y})`);
+    // 발자국
+    if (mv && Math.abs(p - lastPrint) > 20) { lastPrint = p; el('circle', { cx:q.x + (Math.round(p / 20) % 2 ? 5 : -5), cy:q.y, r:2, fill:C.ink, opacity:.5 }, prints); if (prints.childNodes.length > 400) prints.removeChild(prints.firstChild); }
+    // 신호
+    let best = null, bd = 1e9; TOWERS.forEach(t => { const d = Math.hypot(q.x - t.p[0], q.y - t.p[1]); if (d < bd) { bd = d; best = t; } });
+    const strength = Math.max(0, Math.min(5, Math.round((1 - bd / SIG_R) * 5 + .4)));
+    document.querySelectorAll('.signal .bars i').forEach((b, i) => b.classList.toggle('on', i < strength));
+    const nl = bd < SIG_R ? best : null;
+    if (nl !== live) { live = nl; Object.values(towerEls).forEach(g => g.classList.toggle('live', live && g.dataset.id === live.id)); }
+    $('#sigText').innerHTML = live ? `<b>${esc(live.name)}</b> · 수신 ${strength}/5 · 게임 ${live.games.length}편` : (onLoop ? '우회로 위 · 집과 도구가 있다' : '수신 없음 · 길을 따라 내려가세요');
+    $('#signal').classList.toggle('can', !!live && strength >= 3);
+    const nh = Math.hypot(q.x - HOUSE[0], q.y - HOUSE[1]) < 80; if (nh !== nearHouse) { nearHouse = nh; if (nh) toast(stamps.size >= 6 ? '집에 불이 켜졌다. 클릭하면 안내서가 열린다' : '파프리 스튜디오. 클릭하면 도구 여덟이 열린다'); }
+    // 카메라: 산책자를 화면 40% 높이에 둔다
+    const vh = view.getBoundingClientRect().height || 1, scale = vh / 1500, ty = -(q.y * scale - innerHeight * .42); const maxTy = Math.min(0, innerHeight - vh);
+    camY += (Math.max(maxTy, Math.min(0, ty)) - camY) * (reduced ? 1 : .1); view.style.transform = `translateX(-50%) translateY(${camY}px)`;
+    $('#steps').textContent = Math.round(steps);
+    const s = Math.floor((Date.now() - t0) / 1000); $('#clock').textContent = `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+    requestAnimationFrame(frame);
+  }
+
+  // ── 갈림길 ───────────────────────────────────────────
+  function showJunction(on) { $('#junction').classList.toggle('on', on); }
+  function enterLoop() { onLoop = true; p = 0; target = null; showJunction(false); toast('우회로로 들어섰다'); }
+  $('#jLoop').addEventListener('click', enterLoop); $('#jStay').addEventListener('click', () => { showJunction(false); target = jLen + 40; });
+
+  // ── 메모(게임 창) ───────────────────────────────────
+  const memo = $('#memo'), tabs = $('#tabs'), body = $('#memoBody'), foot = $('#memoFoot');
+  let cur = null, curTab = 0, typeT = null;
+  function openMemo(t, tab = 0) {
+    cur = t; curTab = tab;
+    tabs.innerHTML = t.games.map((g, i) => `<button class="tab ${i === tab ? 'on' : ''}" data-i="${i}">${i === 0 ? '첫번째 산책' : i === 1 ? '두번째 산책' : (i + 1) + '번째 산책'}</button>`).join('');
+    const g = t.games[tab];
+    body.innerHTML = `<span class="lab">송전탑 ${t.n} · ${esc(t.name)} · 주파수 ${(88.1 + t.n * 1.7).toFixed(1)}</span>
+      <h2>〈${esc(g.title)}〉</h2>
+      <div class="meta">산책자 · ${esc(g.author)} · ${esc(g.cohort)}</div>
+      <p><b>게임 소개.</b> ${esc(g.desc)}</p>
+      <p style="font-family:var(--f-serif);font-size:15px">“${esc(g.rule)}”</p>
+      <div class="gamebox" id="gamebox">${g.url ? `<div class="cta"><button class="lnk play" id="playBtn">게임 플레이 하기 ➹</button><span>이 자리에서 바로 열립니다. 나무가 한 그루 자랍니다.</span></div>` : `<div class="cta"><span class="lab b">링크 수합 중</span><span>참여자 게임 결과물을 받으면 여기서 바로 플레이할 수 있습니다.</span><button class="lnk" id="playBtn">그래도 나무 심기</button></div>`}</div>
+      <div class="memo-actions">${g.url ? `<a class="lnk" href="${g.url}" target="_blank" rel="noopener">새 창에서 열기 ↗</a>` : ''}<button class="lnk" id="nextTower">다음 탑으로 걷기 ↓</button></div>`;
+    $('#memoTree').hidden = !stamps.has(t.id);
+    memo.classList.add('open'); typewrite(`송전탑 ${t.n}에서는 무슨 일이 있었을까? ${t.foot}`);
+  }
+  function openHouse() {
+    cur = null; tabs.innerHTML = '';
+    body.innerHTML = `<span class="lab o">파프리 스튜디오 · 회나무로 13나길 40</span><h2>${stamps.size >= 6 ? '불이 켜졌다. 에움길 안내서' : '우회로 위의 집'}</h2>
+      <p>모든 산책이 시작되고 끝나는 곳. 강사진이 만든 도구 여덟 개가 여기 있습니다.</p>
+      <ul style="columns:2;padding-left:18px;margin:6px 0 12px">${TOOLS.map(([n, u]) => `<li><a class="lnk" href="${u}" target="_blank" rel="noopener">${esc(n)} ↗</a></li>`).join('')}</ul>
+      ${stamps.size >= 6 ? `<p><a class="lnk play" href="../zine/" style="font-family:var(--f-serif);font-size:20px;padding:8px 14px;border-radius:8px">스물한 편 책장 넘기기 ➹</a> <a class="lnk play" href="${BASE}" target="_blank" rel="noopener" style="margin-left:8px">플레이하기 ↗</a></p>` : `<p style="color:var(--ink-2)">나무 ${stamps.size} / 6. 송전탑 여섯의 게임을 모두 열면 안내서가 열립니다.</p>`}
+      <p style="margin-top:8px"><a class="lnk" href="../walk/">아홉 층 지도로</a> · <a class="lnk" href="../archipelago/">군도로</a></p>`;
+    $('#memoTree').hidden = true; memo.classList.add('open'); typewrite(stamps.size >= 6 ? '여섯 그루가 자랐다. 창문에 불이 켜지고, 안내서가 열린다.' : '집 앞을 지나는 우회로. 돌아서 가는 길이 더 많은 것을 보여 준다.');
+  }
+  function typewrite(text) { clearInterval(typeT); let i = 0; foot.textContent = ''; typeT = setInterval(() => { i++; foot.textContent = text.slice(0, i); if (i >= text.length) clearInterval(typeT); }, reduced ? 0 : 26); }
+  function closeMemo() { if (!memo.classList.contains('open')) return; memo.classList.remove('open'); clearInterval(typeT); }
+  tabs.addEventListener('click', e => { const t = e.target.closest('.tab'); if (t && cur) openMemo(cur, +t.dataset.i); });
+  body.addEventListener('click', e => {
+    if (e.target.closest('#playBtn') && cur) { const g = cur.games[curTab]; if (g.url) $('#gamebox').innerHTML = `<iframe src="${g.url}" allow="camera; microphone; accelerometer; gyroscope; autoplay" title="${esc(g.title)}"></iframe>`; else $('#gamebox .cta').innerHTML = '<span class="lab g">나무를 심었다</span>'; plant(cur.id); }
+    if (e.target.closest('#nextTower') && cur) { const i = TOWERS.findIndex(x => x.id === cur.id); closeMemo(); walkTo(TOWERS[(i + 1) % TOWERS.length]); }
+  });
+  $('#memoClose').addEventListener('click', closeMemo);
+  function plant(id) { if (stamps.has(id)) return; stamps.add(id); try { localStorage.setItem('eumgil-riso-trees', JSON.stringify([...stamps])); } catch (e) {} render(); $('#memoTree').hidden = false; toast(`나무 ${stamps.size} / 6`); if (stamps.size === 6) setTimeout(() => toast('여섯 그루가 자랐다. 우회로의 집에 불이 켜졌다'), 900); }
+  function render() { TOWERS.forEach(t => towerEls[t.id].classList.toggle('done', stamps.has(t.id))); $('#stampCnt').textContent = stamps.size; document.querySelectorAll('#trail .chk').forEach(c => c.classList.toggle('on', stamps.has(c.dataset.id))); houseG.classList.toggle('lit', stamps.size >= 6); $('#houseHint').textContent = stamps.size >= 6 ? '불이 켜졌다 ✶ 클릭' : `나무 ${stamps.size} / 6 · 심으면 불이 켜진다`; }
+  // 탑까지 걷기: 길 위에서 탑에 가장 가까운 지점으로
+  function walkTo(t) { let best = 0, bd = 1e9; for (let l = 0; l < RL; l += 3) { const q = road.getPointAtLength(l), d = Math.hypot(q.x - t.p[0], q.y - t.p[1]); if (d < bd) { bd = d; best = l; } } if (onLoop) { onLoop = false; p = jLen; } target = best; }
+  function tune() { if (live && $('#signal').classList.contains('can')) openMemo(live); else if (nearHouse) openHouse(); else toast('수신이 약하다. 탑에 더 가까이'); }
+
+  // ── 입력 ─────────────────────────────────────────────
+  map.addEventListener('click', e => { const t = e.target.closest('.tower'); if (t) { const tw = TOWERS.find(x => x.id === t.dataset.id); if (live && live.id === tw.id) openMemo(tw); else walkTo(tw); return; } if (e.target.closest('.house')) { if (nearHouse) openHouse(); else { onLoop = true; p = 0; target = LL * .12; showJunction(false); } } });
+  map.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { const t = e.target.closest('.tower,.house'); if (t) { e.preventDefault(); t.dispatchEvent(new MouseEvent('click', { bubbles:true })); } } });
+  const coverOn = () => !$('#cover').classList.contains('gone');
+  addEventListener('keydown', e => {
+    if (e.target.matches('input,textarea,iframe')) return;
+    if (coverOn()) { if (e.key !== 'Tab') { e.preventDefault(); start(); } return; }
+    if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S' && !e.shiftKey && false) { keys.d = true; target = null; e.preventDefault(); }
+    else if (e.key === 'ArrowUp') { keys.u = true; target = null; e.preventDefault(); }
+    else if (e.key === 'ArrowRight' && $('#junction').classList.contains('on')) { enterLoop(); e.preventDefault(); }
+    else if (e.key === 'Enter') tune();
+    else if (e.key === 'Escape') { closeMemo(); showJunction(false); }
+    else if (e.key === 's' || e.key === 'S') document.body.classList.toggle('sidebar-open');
+  });
+  addEventListener('keyup', e => { if (e.key === 'ArrowDown') keys.d = false; if (e.key === 'ArrowUp') keys.u = false; });
+  addEventListener('wheel', e => { if (coverOn() || e.target.closest('.memo, .side')) return; e.preventDefault(); target = null; p += e.deltaY * .35; if (!onLoop) p = Math.max(0, Math.min(RL, p)); }, { passive:false });
+  document.querySelectorAll('.pad [data-dir]').forEach(b => { const k = b.dataset.dir === '1' ? 'd' : 'u'; const on = ev => { ev.preventDefault(); keys[k] = true; target = null; }; const off = () => { keys[k] = false; }; b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off); b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off); });
+  $('#padEnter').addEventListener('click', tune); $('#tuneBtn').addEventListener('click', tune);
+  $('#rollBtn').addEventListener('click', () => document.body.classList.toggle('sidebar-open'));
+  $('#moreBtn').addEventListener('click', () => { const s = $('#side'); s.classList.toggle('expanded'); $('#moreBtn').textContent = s.classList.contains('expanded') ? '접기 ▴' : '더 자세히 보기 ▾'; });
+  $('#resetBtn').addEventListener('click', () => { stamps.clear(); try { localStorage.removeItem('eumgil-riso-trees'); } catch (e) {} render(); toast('나무를 지웠다'); });
+  { const ul = $('#trail'); TOWERS.forEach(t => { const li = document.createElement('li'); li.innerHTML = `<span class="chk" data-id="${t.id}"></span><button data-go="${t.id}">탑 ${t.n} · ${esc(t.name)}</button><span style="color:var(--ink-2)">${t.games.length}편</span>`; ul.appendChild(li); }); ul.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) { closeMemo(); walkTo(TOWERS.find(x => x.id === b.dataset.go)); if (innerWidth < 760) document.body.classList.remove('sidebar-open'); } }); }
+  let toastT; function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2600); }
+
+  // ── 표지 미니 지도 · 시작 ─────────────────────────────
+  { const mini = map.cloneNode(true); mini.removeAttribute('id'); mini.querySelectorAll('[id]').forEach(n => n.setAttribute('id', 'm-' + n.getAttribute('id'))); mini.querySelectorAll('[fill^="url(#"]').forEach(n => n.setAttribute('fill', n.getAttribute('fill').replace('url(#', 'url(#m-'))); mini.querySelectorAll('[href^="#"]').forEach(n => n.setAttribute('href', '#m-' + n.getAttribute('href').slice(1))); mini.querySelectorAll('.ring,.smoke').forEach(n => n.remove()); $('#mini').appendChild(mini); }
+  function start() { const c = $('#cover'); if (c.classList.contains('gone')) return; c.classList.add('gone'); if (innerWidth >= 1100) setTimeout(() => document.body.classList.add('sidebar-open'), 1400); toast('↓ 키나 스크롤로 길을 따라 내려가세요'); }
+  $('#bStart').addEventListener('click', start); $('#cover').addEventListener('click', e => { if (!e.target.closest('button')) start(); });
+  render(); requestAnimationFrame(frame);
+  window.__riso = { walkTo:(id) => walkTo(TOWERS.find(x => x.id === id)), plant, start, tune, enterLoop, openHouse, state:() => ({ p, onLoop, live: live && live.id, nearHouse }) };
+  if (reduced) start(); else setTimeout(start, 12000);
+})();
+</script>
+</html>
