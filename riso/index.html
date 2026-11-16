@@ -378,7 +378,7 @@
   // ── 조우(지름길 밖에서 만나는 것들) ─────────────────────
   const ETYPE = {
     granny:{ name:'춤추는 할머니', act:'같이 춤을 춘다', line:'라디오를 골목 한가운데 틀어 놓고 춤을 추고 계신다.', ask:'“학생도 이리 와, 같이 추자!”', btn:'같이 춤춘다', done:'할머니와 한 곡을 같이 췄다.', after:'“젊은 사람이 잘 추네!” 할머니는 다음 곡으로 넘어간다.' },
-    cats:{ name:'고양이 세 마리', act:'밥을 준다', line:'담장 아래 고양이 세 마리가 이쪽을 보고 있다.', done:'세 마리가 밥을 먹었다. 한동안 뒤를 따라온다.', after:'세 마리가 한동안 뒤를 따라온다. 고양이가 다니는 길은 따로 있다.' },
+    cats:{ name:'고양이 세 마리', act:'밥을 준다', line:'골목 한쪽에 고양이 세 마리가 모여 제멋대로 돌아다니고 있다.', done:'세 마리가 밥을 먹었다. 한동안 뒤를 따라온다.', after:'세 마리가 한동안 뒤를 따라온다. 고양이가 다니는 길은 따로 있다.' },
     store:{ name:'편의점 사장님', act:'자꾸 말을 건다', line:'편의점 앞에 나와 계신 사장님과 눈이 마주쳤다.', done:'사장님 이야기를 끝까지 들었다. 이 골목을 조금 알게 됐다.', after:'사장님은 다음 사람에게 또 말을 건다.' },
     dog:{ name:'도그워커', act:'스쳐 지나간다', line:'개 세 마리를 데리고 누군가 지나간다.', done:'도그워커와 스쳐 지나갔다. 개들이 냄새를 맡고 갔다.', after:'서로 가는 길이 달랐다.' },
     mirror:{ name:'반사경', act:'사진기를 꺼내 사진을 찍는다', line:'모퉁이에 주황색 반사경이 서 있다.', done:'반사경 사진을 한 장 찍어 지도에 붙였다.', after:'둥근 거울 속에서는 골목이 휘어진다.' },
@@ -593,10 +593,19 @@
       const gp = at(g, 4, 0, 'dance'); person(gp, 'g', { arms:'up', bun:true }); blk(gp, -11, -27, 22, 4, 'g'); blk(gp, -13, -23, 26, 4, 'g');
       if (m) { const o = fx ? at(g, -38, 0, 'walkin') : at(g, -38, 0), d = at(o, 0, 0, 'dance'); d.style.animationDelay = '-.35s'; person(d, 'B', { arms:'up', u:3.2 }); }
       note(g, -64, -60, 'B', 0); note(g, 34, -74, 'R', .7); note(g, 78, -44, 'B', 1.3); if (m) { note(g, -82, -34, 'R', .3); note(g, 8, -94, 'B', 1); } },
-    cats(g, m, fx, r) { const n = m === true ? 3 : (m || 0); wall(g, r, -88, -72, 176); ground(g, r, -88, 176);
-      [[-60, 'B', 1.1, false, ''], [-8, 'd', 1, false, '2'], [62, 'R', 1.05, true, '3']].forEach(([x, col, sc, fl, kd], i) => { let par = g; if (fx === 'in') { par = at(g, 0, 0, 'walkin'); par.style.animationDelay = (i * .22) + 's'; } cat(par, x, col, sc, fl, kd); });
-      [-36, 16, 38].forEach((x, i) => { if (i < n) pix(at(g, x, 0, fx && fx !== 'in' && i === n - 1 ? 'dropin' : ''), SPR.bowl, 3); });
-      const t = el('text', { x:-4, y:-86, 'font-size':11, 'text-anchor':'middle' }, g); t.textContent = n >= 3 ? '냠냠냠' : n ? '야옹!' : '야옹'; },
+    cats(g, m, fx, r) { const n = m === true ? 3 : (m || 0), BW = [[-34, 6], [2, 10], [36, 5]];   // 세 마리가 모여 있되 제멋대로 돌아다닌다
+      for (let i = 0, k = ri(r, 4, 8); i < k; i++) blk(g, ri(r, -84, 84), ri(r, -8, 14), 2, 2, 'B'); genGrass(r).draw(el('g', { transform:`translate(${r() < .5 ? -92 : 62} 14)` }, g), 2);
+      BW.forEach(([x, y], i) => { if (i < n) pix(at(g, x, y, fx && fx !== 'in' && i === n - 1 ? 'dropin' : ''), SPR.bowl, 3); });
+      const CT = [['B', 1.1, ''], ['d', 1, '2'], ['R', 1.05, '3']].map(([col, sc, kd], i) => { let par = g; if (fx === 'in') { par = at(g, 0, 0, 'walkin'); par.style.animationDelay = (i * .22) + 's'; } const mv = el('g', {}, par), fl = el('g', {}, mv); pix(fl, SPR['cat' + kd], 3 * sc, { c:col });
+        const c = { mv, fl, x:[-48, 6, 44][i] + ri(r, -8, 8), y:[-14, 4, -20][i] + ri(r, -4, 4), tx:0, ty:0, wait:ri(r, 0, 50), sp:.5, d:i % 2 ? -1 : 1, hop:0, bw:0 }; c.tx = c.x; c.ty = c.y; return c; });
+      const put = c => { c.mv.setAttribute('transform', `translate(${c.x.toFixed(1)} ${(c.y - Math.abs(Math.sin(c.hop)) * 5).toFixed(1)})`); c.fl.setAttribute('transform', `scale(${c.d} 1)`); };
+      CT.forEach(put);
+      g.__live = dt => CT.forEach((c, i) => { const eat = i < n; if (eat && !c.bw) { c.bw = 1; c.tx = BW[i][0] - 24; c.ty = BW[i][1] - 2; c.sp = 1.5; c.wait = 0; }
+        if (c.wait > 0) { c.wait -= dt; if (eat) { c.hop += .22 * dt; put(c); } return; }
+        const dx = c.tx - c.x, dy = c.ty - c.y, d = Math.hypot(dx, dy);
+        if (d < 1.2) { if (eat) { c.wait = 200 + Math.random() * 200; c.d = 1; } else { c.wait = Math.random() < .45 ? 0 : 20 + Math.random() * 110; const a = Math.random() * 6.283, q = Math.random(); c.tx = Math.cos(a) * 64 * q; c.ty = -8 + Math.sin(a) * 24 * q; c.sp = Math.random() < .28 ? 1.5 + Math.random() : .35 + Math.random() * .6; } c.hop = 0; put(c); return; }
+        const st = Math.min(d, c.sp * dt); c.x += dx / d * st; c.y += dy / d * st; if (Math.abs(dx) > .6) c.d = dx > 0 ? 1 : -1; c.hop += (c.sp > 1.2 ? .5 : .28) * dt; put(c); });
+      const t = el('text', { x:-4, y:-62, 'font-size':11, 'text-anchor':'middle' }, g); t.textContent = n >= 3 ? '냠냠냠' : n ? '야옹!' : '야옹'; },
     store(g, m, fx, r) { ground(g, r, -90, 150); blk(g, -80, -76, 100, 76, 'W'); blk(g, -80, -76, 100, 76, 'h'); blk(g, -80, -98, 100, 22, 'B');
       const t = el('text', { x:-30, y:-83, 'font-size':11, 'text-anchor':'middle', style:'fill:#F7F6F2' }, g); t.textContent = '24 편의점';
       wall(g, r, -86, -78, 112);
@@ -605,9 +614,15 @@
       blk(g, -84, -12, 10, 12, 'g'); blk(g, -82, -22, 6, 10, 'd');
       const pg = fx === 'in' ? at(at(g, 48, 0, 'walkin'), 0, 0) : at(g, 48); person(pg, 'R', { arms:'wave' }); blk(pg, -5, -37, 10, 17, 'W'); blk(pg, -5, -37, 10, 2, 'B');
       const bb = at(g, 74, -94, fx ? 'popin' : ''); blk(bb, -24, -20, 48, 24, 'W', { stroke:PB, 'stroke-width':2 }); blk(bb, -14, 4, 7, 7, 'B'); const b = el('text', { x:0, y:-4, 'font-size':11, 'text-anchor':'middle' }, bb); b.textContent = m === true ? '또 와!' : ['학생!', '옛날엔', '내가!', '고양이', '또 와!'][m || 0]; },
-    dog(g, m, fx, r) { ground(g, r, -96, 192); const q = fx ? at(g, 0, 0, 'cross') : g, pp = at(q, -50); person(pp, 'B', { arms:'fwd' }); blk(pp, -7, -57, 14, 3, 'R'); blk(pp, 5, -55, 6, 2, 'R');
-      el('path', { d:'M-35 -36 L6 -16 M-35 -36 L38 -18 M-35 -36 L68 -14', fill:'none', stroke:PB, 'stroke-width':1.4, 'stroke-dasharray':'3 2' }, q);
-      const ds = [['R', .9, ''], ['B', 1.05, '2'], ['d', .8, '']].sort(() => r() - .5); ds.forEach(([c, sc, kd], i) => dogS(q, -2 + i * 32, c, sc, kd)); },
+    dog(g, m, fx, r) { for (let i = 0, k = ri(r, 3, 6); i < k; i++) blk(g, ri(r, -90, 90), ri(r, 2, 14), 2, 2, 'B');   // 바닥선 없이, 줄로 이어진 채 개 세 마리가 제각기 돌아다닌다
+      const q = fx ? at(g, 0, 0, 'cross') : g, pp = at(q, -50); person(pp, 'B', { arms:'fwd' }); blk(pp, -7, -57, 14, 3, 'R'); blk(pp, 5, -55, 6, 2, 'R');
+      const HX = -35, HY = -36, lines = [0, 1, 2].map(() => el('line', { stroke:PB, 'stroke-width':1.4, 'stroke-dasharray':'3 2' }, q));
+      const DG = [['R', .9, ''], ['B', 1.05, '2'], ['d', .8, '']].sort(() => r() - .5).map(([c, sc, kd], i) => { const mv = el('g', {}, q), fl = el('g', {}, mv); pix(fl, SPR['dog' + kd], 3 * sc, { c }); const o = { mv, fl, sc, x:-2 + i * 30 + ri(r, -6, 6), y:[-6, 8, -14][i] + ri(r, -3, 3), tx:0, ty:0, wait:ri(r, 0, 40), sp:.6, d:1, hop:0 }; o.tx = o.x; o.ty = o.y; return o; });
+      const put = (o, i) => { const by = o.y - Math.abs(Math.sin(o.hop)) * 3, L = lines[i]; o.mv.setAttribute('transform', `translate(${o.x.toFixed(1)} ${by.toFixed(1)})`); o.fl.setAttribute('transform', `scale(${o.d} 1)`); L.setAttribute('x1', HX); L.setAttribute('y1', HY); L.setAttribute('x2', (o.x + o.d * 9 * o.sc).toFixed(1)); L.setAttribute('y2', (by - 13 * o.sc).toFixed(1)); };
+      DG.forEach(put);
+      g.__live = dt => DG.forEach((o, i) => { if (o.wait > 0) { o.wait -= dt; return; } const dx = o.tx - o.x, dy = o.ty - o.y, d = Math.hypot(dx, dy);
+        if (d < 1.2) { o.wait = Math.random() < .5 ? 0 : 10 + Math.random() * 70; o.tx = -22 + Math.random() * 112; o.ty = -24 + Math.random() * 42; o.sp = Math.random() < .3 ? 1.6 + Math.random() : .4 + Math.random() * .7; o.hop = 0; put(o, i); return; }
+        const st = Math.min(d, o.sp * dt); o.x += dx / d * st; o.y += dy / d * st; if (Math.abs(dx) > .6) o.d = dx > 0 ? 1 : -1; o.hop += .4 * dt; put(o, i); }); },
     mirror(g, m, fx, r) { const ph = ri(r, 40, 58), mu = 5.8 + r() * 1.2; ground(g, r, -40, 80); blk(g, -3, -ph, 6, ph, 'B'); blk(g, -12, -4, 24, 4, 'B'); if (r() < .6) blk(g, -3, -ri(r, 14, 30), 6, 3, 'R');
       pix(el('g', { transform:`translate(0 ${-ph + 6})` }, g), SPR.mirror, mu); pix(el('g', { transform:`translate(${ri(r, -3, 3)} ${-ph - mu * 2.2})` }, g), SPR.walk0, 2.6);
       const cy = -ph + 6 - mu * 4.5;
@@ -627,7 +642,7 @@
       if (m) { const o = fx ? at(g, -10, 0, 'walkin') : at(g, -10, 0); person(at(o, 0, 0, 'dance'), 'R', { arms:'fwd', u:3.2 }); note(g, -80, -90, 'B', 0); note(g, -12, -100, 'R', .6); note(g, 36, -74, 'B', 1.2); note(g, 62, -94, 'R', 1.7); } },
   };
   const ARTVB = '-100 -116 200 134';
-  function drawHand(parent, type, m, fx) { const own = parent.closest ? parent.closest('[data-id]') : null, g = el('g', {}, parent); ART[type](g, m, fx, rng('art-' + type + (own ? own.dataset.id : ''))); return g; }
+  function drawHand(parent, type, m, fx) { const own = parent.closest ? parent.closest('[data-id]') : null, g = el('g', {}, parent); ART[type](g, m, fx, rng('art-' + type + (own ? own.dataset.id : ''))); parent.__live = g.__live || null; return g; }
 
   // ── 거점 표식 6종 ───────────────────────────────────
   const TOP = { tower:96, antenna:110, tank:70, windmill:92, lamp:80, sign:52 };
@@ -795,8 +810,10 @@
     nearHouse = Math.hypot(HOUSE[0] - me.x, HOUSE[1] - me.y) < 110;
     // 조우
     const lvNow = curLv(); let ne = null, ned = 1e9, hint = null, hd = 1e9;
+    if (stageG && stageG.__live && cutOpen()) stageG.__live(dt);
     for (const e of ENC) {
-      if (e.type === 'dog') { e.t += dt; const a = e.t * .0055 + e.ph, dir = -Math.sin(a) >= 0 ? 1 : -1; e.x = e.cx + Math.cos(a) * 190; e.y = e.cy + Math.sin(a) * 80; e.g.setAttribute('transform', `translate(${e.x.toFixed(1)} ${e.y.toFixed(1)}) scale(${dir * .9} .9)`); const d = Math.hypot(e.x - me.x, e.y - me.y); e.g.classList.toggle('on', d < 320 || isMet(e.id)); if (e.cool > 0) e.cool -= dt; if (d < 78 && !isMet(e.id) && !(e.cool > 0) && !coverOn() && !overview && !cutOpen() && !memoOpen()) { e.cool = 600; startCut(e); } continue; }
+      if (e.art.__live && e.g.classList.contains('on')) e.art.__live(dt);
+      if (e.type === 'dog') { if (e.rw == null) { e.rw = 0; e.tx = e.x; e.ty = e.y; e.dir = 1; } if (e.rw > 0) e.rw -= dt; else { const ddx = e.tx - e.x, ddy = e.ty - e.y, mm = Math.hypot(ddx, ddy); if (mm < 2) { e.rw = Math.random() < .35 ? 40 + Math.random() * 130 : 0; const a = Math.random() * 6.283, q = .3 + Math.random() * .7; e.tx = Math.max(70, Math.min(WW - 70, e.cx + Math.cos(a) * 230 * q)); e.ty = Math.max(130, Math.min(WH - 70, e.cy + Math.sin(a) * 120 * q)); } else { const st = Math.min(mm, 1.05 * dt); e.x += ddx / mm * st; e.y += ddy / mm * st; if (Math.abs(ddx) > 1) e.dir = ddx > 0 ? 1 : -1; } } e.g.setAttribute('transform', `translate(${e.x.toFixed(1)} ${e.y.toFixed(1)}) scale(${e.dir * .9} .9)`); const d = Math.hypot(e.x - me.x, e.y - me.y); e.g.classList.toggle('on', d < 320 || isMet(e.id)); if (e.cool > 0) e.cool -= dt; if (d < 78 && !isMet(e.id) && !(e.cool > 0) && !coverOn() && !overview && !cutOpen() && !memoOpen()) { e.cool = 600; startCut(e); } continue; }
       if (e.follow > 0) { e.follow -= dt; e.x += (me.x - 46 - e.x) * .04 * dt; e.y += (me.y + 8 - e.y) * .04 * dt; e.g.setAttribute('transform', `translate(${e.x.toFixed(1)} ${e.y.toFixed(1)}) scale(.9)`); continue; }
       const d = Math.hypot(e.x - me.x, e.y - me.y); if (e.seen && d < ned) { ned = d; ne = e; } if (!isMet(e.id) && e.lv <= lvNow && d < hd) { hd = d; hint = e; }
     }
