@@ -45,7 +45,7 @@
   @keyframes ring{0%{transform:scale(.2);opacity:.8}100%{transform:scale(1);opacity:0}}
   .tower .tree{opacity:0;transition:opacity .6s}
   .tower.done .tree{opacity:1}
-  .house .win{fill:#3a3a3a}
+  .house .win{fill:#fff}
   .house.lit .win{fill:#F2C94C}
   .smoke{animation:smoke 3.4s ease-out infinite;transform-box:fill-box;transform-origin:center bottom;opacity:0}
   .smoke:nth-child(2){animation-delay:1.2s}.smoke:nth-child(3){animation-delay:2.3s}
@@ -62,16 +62,18 @@
   .plate{position:fixed;left:18px;top:16px;z-index:5;display:flex;flex-direction:column;gap:6px;align-items:flex-start;pointer-events:none}
   .plate p{margin:0;color:var(--ink-2);font-size:11.5px;background:var(--paper);padding:0 4px}
   .pal{position:fixed;right:18px;top:46px;z-index:5;display:flex;gap:7px;align-items:center;background:var(--paper);padding:4px 8px;font-size:11.5px}
-  .gait.sty{top:76px}
-  .gait{position:fixed;right:18px;top:106px;z-index:5;display:flex;gap:4px 10px;flex-wrap:wrap;justify-content:flex-end;align-items:center;background:var(--paper);padding:3px 8px;font-size:11.5px;max-width:calc(100vw - 36px)}
+  .cbtn{appearance:none;-webkit-appearance:none;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--ink);padding:0;cursor:pointer;display:grid;place-items:center;color:#fff}
+  .cbtn svg{width:15px;height:15px;filter:drop-shadow(0 0 1px rgba(0,0,0,.8))}
+  .pal{overflow:visible;z-index:7}
+  .cpop{position:absolute;right:0;top:calc(100% + 8px);background:var(--sheet);border:1px solid var(--ink);box-shadow:5px 6px 0 rgba(21,21,21,.14);padding:10px;display:flex;flex-direction:column;gap:8px;align-items:center;z-index:8}
+  .cpop[hidden]{display:none}
+  .cpop canvas{width:180px;height:180px;border-radius:50%;cursor:crosshair;touch-action:none;display:block}
+  .cpop i{position:absolute;width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1.5px var(--ink);transform:translate(-50%,-50%);pointer-events:none}
+  .cpop input[type=range]{width:180px;margin:0}
+  .cpop .lnk{font-size:11.5px}
+  .gait.sty{top:80px}
+  .gait{position:fixed;right:18px;top:110px;z-index:5;display:flex;gap:4px 10px;flex-wrap:wrap;justify-content:flex-end;align-items:center;background:var(--paper);padding:3px 8px;font-size:11.5px;max-width:calc(100vw - 36px)}
   .gait .lnk{font-size:11.5px}
-  .pal button{appearance:none;-webkit-appearance:none;width:18px;height:18px;border-radius:50%;border:1px solid var(--ink);padding:0;cursor:pointer}
-  .pal button.on{outline:2px solid var(--ink);outline-offset:2px}
-  .pal input{appearance:none;-webkit-appearance:none;width:20px;height:20px;padding:0;border:1px dashed var(--ink);border-radius:50%;background:none;cursor:pointer;overflow:hidden}
-  .pal input.on{border-style:solid;outline:2px solid var(--ink);outline-offset:2px}
-  .pal input::-webkit-color-swatch-wrapper{padding:0}
-  .pal input::-webkit-color-swatch{border:0;border-radius:50%}
-  .pal input::-moz-color-swatch{border:0;border-radius:50%}
   .tools{position:fixed;right:18px;top:16px;z-index:5;display:flex;gap:6px 14px;flex-wrap:wrap;justify-content:flex-end;align-items:center;background:var(--paper);padding:2px 6px}
   .signal{position:fixed;left:18px;bottom:18px;z-index:5;padding:10px 12px;width:268px;display:grid;grid-template-columns:58px 1fr;gap:4px 12px;align-items:center}
   .signal .compass{grid-row:1 / span 2;width:58px;height:58px}
@@ -248,6 +250,7 @@
     .plate p{font-size:10.5px}
     .tools{top:auto;bottom:112px;right:12px}
     .pal{top:auto;bottom:146px;right:12px}
+    .cpop{top:auto;bottom:calc(100% + 8px)}
     .gait{top:auto;bottom:210px;right:12px}
     .gait.sty{top:auto;bottom:178px}
     .signal{width:calc(100vw - 36px);bottom:12px;left:18px}
@@ -415,6 +418,46 @@
   function crayon(g) { g.querySelectorAll('path,rect,circle,ellipse').forEach(n => { const f = n.getAttribute('fill'); if (!f || f === 'none' || f.indexOf('url(') === 0 || PLAIN.indexOf(f) >= 0) return; if (n.tagName === 'circle' && +n.getAttribute('r') < 4) return; n.setAttribute('fill', crayPat(f)); if (!n.getAttribute('stroke')) { n.setAttribute('stroke', C.ink); n.setAttribute('stroke-width', 1.3); n.setAttribute('stroke-linejoin', 'round'); } }); }
   const fig = el('g', { id:'walkfig' }, defs); el('circle', { cy:-9, r:4, fill:C.ink }, fig); el('path', { d:'M0 -5 V6 M0 6 L-5 15 M0 6 L5 15 M-6 0 L0 -2 L6 2', fill:'none', stroke:C.ink, 'stroke-width':2.4, 'stroke-linecap':'round' }, fig);
 
+  // ── 픽셀 그림: 파랑과 빨강 두 가지 잉크. 면은 격자·빗금·망점으로 채운다 ──
+  const PB = '#1437FF', PR = '#FF2A1F';
+  const PGRID = pat('pgrid', 8, 8, p => { el('rect', { width:8, height:8, fill:'#fff' }, p); el('path', { d:'M0 1.2 H8 M1.2 0 V8', stroke:PR, 'stroke-width':2.2 }, p); el('rect', { x:4, y:4, width:1.7, height:1.7, fill:PB }, p); });
+  const PHAT = pat('phat', 6, 6, p => el('path', { d:'M-1 1 L1 -1 M0 6 L6 0 M5 7 L7 5', stroke:PB, 'stroke-width':1.4 }, p));
+  const PHATR = pat('phatr', 6, 6, p => el('path', { d:'M-1 1 L1 -1 M0 6 L6 0 M5 7 L7 5', stroke:PR, 'stroke-width':1.4 }, p));
+  const PDIT = pat('pdit', 4, 4, p => { el('rect', { width:2, height:2, fill:PB }, p); el('rect', { x:2, y:2, width:2, height:2, fill:PB }, p); });
+  const PFILL = { B:PB, R:PR, W:'#fff', g:PGRID, h:PHAT, r:PHATR, d:PDIT };
+  const blk = (par, x, y, w, h, f, a) => el('rect', Object.assign({ x, y, width:w, height:h, fill:PFILL[f] || f, 'shape-rendering':'crispEdges' }, a || {}), par);
+  // 글자로 적은 그림을 픽셀로 찍는다. 아래 가운데가 원점이고, map으로 글자를 다른 채움으로 바꿔 쓴다
+  function pix(par, rows, u = 4, map = {}, a = {}) { const g = el('g', Object.assign({ 'shape-rendering':'crispEdges' }, a), par), w = rows[0].length, x0 = -w * u / 2, y0 = -rows.length * u;
+    rows.forEach((row, j) => { let i = 0; while (i < w) { const ch = row[i]; if (ch === '.') { i++; continue; } let k = i; while (k < w && row[k] === ch) k++; const f = map[ch] || ch; el('rect', { x:+(x0 + i * u).toFixed(2), y:+(y0 + j * u).toFixed(2), width:+((k - i) * u + .15).toFixed(2), height:+(u + .15).toFixed(2), fill:PFILL[f] || f }, g); i = k; } }); return g; }
+  const SPR = {
+    walk0:['..BBB..', '..BBB..', '..BBB..', '...B...', '.RRRRR.', 'B.RRR.B', 'B.RRR.B', '..RRR..', '..B.B..', '..B.B..', '..B.B..', '.BB.BB.'],
+    walkA:['..BBB..', '..BBB..', '..BBB..', '...B...', '.RRRRR.', 'B.RRR.B', '.BRRRB.', '..RRR..', '..B.B..', '.B...B.', '.B...B.', 'BB...BB'],
+    walkB:['..BBB..', '..BBB..', '..BBB..', '...B...', '.RRRRR.', '.BRRRB.', 'B.RRR.B', '..RRR..', '..BBB..', '...B...', '...B...', '..BBB..'],
+    pUp:['B..BBB..B', 'B..BBB..B', '.B.BBB.B.', '.B..B..B.', '..ccccc..', '...ccc...', '...ccc...', '...ccc...', '...ccc...', '..ccccc..', '..ccccc..', '...B.B...', '...B.B...', '...B.B...', '...B.B...', '..BB.BB..'],
+    pDown:['...BBB...', '...BBB...', '...BBB...', '....B....', '..ccccc..', '.B.ccc.B.', '.B.ccc.B.', '.B.ccc.B.', '...ccc...', '..ccccc..', '..ccccc..', '...B.B...', '...B.B...', '...B.B...', '...B.B...', '..BB.BB..'],
+    pWave:['...BBB..B', '...BBB..B', '...BBB.B.', '....B..B.', '..ccccc..', '.B.ccc...', '.B.ccc...', '.B.ccc...', '...ccc...', '..ccccc..', '..ccccc..', '...B.B...', '...B.B...', '...B.B...', '...B.B...', '..BB.BB..'],
+    pFwd:['...BBB...', '...BBB...', '...BBB...', '....B....', '..ccccc..', '...cccBBB', '...ccc...', '...cccBBB', '...ccc...', '..ccccc..', '..ccccc..', '...B.B...', '...B.B...', '...B.B...', '...B.B...', '..BB.BB..'],
+    cat:['c......c.c.', 'c......ccc.', 'c.....ccWcc', '.c...cccccc', '.cccccccc..', '..ccccccc..', '..ccccccc..', '..c.c.c.c..'],
+    dog:['.......c.c', 'c......ccc', 'c.....ccWc', '.ccccccccc', '.cccccccc.', '.c.c..c.c.', '.c.c..c.c.'],
+    radio:['......B.', '.....B..', 'BBBBBBBB', 'BWWBRRRB', 'BWWBRRRB', 'BBBBBBBB'],
+    note:['..cc', '..c.', '..c.', '..c.', 'ccc.', 'ccc.'],
+    bowl:['.RRR.', 'BBBBB', '.BBB.'],
+    mirror:['..RRRRR..', '.RdddddR.', 'RdddddddR', 'RdddddddR', 'RdddddddR', 'RdddddddR', 'RdddddddR', '.RdddddR.', '..RRRRR..'],
+    pile:['....R....', '...RrR...', '..RrrrR..', '.RrrrrrR.', 'RRRRRRRRR'],
+    flower:['.R.R.', 'RRWRR', '.R.R.', '..B..', '.BB..', '..B..', '..BB.', '..B..'],
+    wheel:['...BBBBB...', '..B..B..B..', '.B...B...B.', 'B....B....B', 'B....B....B', 'BBBBBRBBBBB', 'B....B....B', 'B....B....B', '.B...B...B.', '..B..B..B..', '...BBBBB...'],
+    tree:['..R...R.R..', '.R..R..R..R', 'R..R.B...R.', '..R..B.R...', '.R...B..R.R', '...R.B.R...', '.....B.....', '.....B.....', '.....B.....', '.....B.....'],
+    pine:['....B....', '....B....', '...BBB...', '...BBB...', '..BBBBB..', '..BBBBB..', '.BBBBBBB.', '.BBBBBBB.', 'BBBBBBBBB', 'BBBBBBBBB', '...B.B...', '...B.B...'],
+    grass:['..B...B..', 'B.B.B.B.B', 'B.BBB.BBB', 'BBBBBBBBB'],
+    tower:['.....B.....', '.....B.....', '....BBB....', '..BBBBBBB..', '..B.ggg.B..', '....ggg....', '.BBBBBBBBB.', '.B..ggg..B.', '....ggg....', '...ggggg...', '...ggggg...', '...ggggg...', '..ggggggg..', '..ggggggg..', '..ggggggg..', '.ggggggggg.', '.ggggggggg.', '.ggggggggg.', 'BBBBBBBBBBB'],
+    antenna:['....R....', '....R....', '....B....', '.dd.B.dd.', '.dd.B.dd.', '....B....', '..BBBBB..', '....B....', '....B....', '.BBBBBBB.', '....B....', '....B....', '....B....', '....B....', '....B....', '...BBB...', '..BBBBB..'],
+    tank:['.ggggggg.', 'ggggggggg', 'ggggggggg', 'ggggggggg', 'ggggggggg', '.BBBBBBB.', '.B.....B.', '.B..B..B.', '.BBBBBBB.', '.B..B..B.', '.B..B..B.', '.B..B..B.', 'BB..B..BB'],
+    mill:['...BBB...', '...BBB...', '...hhh...', '...hhh...', '..hhhhh..', '..hhhhh..', '..hhhhh..', '.hhhhhhh.', '.hhhhhhh.', '.hhBBBhh.', '.hhBBBhh.'],
+    lamp:['...BBBBB', '...B.RRR', '...B.RRR', '...B....', '...B....', '...B....', '...B....', '...B....', '...B....', '...B....', '...B....', '..BBB...', '.BBBBB..'],
+    sign:['.ggggggg.', '.ggggggg.', '....B....', 'ddddddd..', 'ddddddd..', '....B....', '....B....', '....B....', '...BBB...'],
+    letterA:['.BB.', 'B..B', 'BBBB', 'B..B', 'B..B'],
+  };
+
   const base = el('g', {}, map);
   el('rect', { x:8, y:10, width:WW, height:WH, fill:C.ink, opacity:.1 }, base);
   el('rect', { x:0, y:0, width:WW, height:WH, fill:C.sheet }, base);
@@ -428,8 +471,8 @@
   const reg = (n, x, y, r = 60, extra = {}) => { n.classList.add('rev'); const it = Object.assign({ n, x, y, r, on:false }, extra); REV.push(it); return it; };
   const blob = (cx, cy, rx, ry, seed, n = 14) => { const r = rng(seed), pts = []; for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2, k = .78 + r() * .44; pts.push([cx + Math.cos(a) * rx * k, cy + Math.sin(a) * ry * k]); } let d = ''; for (let i = 0; i < n; i++) { const p0 = pts[(i - 1 + n) % n], p1 = pts[i], p2 = pts[(i + 1) % n], p3 = pts[(i + 2) % n]; const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6], c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6]; d += (i ? '' : `M${p1[0].toFixed(1)} ${p1[1].toFixed(1)} `) + `C${c1[0].toFixed(1)} ${c1[1].toFixed(1)} ${c2[0].toFixed(1)} ${c2[1].toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)} `; } return d + 'Z'; };
   const hill = (cx, cy, w, h, seed) => { const r = rng(seed); let d = `M${cx - w / 2} ${cy}`; const n = 7; for (let i = 1; i <= n; i++) { const x = cx - w / 2 + w * i / n, y = cy - h * (0.35 + 0.65 * Math.sin(Math.PI * i / n) * (0.7 + r() * .5)); d += ` Q${cx - w / 2 + w * (i - .5) / n} ${y - h * .25 * r()} ${x} ${i === n ? cy : y}`; } return d + ' Z'; };
-  const tree = (x, y, s, col, p) => { const g = el('g', { transform:`translate(${x} ${y}) scale(${s})` }, p); el('path', { d:'M0 -40 C-14 -38 -20 -18 -12 -10 C-20 -4 -10 6 0 2 C10 6 20 -4 12 -10 C20 -18 14 -38 0 -40Z', fill:col }, g); el('rect', { x:-2, y:0, width:4, height:14, fill:C.ink }, g); return g; };
-  const pine = (x, y, s, col, p) => { const g = el('g', { transform:`translate(${x} ${y}) scale(${s})` }, p); el('path', { d:'M0 -44 L-12 -22 L-6 -22 L-16 -6 L-8 -6 L-18 10 L18 10 L8 -6 L16 -6 L6 -22 L12 -22 Z', fill:col }, g); el('rect', { x:-2, y:10, width:4, height:10, fill:C.ink }, g); return g; };
+  const tree = (x, y, s, col, p) => pix(el('g', { transform:`translate(${(+x).toFixed(1)} ${(y + 14 * s).toFixed(1)}) scale(${(+s).toFixed(2)})` }, p), SPR.tree, 4.6);
+  const pine = (x, y, s, col, p) => pix(el('g', { transform:`translate(${(+x).toFixed(1)} ${(y + 20 * s).toFixed(1)}) scale(${(+s).toFixed(2)})` }, p), SPR.pine, 4.6);
   const clear = (x, y, r = 135) => TOWERS.every(t => Math.hypot(t.p[0] - x, t.p[1] - y) > r) && ENC.every(e => Math.hypot(e.x - x, e.y - y) > 115) && Math.hypot(HOUSE[0] - x, HOUSE[1] - y) > 170;
   const cohortAt = (x, y) => { const r = Math.hypot((x - HOUSE[0]) / SX, y - HOUSE[1]); return r < 300 ? 1 : r < 450 ? 3 : r < 590 ? 2 : 4; };
   { const r = rng('terrain-v6');
@@ -441,18 +484,18 @@
       if (k < .2) { const w = 200 + r() * 170; el('path', { d:hill(cx, cy + 40, w, 90 + r() * 90, seed), fill:r() < .6 ? VSTR : HSTR2 }, g); reg(g, cx, cy, w / 2.4); }
       else if (k < .38) { const rx = 100 + r() * 70; el('path', { d:blob(cx, cy, rx, 38 + r() * 30, seed), fill:r() < .7 ? HSTR : HSTR2 }, g); reg(g, cx, cy, rx * .8); }
       else if (k < .52) { el('path', { d:blob(cx, cy, 46 + r() * 36, 78 + r() * 56, seed, 10), fill:CPAT[cohortAt(cx, cy)], class:'twinkle' }, g); reg(g, cx, cy, 70); }
-      else if (k < .6) { el('ellipse', { cx, cy, rx:34 + r() * 26, ry:18 + r() * 14, fill:r() < .5 ? OLIVE : C.blue }, g); reg(g, cx, cy, 40); }
-      else if (k < .78) { const n = 2 + Math.floor(r() * 4); for (let i = 0; i < n; i++) (r() < .5 ? tree : pine)(cx + (i - n / 2) * 26 + r() * 10, cy + (r() - .5) * 22, .7 + r() * .5, [C.green2, C.green, C.blue, C.lime][Math.floor(r() * 4)], g); reg(g, cx, cy, 60); }
-      else if (k < .82) { let d = ''; for (let a = 0; a < 15; a += .3) d += (a ? ' L' : 'M') + (cx + Math.cos(a) * a * 3.2).toFixed(1) + ' ' + (cy + Math.sin(a) * a * 3.2).toFixed(1); el('path', { d, fill:'none', stroke:r() < .5 ? C.blue : C.ink, 'stroke-width':1.6, 'stroke-linecap':'round' }, g); reg(g, cx, cy, 50); }
-      else if (k < .86) { for (let i = 0; i < 4; i++) el('ellipse', { cx:cx + (r() - .5) * 90, cy:cy + (r() - .5) * 50, rx:8 + r() * 10, ry:5 + r() * 5, fill:DIAG, stroke:C.olive, 'stroke-width':.8 }, g); reg(g, cx, cy, 50); }
-      else if (k < .93) { const w = 90 + r() * 80; el('path', { d:`M${cx - w / 2} ${cy} H${cx + w / 2}`, stroke:C.ink, 'stroke-width':1.6, 'stroke-dasharray':'2 6' }, g); for (let i = 0; i <= 5; i++) el('path', { d:`M${cx - w / 2 + w * i / 5} ${cy - 9} V${cy + 4}`, stroke:C.ink, 'stroke-width':1.6 }, g); reg(g, cx, cy, w / 2); }
-      else { for (let i = 0; i < 5; i++) { const bx = cx + (r() - .5) * 90, by = cy + (r() - .5) * 40; el('path', { d:`M${bx - 7} ${by} q3.5 -5 7 0 q3.5 -5 7 0`, fill:'none', stroke:C.ink, 'stroke-width':1.3 }, g); } reg(g, cx, cy, 50); }
+      else if (k < .6) { const n = 2 + Math.floor(r() * 3); for (let i = 0; i < n; i++) blk(g, Math.round(cx - 44 + i * 30 + (r() - .5) * 8), Math.round(cy - 14 + (r() - .5) * 26), 28 + Math.round(r() * 14), 20 + Math.round(r() * 10), 'd'); reg(g, cx, cy, 44); }
+      else if (k < .78) { const n = 2 + Math.floor(r() * 4); for (let i = 0; i < n; i++) (r() < .5 ? tree : pine)(cx + (i - n / 2) * 32 + r() * 10, cy + (r() - .5) * 22, .7 + r() * .5, 0, g); reg(g, cx, cy, 60); }
+      else if (k < .82) { const X = Math.round(cx), Y = Math.round(cy); if (r() < .5) { blk(g, X - 24, Y - 62, 22, 62, 'B'); blk(g, X - 24, Y - 18, 64, 18, 'B'); } else { blk(g, X - 4, Y - 20, 36, 36, 'R'); pix(el('g', { transform:`translate(${X - 22} ${Y + 14})` }, g), SPR.letterA, 4.5); } reg(g, cx, cy, 50); }
+      else if (k < .86) { for (let i = 0; i < 4; i++) blk(g, Math.round(cx + (r() - .5) * 90), Math.round(cy + (r() - .5) * 50), 24, 24, 'g'); reg(g, cx, cy, 50); }
+      else if (k < .93) { const w = 96 + Math.round(r() * 64); blk(g, Math.round(cx - w / 2), Math.round(cy - 12), w, 24, 'g'); reg(g, cx, cy, w / 2); }
+      else { for (let i = 0; i < 3; i++) pix(el('g', { transform:`translate(${(cx + (r() - .5) * 90).toFixed(0)} ${(cy + (r() - .5) * 40).toFixed(0)})` }, g), SPR.grass, 3); reg(g, cx, cy, 50); }
     }
     // 강(조각조각 드러난다)
     const ry = x => 690 + 60 * Math.sin(x / 260) + 34 * Math.sin(x / 97 + 1);
-    for (let x = 0; x < WW; x += 150) { let d = ''; for (let k = 0; k <= 150; k += 25) d += (k ? ' L' : 'M') + (x + k) + ' ' + ry(x + k).toFixed(1); const g = el('g', {}, TG); el('path', { d, fill:'none', stroke:C.blue, 'stroke-width':13, 'stroke-linecap':'round', 'stroke-linejoin':'round' }, g); el('path', { d, fill:'none', stroke:'#fff', 'stroke-width':1.1, opacity:.6, class:'flow' }, g); reg(g, x + 75, ry(x + 75), 60); }
+    for (let x = 0; x < WW; x += 150) { const g = el('g', {}, TG); for (let k = 0; k < 150; k += 30) { const y = Math.round(ry(x + k + 15) / 6) * 6; blk(g, x + k, y - 9, 30.3, 18, 'd'); blk(g, x + k, y - 9, 30.3, 3, 'B'); } reg(g, x + 75, ry(x + 75), 60); }
     // 철길
-    for (let x = 0; x < WW; x += 150) { if (!clear(x + 75, 1150, 100)) continue; const g = el('g', {}, TG), y = 1150; el('path', { d:`M${x} ${y} H${x + 150}`, stroke:C.grey, 'stroke-width':6 }, g); for (let k = 6; k < 150; k += 18) el('path', { d:`M${x + k} ${y - 8} V${y + 8}`, stroke:C.ink, 'stroke-width':1.4 }, g); reg(g, x + 75, y, 60); }
+    for (let x = 0; x < WW; x += 150) { if (!clear(x + 75, 1150, 100)) continue; const g = el('g', {}, TG); blk(g, x, 1141, 150.3, 18, 'g'); reg(g, x + 75, 1150, 60); }
     // 기수 라벨(각 기수의 첫 표식 위)
     ORDER.forEach(c => { const t = TOWERS.find(x => x.cohort === c), txt = `레벨 ${ORDER.indexOf(c) + 1} · ${COHORTS[c].name} · ${COHORTS[c].who} · ${COHORTS[c].when}`, w = txt.length * 8.6 + 24, x = t.p[0], y = t.p[1] - 140, g = el('g', { transform:`translate(${x} ${y}) rotate(${c % 2 ? -2 : 2})` }, map); el('rect', { x:-w / 2, y:-13, width:w, height:26, rx:6, fill:C.ink }, g); const tx = el('text', { 'text-anchor':'middle', 'dominant-baseline':'central', 'font-size':12.5, style:'fill:#F7F6F2' }, g); tx.textContent = txt; reg(g, x, y, 120); });
   }
@@ -465,13 +508,11 @@
 
   // ── 집(파프리 스튜디오) ─────────────────────────────
   const houseG = el('g', { class:'house', transform:`translate(${HOUSE[0]} ${HOUSE[1]})`, tabindex:'0', role:'button' }, map);
-  el('rect', { x:-42, y:-30, width:44, height:40, fill:HOUSEH, stroke:C.ink, 'stroke-width':1.2 }, houseG);
-  el('path', { d:'M-46 -30 L-20 -56 L6 -30 Z', fill:'#8C8C8C', stroke:C.ink, 'stroke-width':1.2 }, houseG);
-  el('rect', { x:4, y:-22, width:34, height:32, fill:C.brick }, houseG);
-  el('path', { d:'M2 -22 L21 -44 L40 -22 Z', fill:C.brick }, houseG);
-  el('rect', { x:-30, y:-18, width:10, height:10, class:'win' }, houseG); el('rect', { x:14, y:-12, width:8, height:10, class:'win' }, houseG);
-  el('rect', { x:-8, y:-54, width:6, height:14, fill:C.ink }, houseG);
-  for (let i = 0; i < 3; i++) el('circle', { cx:-5 + i * 2, cy:-58, r:5, fill:'#9a9a9a', class:'smoke' }, houseG);
+  blk(houseG, -42, -28, 84, 38, 'W'); blk(houseG, -42, -28, 84, 38, 'h'); blk(houseG, -42, -62, 84, 34, 'g');
+  blk(houseG, -9, -14, 18, 24, 'B'); blk(houseG, -6, -18, 12, 4, 'B');
+  blk(houseG, -32, -18, 12, 12, 'W', { class:'win', stroke:PB, 'stroke-width':2 }); blk(houseG, 20, -18, 12, 12, 'W', { class:'win', stroke:PB, 'stroke-width':2 });
+  blk(houseG, 20, -76, 10, 14, 'B');
+  for (let i = 0; i < 3; i++) blk(houseG, 21 + i * 2, -86, 6, 6, 'R', { class:'smoke' });
   { const t = el('text', { y:27, 'text-anchor':'middle', 'font-size':11.5 }, houseG); t.textContent = '파프리 스튜디오'; }
   const houseHint = el('text', { y:41, 'text-anchor':'middle', 'font-size':10, style:'fill:#5C5B57' }, houseG);
   { const t = el('title', {}, houseG); t.textContent = '파프리 스튜디오 · 모든 산책이 시작되는 집'; }
@@ -479,61 +520,52 @@
   // ── 조우 그림 7종(지도 스프라이트와 카드에 같이 쓴다) ──
   const P = (g, d, a = {}) => el('path', Object.assign({ d, fill:'none', stroke:C.ink, 'stroke-width':2, 'stroke-linecap':'round', 'stroke-linejoin':'round' }, a), g);
   const at = (g, x, y = 0, cls) => { const o = el('g', { transform:`translate(${x} ${y})` }, g); return cls ? el('g', { class:cls }, o) : o; };
-  function person(g, col, o = {}) { const h = o.h || 56;
-    P(g, `M-5 0 V${-h * .36} M5 0 V${-h * .36}`, { 'stroke-width':3 });
-    el('path', { d:`M-11 ${-h * .34} L-7 ${-h * .78} H7 L11 ${-h * .34} Z`, fill:col }, g);
-    P(g, o.arms === 'up' ? `M-7 ${-h * .7} L-19 ${-h * .96} M7 ${-h * .7} L19 ${-h * .96}` : o.arms === 'wave' ? `M-7 ${-h * .7} L-14 ${-h * .48} M7 ${-h * .7} L20 ${-h * .94}` : o.arms === 'fwd' ? `M-7 ${-h * .7} L-12 ${-h * .46} M7 ${-h * .7} L20 ${-h * .56}` : `M-7 ${-h * .7} L-12 ${-h * .46} M7 ${-h * .7} L12 ${-h * .46}`, { 'stroke-width':2.4 });
-    el('circle', { cx:0, cy:-h * .88, r:7, fill:C.sheet, stroke:C.ink, 'stroke-width':1.6 }, g);
-    if (o.hair) { el('path', { d:`M-7.5 ${-h * .89} a7.5 7.5 0 0 1 15 0 Z`, fill:o.hair }, g); if (o.bun) el('circle', { cx:0, cy:-h * .88 - 9, r:4, fill:o.hair }, g); } }
-  function cat(g, x, col, s = 1, flip) { const c = el('g', { transform:`translate(${x} 0) scale(${flip ? -s : s} ${s})` }, g); el('ellipse', { cx:0, cy:-8, rx:13, ry:8, fill:col }, c); el('circle', { cx:12, cy:-17, r:6.5, fill:col }, c); el('path', { d:'M7 -21 L8 -29 L12 -23 Z M13 -23 L17 -29 L18 -20 Z', fill:col }, c); P(c, 'M-12 -9 C-22 -10 -23 -24 -16 -27', { stroke:col, 'stroke-width':3.2, class:'tailw' }); P(c, 'M-7 -2 V0 M7 -2 V0', { stroke:col, 'stroke-width':3 }); el('circle', { cx:14, cy:-18, r:1.1, fill:C.sheet }, c); }
-  function dogS(g, x, col, s = 1) { const c = el('g', { transform:`translate(${x} 0) scale(${s})` }, g); el('rect', { x:-13, y:-17, width:26, height:11, rx:5.5, fill:col }, c); el('circle', { cx:14, cy:-19, r:6, fill:col }, c); el('path', { d:'M11 -23 L9 -31 L15 -25 Z', fill:col }, c); P(c, 'M-9 -7 V0 M-4 -7 V0 M5 -7 V0 M10 -7 V0', { stroke:col, 'stroke-width':2.6 }); P(c, 'M-13 -14 L-20 -22', { stroke:col, 'stroke-width':3, class:'tailw' }); el('circle', { cx:19, cy:-18, r:1.3, fill:C.sheet }, c); }
-  function note(g, x, y, col, delay) { const n = el('g', { class:'note', style:`animation-delay:${delay}s` }, g); el('ellipse', { cx:x, cy:y, rx:4, ry:3, fill:col, transform:`rotate(-20 ${x} ${y})` }, n); P(n, `M${x + 3.6} ${y - 1} V${y - 14} l6 3`, { stroke:col, 'stroke-width':1.8 }); }
+  const person = (g, fill, o = {}) => { const u = o.u || 3.4, a = o.arms || 'down', sp = pix(g, SPR['p' + a[0].toUpperCase() + a.slice(1)], u, { c:fill }); if (o.bun) pix(el('g', { transform:`translate(0 ${(-16 * u).toFixed(1)})` }, g), ['.B.', 'BBB'], u); return sp; };
+  const cat = (g, x, fill, sc = 1, flip) => pix(el('g', { transform:`translate(${x} 0) scale(${flip ? -sc : sc} ${sc})` }, g), SPR.cat, 3, { c:fill });
+  const dogS = (g, x, fill, sc = 1) => pix(el('g', { transform:`translate(${x} 0) scale(${sc})` }, g), SPR.dog, 3, { c:fill });
+  const note = (g, x, y, fill, delay) => { const n = el('g', { class:'note', style:`animation-delay:${delay}s` }, g); pix(el('g', { transform:`translate(${x} ${y})` }, n), SPR.note, 2.6, { c:fill }); };
   const ART = {
-    granny(g, m, fx) { el('ellipse', { cx:0, cy:3, rx:62, ry:7, fill:HSTR }, g);
-      el('rect', { x:34, y:-17, width:26, height:17, rx:2, fill:C.ink }, g); el('circle', { cx:42, cy:-8, r:4.5, fill:C.sheet }, g); el('rect', { x:50, y:-13, width:7, height:3, fill:C.lime }, g); P(g, 'M56 -17 L66 -34', { 'stroke-width':1.6 });
-      person(at(g, 4, 0, 'dance'), C.brick, { arms:'up', h:58, hair:C.grey, bun:true });
-      if (m) { const o = fx ? at(g, -34, 0, 'walkin') : at(g, -34, 0), d = at(o, 0, 0, 'dance'); d.style.animationDelay = '-.35s'; person(d, C.blue, { arms:'up', h:54 }); }
-      note(g, -58, -66, C.blue, 0); note(g, 30, -78, C.green2, .7); note(g, 72, -50, C.blue, 1.3); if (m) { note(g, -76, -40, C.brick, .3); note(g, 6, -92, C.blue, 1); } },
-    cats(g, m, fx) { const n = m === true ? 3 : (m || 0); el('rect', { x:-84, y:-66, width:168, height:14, fill:DIAG, stroke:C.olive, 'stroke-width':1 }, g); P(g, 'M-84 0 H84', { 'stroke-width':1.4, 'stroke-dasharray':'3 5' });
-      [[-46, C.ink, 1.15, false], [4, C.olive, 1, false], [60, C.grey, 1.1, true]].forEach(([x, col, sc, fl], i) => { let par = g; if (fx === 'in') { par = at(g, 0, 0, 'walkin'); par.style.animationDelay = (i * .22) + 's'; } cat(par, x, col, sc, fl); });
-      [-30, 18, 44].forEach((x, i) => { if (i < n) { const b = at(g, x, 0, fx && fx !== 'in' && i === n - 1 ? 'dropin' : ''); el('path', { d:'M-9 -6 h18 l-4 6 h-10 z', fill:C.blue }, b); el('ellipse', { cx:0, cy:-6, rx:7, ry:2.2, fill:C.lime }, b); } });
-      const t = el('text', { x:-4, y:-78, 'font-size':11, 'text-anchor':'middle' }, g); t.textContent = n >= 3 ? '냠냠냠' : n ? '야옹!' : '야옹'; },
-    store(g, m, fx) { el('rect', { x:-78, y:-74, width:98, height:74, fill:C.sheet, stroke:C.ink, 'stroke-width':1.6 }, g); el('rect', { x:-78, y:-92, width:98, height:18, fill:C.blue, stroke:C.ink, 'stroke-width':1.6 }, g);
-      const t = el('text', { x:-29, y:-79, 'font-size':11, 'text-anchor':'middle', style:'fill:#F7F6F2' }, g); t.textContent = '24 편의점';
-      el('path', { d:'M-82 -74 H24 L30 -60 H-88 Z', fill:HSTR2, stroke:C.ink, 'stroke-width':1.2 }, g);
-      el('rect', { x:-70, y:-52, width:44, height:30, fill:'#DCE3F7', stroke:C.ink, 'stroke-width':1.2 }, g); P(g, 'M-70 -42 H-26 M-70 -32 H-26', { 'stroke-width':1 }); [-64, -54, -44, -35].forEach((x, i) => el('rect', { x, y:-50 + (i % 2) * 10, width:5, height:7, fill:[C.brick, C.lime, C.green, C.olive][i] }, g));
-      el('rect', { x:-14, y:-50, width:24, height:50, fill:'#DCE3F7', stroke:C.ink, 'stroke-width':1.2 }, g);
-      person(fx === 'in' ? at(at(g, 46, 0, 'walkin'), 0, 0) : at(g, 46), C.green2, { arms:'wave', h:56, hair:C.ink });
-      const bb = at(g, 72, -90, fx ? 'popin' : ''); el('path', { d:'M-22 -18 h44 v22 h-28 l-8 9 v-9 h-8 z', fill:C.sheet, stroke:C.ink, 'stroke-width':1.4 }, bb); const b = el('text', { x:0, y:-3, 'font-size':11, 'text-anchor':'middle' }, bb); b.textContent = m === true ? '또 와!' : ['학생!', '옛날엔', '내가!', '고양이', '또 와!'][m || 0]; },
-    dog(g, m, fx) { P(g, 'M-96 0 H96', { 'stroke-width':1.2, 'stroke-dasharray':'2 6' }); const r = fx ? at(g, 0, 0, 'cross') : g; person(at(r, -46), C.blue, { arms:'fwd', h:56, hair:C.olive }); P(r, 'M-26 -31 L6 -17 M-26 -31 L38 -19 M-26 -31 L66 -15', { 'stroke-width':1 });
-      dogS(r, -6, C.olive, .9); dogS(r, 26, C.ink, 1); dogS(r, 56, C.grey, .8); },
-    mirror(g, m, fx) { P(g, 'M0 0 V-50', { 'stroke-width':4 }); P(g, 'M-9 0 H9', { 'stroke-width':4 }); el('circle', { cx:0, cy:-76, r:30, fill:C.brick }, g); el('circle', { cx:0, cy:-76, r:24, fill:'#DCE3F7', stroke:C.ink, 'stroke-width':1.2 }, g);
-      P(g, 'M-17 -67 C-6 -73 4 -72 17 -82', { stroke:C.grey, 'stroke-width':6 }); el('use', { href:'#walkfig', transform:'translate(1 -70) scale(.6)' }, g); P(g, 'M-15 -92 A20 20 0 0 1 3 -98', { stroke:'#fff', 'stroke-width':2.4 });
-      if (m === 1) { const v = at(g, 0, -76, fx ? 'popin' : ''); P(v, 'M-42 -24 V-38 H-28 M28 -38 H42 V-24 M42 24 V38 H28 M-28 38 H-42 V24', { 'stroke-width':2.6 }); P(v, 'M-6 0 H6 M0 -6 V6', { 'stroke-width':1.4 }); el('circle', { cx:34, cy:-30, r:3, fill:C.brick, class:'twinkle' }, v); }
-      if (m === true) { const q = el('g', { transform:'rotate(9)' }, at(g, 58, -34, fx ? 'dropin' : '')); el('rect', { x:-20, y:-26, width:40, height:48, fill:'#fff', stroke:C.ink, 'stroke-width':1.2 }, q); el('rect', { x:-16, y:-22, width:32, height:30, fill:'#DCE3F7' }, q); el('circle', { cx:0, cy:-7, r:10, fill:C.brick }, q); el('circle', { cx:0, cy:-7, r:7.5, fill:'#EEF1FB' }, q); const t = el('text', { x:0, y:18, 'font-size':8, 'text-anchor':'middle' }, q); t.textContent = '찰칵'; el('rect', { x:-12, y:-31, width:24, height:8, fill:'#D6D6CC', opacity:.85 }, q); } },
-    poop(g, m, fx) { el('ellipse', { cx:0, cy:3, rx:56, ry:6, fill:HSTR }, g);
-      const pile = par => { el('path', { d:'M-22 0 C-28 -12 -14 -15 -16 -22 C-19 -31 -2 -32 -2 -39 C8 -33 14 -29 11 -21 C24 -19 27 -6 21 0 Z', fill:C.olive }, par); P(par, 'M-12 -8 C-4 -4 6 -4 14 -9 M-8 -22 C-2 -19 4 -19 8 -23', { stroke:'#6E6A22', 'stroke-width':1.6 }); };
-      if (!m) { pile(g); P(g, 'M-32 -40 q4 -6 0 -12 q-4 -6 0 -12 M30 -36 q4 -6 0 -12 q-4 -6 0 -12', { 'stroke-width':1.3, class:'twinkle' }); [[-40, -22], [38, -18], [4, -58]].forEach(([x, y]) => el('circle', { cx:x, cy:y, r:1.8, fill:C.ink, class:'twinkle' }, g)); }
-      else { if (fx) { pile(at(g, 0, 0, 'shrinkout')); [[-18, -10, 0], [14, -16, .12], [0, -30, .22]].forEach(([x, y, d]) => { const c = el('circle', { cx:x, cy:y, r:12, fill:'none', stroke:C.ink, 'stroke-width':1.4, class:'puff' }, g); c.style.animationDelay = d + 's'; }); }
-        const fl = fx ? at(g, 0, 0, 'growin') : g; P(fl, 'M0 0 V-34', { stroke:C.green2, 'stroke-width':3 }); el('path', { d:'M0 -12 C-14 -14 -18 -24 -16 -28 C-8 -26 -2 -20 0 -12 Z M0 -18 C12 -18 18 -28 17 -32 C8 -31 2 -26 0 -18 Z', fill:C.green }, fl); for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2; el('circle', { cx:Math.cos(a) * 10, cy:-44 + Math.sin(a) * 10, r:6.5, fill:C.brick }, fl); } el('circle', { cx:0, cy:-44, r:5.5, fill:C.lime }, fl); [[-34, -14], [32, -22], [40, -52], [-40, -48]].forEach(([x, y]) => P(g, `M${x - 4} ${y} H${x + 4} M${x} ${y - 4} V${y + 4}`, { stroke:C.blue, 'stroke-width':1.6, class:'twinkle' })); } },
-    park(g, m, fx) { el('ellipse', { cx:0, cy:4, rx:86, ry:8, fill:HSTR }, g);
-      P(g, 'M-44 0 V-62', { 'stroke-width':4 }); const w = at(g, -44, -62, m ? 'spinme' : ''); el('circle', { r:24, fill:'none', stroke:C.blue, 'stroke-width':5 }, w); for (let i = 0; i < 4; i++) P(w, `M0 0 L${(Math.cos(i * Math.PI / 2 + .4) * 24).toFixed(1)} ${(Math.sin(i * Math.PI / 2 + .4) * 24).toFixed(1)}`, { stroke:C.blue, 'stroke-width':3 }); el('circle', { r:4.5, fill:C.ink }, w);
-      P(g, 'M26 0 V-40 M14 -40 H38', { 'stroke-width':4 }); el('ellipse', { cx:26, cy:-3, rx:15, ry:5, fill:C.brick, stroke:C.ink, 'stroke-width':1.2 }, g);
-      el('path', { d:'M66 -44 C52 -42 46 -22 54 -14 C46 -8 56 2 66 -2 C76 2 86 -8 78 -14 C86 -22 80 -42 66 -44Z', fill:C.green2 }, g); el('rect', { x:64, y:-4, width:4, height:8, fill:C.ink }, g);
-      if (m) { const o = fx ? at(g, -8, 0, 'walkin') : at(g, -8, 0); person(at(o, 0, 0, 'dance'), C.blue, { arms:'fwd', h:52 }); note(g, -78, -88, C.blue, 0); note(g, -10, -98, C.brick, .6); note(g, 34, -72, C.green2, 1.2); note(g, 60, -92, C.blue, 1.7); } },
+    granny(g, m, fx) { blk(g, -72, 1, 144, 5, 'd');
+      pix(el('g', { transform:'translate(52 0)' }, g), SPR.radio, 3.4);
+      person(at(g, 4, 0, 'dance'), 'g', { arms:'up', bun:true });
+      if (m) { const o = fx ? at(g, -38, 0, 'walkin') : at(g, -38, 0), d = at(o, 0, 0, 'dance'); d.style.animationDelay = '-.35s'; person(d, 'B', { arms:'up', u:3.2 }); }
+      note(g, -64, -60, 'B', 0); note(g, 34, -74, 'R', .7); note(g, 78, -44, 'B', 1.3); if (m) { note(g, -82, -34, 'R', .3); note(g, 8, -94, 'B', 1); } },
+    cats(g, m, fx) { const n = m === true ? 3 : (m || 0); blk(g, -88, -70, 176, 16, 'g'); blk(g, -88, 1, 176, 4, 'd');
+      [[-60, 'B', 1.1, false], [-8, 'd', 1, false], [62, 'R', 1.05, true]].forEach(([x, col, sc, fl], i) => { let par = g; if (fx === 'in') { par = at(g, 0, 0, 'walkin'); par.style.animationDelay = (i * .22) + 's'; } cat(par, x, col, sc, fl); });
+      [-36, 16, 38].forEach((x, i) => { if (i < n) pix(at(g, x, 0, fx && fx !== 'in' && i === n - 1 ? 'dropin' : ''), SPR.bowl, 3); });
+      const t = el('text', { x:-4, y:-80, 'font-size':11, 'text-anchor':'middle' }, g); t.textContent = n >= 3 ? '냠냠냠' : n ? '야옹!' : '야옹'; },
+    store(g, m, fx) { blk(g, -80, -76, 100, 76, 'W'); blk(g, -80, -76, 100, 76, 'h'); blk(g, -80, -98, 100, 22, 'B');
+      const t = el('text', { x:-30, y:-83, 'font-size':11, 'text-anchor':'middle', style:'fill:#fff' }, g); t.textContent = '24 편의점';
+      blk(g, -86, -76, 112, 12, 'g');
+      blk(g, -72, -56, 46, 32, 'W', { stroke:PB, 'stroke-width':2 }); [-67, -57, -47, -38].forEach((x, i) => blk(g, x, -52 + (i % 2) * 13, 6, 9, i % 2 ? 'R' : 'B'));
+      blk(g, -16, -52, 26, 52, 'B'); blk(g, -11, -46, 16, 22, 'W');
+      person(fx === 'in' ? at(at(g, 48, 0, 'walkin'), 0, 0) : at(g, 48), 'R', { arms:'wave' });
+      const bb = at(g, 74, -94, fx ? 'popin' : ''); blk(bb, -24, -20, 48, 24, 'W', { stroke:PB, 'stroke-width':2 }); blk(bb, -14, 4, 7, 7, 'B'); const b = el('text', { x:0, y:-4, 'font-size':11, 'text-anchor':'middle' }, bb); b.textContent = m === true ? '또 와!' : ['학생!', '옛날엔', '내가!', '고양이', '또 와!'][m || 0]; },
+    dog(g, m, fx) { blk(g, -96, 1, 192, 4, 'd'); const r = fx ? at(g, 0, 0, 'cross') : g; person(at(r, -50), 'B', { arms:'fwd' }); el('path', { d:'M-35 -36 L6 -16 M-35 -36 L38 -18 M-35 -36 L68 -14', fill:'none', stroke:PB, 'stroke-width':1.4 }, r);
+      dogS(r, -2, 'R', .9); dogS(r, 30, 'B', 1); dogS(r, 62, 'd', .85); },
+    mirror(g, m, fx) { blk(g, -3, -50, 6, 50, 'B'); blk(g, -12, -4, 24, 4, 'B'); pix(el('g', { transform:'translate(0 -44)' }, g), SPR.mirror, 6.6);
+      pix(el('g', { transform:'translate(0 -58)' }, g), SPR.walk0, 2.6);
+      if (m === 1) { const v = at(g, 0, -74, fx ? 'popin' : ''); el('path', { d:'M-42 -24 V-38 H-28 M28 -38 H42 V-24 M42 24 V38 H28 M-28 38 H-42 V24', fill:'none', stroke:PR, 'stroke-width':3, 'shape-rendering':'crispEdges' }, v); blk(v, 30, -34, 6, 6, 'R', { class:'twinkle' }); }
+      if (m === true) { const q = el('g', { transform:'rotate(9)' }, at(g, 60, -34, fx ? 'dropin' : '')); blk(q, -21, -27, 42, 50, 'W', { stroke:PB, 'stroke-width':2 }); blk(q, -17, -23, 34, 30, 'h'); pix(el('g', { transform:'translate(0 4)' }, q), SPR.mirror, 2.8); const t = el('text', { x:0, y:19, 'font-size':8, 'text-anchor':'middle' }, q); t.textContent = '찰칵'; blk(q, -12, -33, 24, 8, 'g'); } },
+    poop(g, m, fx) { blk(g, -60, 1, 120, 4, 'd'); const pile = par => pix(par, SPR.pile, 5);
+      if (!m) { pile(g); [[-40, -22], [38, -18], [4, -40], [-28, -46], [26, -42]].forEach(([x, y], i) => blk(g, x, y, 4, 4, i < 3 ? 'B' : 'R', { class:'twinkle' })); }
+      else { if (fx) { pile(at(g, 0, 0, 'shrinkout')); [[-18, -10, 0], [14, -16, .12], [0, -30, .22]].forEach(([x, y, d]) => { const c = blk(g, x - 10, y - 10, 20, 20, 'none', { stroke:PB, 'stroke-width':2, class:'puff' }); c.style.animationDelay = d + 's'; }); }
+        pix(fx ? at(g, 0, 0, 'growin') : g, SPR.flower, 6); [[-34, -14], [32, -22], [40, -52], [-40, -48]].forEach(([x, y]) => blk(g, x - 2, y - 2, 5, 5, 'R', { class:'twinkle' })); } },
+    park(g, m, fx) { blk(g, -92, 1, 184, 5, 'd');
+      blk(g, -47, -62, 6, 62, 'B'); pix(el('g', { transform:'translate(0 27.5)' }, at(g, -44, -62, m ? 'spinme' : '')), SPR.wheel, 5);
+      blk(g, 12, -42, 30, 6, 'B'); blk(g, 24, -42, 6, 42, 'B'); blk(g, 10, -9, 34, 9, 'g');
+      pix(el('g', { transform:'translate(74 0)' }, g), SPR.tree, 4.2);
+      if (m) { const o = fx ? at(g, -10, 0, 'walkin') : at(g, -10, 0); person(at(o, 0, 0, 'dance'), 'R', { arms:'fwd', u:3.2 }); note(g, -80, -90, 'B', 0); note(g, -12, -100, 'R', .6); note(g, 36, -74, 'B', 1.2); note(g, 62, -94, 'R', 1.7); } },
   };
   const ARTVB = '-100 -116 200 134';
-  function drawHand(parent, type, m, fx) { const g = el('g', { filter:'url(#hand0)' }, parent); ART[type](g, m, fx); crayon(g); return g; }
+  function drawHand(parent, type, m, fx) { const g = el('g', {}, parent); ART[type](g, m, fx); return g; }
 
   // ── 거점 표식 6종 ───────────────────────────────────
   const TOP = { tower:96, antenna:110, tank:70, windmill:92, lamp:80, sign:52 };
   const MARK = {
-    tower: g => { const tw = el('g', { fill:'none', stroke:C.ink, 'stroke-width':2.2, 'stroke-linejoin':'round' }, g); el('path', { d:'M-16 0 L-6 -78 L6 -78 L16 0 Z', 'stroke-width':2 }, tw); el('path', { d:'M-16 0 L16 0 M-14 -18 L14 -18 M-12 -36 L12 -36 M-10 -54 L10 -54 M-24 -62 H24 M-20 -50 H20', 'stroke-width':1.6 }, tw); el('path', { d:'M-14 -18 L12 -36 M14 -18 L-12 -36 M-12 -36 L10 -54 M12 -36 L-10 -54 M-16 0 L14 -18 M16 0 L-14 -18', 'stroke-width':1.2 }, tw); el('path', { d:'M-24 -62 L-20 -50 M24 -62 L20 -50 M0 -78 V-92', 'stroke-width':1.6 }, tw); el('circle', { cy:-95, r:3, fill:C.ink }, g); },
-    antenna: g => { const a = el('g', { fill:'none', stroke:C.ink, 'stroke-width':2 }, g); el('path', { d:'M0 0 V-100 M-10 0 H10 M-14 -30 H14 M-10 -50 H10 M-6 -70 H6' }, a); el('path', { d:'M-14 -30 L0 -50 L14 -30 M-10 -50 L0 -70 L10 -50', 'stroke-width':1.2 }, a); el('circle', { cy:-104, r:4, fill:C.brick, class:'twinkle' }, g); el('path', { d:'M-12 -108 q12 -10 24 0 M-18 -114 q18 -14 36 0', fill:'none', stroke:C.ink, 'stroke-width':1.2, opacity:.6 }, g); },
-    tank: g => { el('path', { d:'M-14 0 L-10 -40 M14 0 L10 -40 M-4 0 L-2 -40 M4 0 L2 -40 M-12 -14 H12 M-11 -28 H11', fill:'none', stroke:C.ink, 'stroke-width':1.8 }, g); el('ellipse', { cy:-40, rx:22, ry:6, fill:C.grey, stroke:C.ink, 'stroke-width':1.5 }, g); el('rect', { x:-22, y:-66, width:44, height:26, fill:HSTR2, stroke:C.ink, 'stroke-width':1.5 }, g); el('ellipse', { cy:-66, rx:22, ry:6, fill:C.lime, stroke:C.ink, 'stroke-width':1.5 }, g); },
-    windmill: g => { el('path', { d:'M-10 0 L-4 -60 L4 -60 L10 0 Z M-8 -14 H8 M-6 -30 H6', fill:'none', stroke:C.ink, 'stroke-width':1.8 }, g); const b = el('g', {}, g); for (let k = 0; k < 4; k++) el('path', { d:'M0 -66 L-5 -92 L5 -92 Z', fill:C.sheet, stroke:C.ink, 'stroke-width':1.5, transform:`rotate(${k * 90} 0 -66)` }, b); if (!reduced) el('animateTransform', { attributeName:'transform', type:'rotate', from:'0 0 -66', to:'360 0 -66', dur:'9s', repeatCount:'indefinite' }, b); el('circle', { cy:-66, r:3, fill:C.ink }, g); },
-    lamp: g => { el('path', { d:'M0 0 V-64 Q0 -74 10 -74 H18', fill:'none', stroke:C.ink, 'stroke-width':2.4 }, g); el('path', { d:'M12 -80 H26 L22 -70 H16 Z', fill:C.ink }, g); el('circle', { cx:19, cy:-66, r:5, fill:'#F2C94C', class:'twinkle' }, g); el('path', { d:'M-6 0 H6', stroke:C.ink, 'stroke-width':2.4 }, g); },
-    sign: g => { el('path', { d:'M0 0 V-52', stroke:C.ink, 'stroke-width':2.4 }, g); el('path', { d:'M-4 -50 H30 L38 -42 L30 -34 H-4 Z', fill:C.blue, stroke:C.ink, 'stroke-width':1.2 }, g); el('path', { d:'M4 -30 H-26 L-34 -22 L-26 -14 H4 Z', fill:C.lime, stroke:C.ink, 'stroke-width':1.2 }, g); },
+    tower: g => pix(g, SPR.tower, 4.4), antenna: g => pix(g, SPR.antenna, 5.6), tank: g => pix(g, SPR.tank, 5.4),
+    windmill: g => { pix(g, SPR.mill, 5.6); const b = el('g', {}, g); for (let k = 0; k < 4; k++) blk(b, -4, -92, 8, 30, k % 2 ? 'g' : 'R', { transform:`rotate(${k * 90} 0 -62)` }); if (!reduced) el('animateTransform', { attributeName:'transform', type:'rotate', from:'0 0 -62', to:'360 0 -62', dur:'9s', repeatCount:'indefinite' }, b); blk(g, -4, -66, 8, 8, 'B'); },
+    lamp: g => pix(g, SPR.lamp, 6), sign: g => pix(g, SPR.sign, 6),
   };
   const towerEls = {};
   TOWERS.forEach(t => {
@@ -551,8 +583,8 @@
   const encG = el('g', {}, map);
   ENC.forEach(e => { const g = el('g', { class:'enc', 'data-id':e.id, transform:`translate(${e.x} ${e.y}) scale(.9)`, tabindex:'0', role:'button' }, encG); e.g = g; const tt = el('title', {}, g); tt.textContent = ETYPE[e.type].name; e.art = el('g', {}, g); drawHand(e.art, e.type, false); if (e.type === 'dog') g.classList.add('rev'); else reg(g, e.x, e.y, 45, { enc:e }); });
   const WK = el('g', {}, map), WKin = el('g', {}, WK);
-  el('circle', { r:13, fill:'none', stroke:C.ink, 'stroke-width':1, 'stroke-dasharray':'3 3' }, WKin);
-  const WKfig = el('g', {}, WKin), WKhead = el('circle', { cy:-9, r:4, fill:C.ink }, WKfig), WKlimb = el('path', { fill:'none', stroke:C.ink, 'stroke-width':2.4, 'stroke-linecap':'round', 'stroke-linejoin':'round' }, WKfig);
+  el('circle', { r:19, fill:'none', stroke:PB, 'stroke-width':1.2, 'stroke-dasharray':'2 4' }, WKin);
+  const WKfig = el('g', {}, WKin), WKfr = ['walk0', 'walkA', 'walkB'].map(n => pix(el('g', { transform:'translate(0 15)' }, WKfig), SPR[n], 2.4)); let wfr = -1;
   // 걸음걸이: 속도, 발 내딛는 빠르기, 보폭, 통통 튐, 몸 기울기, 좌우 흔들림, 발소리 빠르기
   const GAITS = [
     { id:'stroll', name:'산책', sp:1, cad:.13, amp:.6, bounce:1.3, lean:0, sway:0, rate:1 },
@@ -565,7 +597,7 @@
   function pose(dt, moved, mvx) { if (moved) { gph += GT.cad * dt; gamp += (1 - gamp) * Math.min(1, .2 * dt); if (Math.abs(mvx) > .3) gdir = mvx > 0 ? 1 : -1; } else gamp += (0 - gamp) * Math.min(1, .16 * dt);
     const sw = Math.sin(gph), rest = .5 * (1 - gamp), A = GT.amp * gamp, hopK = Math.abs(sw), L = 10.3, R = 7.6, ab = .3 + .95 * (1 - gamp);
     const aL = GT.hop ? -rest - A : -rest + A * sw, aR = GT.hop ? rest + A : rest - A * sw, bL = GT.hop ? -ab - 1.1 * hopK * gamp : -ab - A * .9 * sw, bR = GT.hop ? ab + 1.1 * hopK * gamp : ab + A * .9 * sw, f = v => v.toFixed(1);
-    WKlimb.setAttribute('d', `M0 -5 V6 M0 6 L${f(Math.sin(aL) * L)} ${f(6 + Math.cos(aL) * L)} M0 6 L${f(Math.sin(aR) * L)} ${f(6 + Math.cos(aR) * L)} M0 -2 L${f(Math.sin(bL) * R)} ${f(-2 + Math.cos(bL) * R)} M0 -2 L${f(Math.sin(bR) * R)} ${f(-2 + Math.cos(bR) * R)}`);
+    const fr = gamp < .25 || GT.hop ? 0 : sw > 0 ? 1 : 2; if (fr !== wfr) { wfr = fr; WKfr.forEach((n, k) => n.parentNode.setAttribute('display', k === fr ? 'inline' : 'none')); }
     WKfig.setAttribute('transform', `translate(0 ${f(-GT.bounce * hopK * gamp)}) rotate(${f((GT.lean * gdir + GT.sway * sw) * gamp)} 0 14)`); }
   pose(1, false, 0);
 
@@ -747,20 +779,26 @@
     if (a.bad) { fb(); return; } clearInterval(a.fadeT); try { a.currentTime = 0; } catch (e) {} a.volume = VOL[n]; const pr = a.play(); if (pr && pr.catch) pr.catch(fb); }
   function fadeOut(n, ms = 500) { const a = SND[n]; if (!a || a.paused) return; clearInterval(a.fadeT); const v0 = a.volume, t0 = performance.now(); a.fadeT = setInterval(() => { const k = (performance.now() - t0) / ms; if (k >= 1) { clearInterval(a.fadeT); a.pause(); } else a.volume = v0 * (1 - k); }, 40); }
   const SFX = new Proxy({}, { get: (_, n) => () => play(n) });
-  // 배경음악과 연필 소리: 볼륨만 천천히 움직인다
-  const bgm = aud('bgm'), pen = aud('steps'); bgm.loop = true; pen.loop = true; bgm.volume = 0; pen.volume = 0;
-  let audioKick = false, walking = 0;
-  function kick() { if (audioKick) return; audioKick = true; if (musicOn && !bgm.bad) { const pr = bgm.play(); if (pr && pr.catch) pr.catch(() => { audioKick = false; }); } }
+  // 배경음악은 지도가 열리는 만큼 여섯 가지 변주가 차례로 이어진다. 발소리는 걸을 때만 조용히
+  const BGN = ['bgm', 'bgm2', 'bgm5', 'bgm3', 'bgm4', 'bgm6'], bgOf = i => { const a = aud(BGN[i]); a.loop = true; return a; }, pen = aud('steps'); pen.loop = true; pen.volume = 0;
+  const opened = () => replay ? replay.i / Math.max(1, replay.n) : Math.max(visited.length / TOTAL, REV.reduce((n, it) => n + (it.on ? 1 : 0), 0) / REV.length * 1.15);
+  let audioKick = false, walking = 0, bgI = 0, bgHold = 0; bgOf(0).volume = 0;
+  function kick() { if (audioKick) return; audioKick = true; const a = bgOf(bgI); if (musicOn && !a.bad) { const pr = a.play(); if (pr && pr.catch) pr.catch(() => { audioKick = false; }); } }
   function busy(n) { const a = SND[n]; return a && !a.paused && !a.ended; }
   setInterval(() => {
     if (!audioKick) return; const on = soundOn && !document.hidden, mon = musicOn && !document.hidden;
-    if (!bgm.bad) { if (!mon) { if (!bgm.paused) bgm.pause(); } else { if (bgm.paused) { const pr = bgm.play(); if (pr && pr.catch) pr.catch(() => {}); }
-      const d = bgm.duration || 60, t = bgm.currentTime, env = Math.max(0, Math.min(1, t / 2.5, (d - t) / 3)), duck = busy('dance') || busy('park') ? 0 : busy('level') ? .25 : cutOpen() ? .45 : replay ? 1.25 : 1;
-      bgm.volume = Math.max(0, Math.min(1, bgm.volume + (BGM_VOL * env * duck - bgm.volume) * .18)); } }
+    let want = Math.min(BGN.length - 1, Math.floor(opened() * BGN.length)); if (!replay && want < bgI) want = bgI; if (bgOf(want).bad) want = bgI;
+    if (want !== bgI && performance.now() - bgHold > 9000) { bgI = want; bgHold = performance.now(); const a = bgOf(bgI); if (a.paused) a.volume = 0; if (on && !replay) play('signal'); }
+    BGN.forEach((n, i) => { const a = SND[n]; if (!a || a.bad) return;
+      if (!mon) { if (!a.paused) a.pause(); return; }
+      if (i === bgI) { if (a.paused) { const pr = a.play(); if (pr && pr.catch) pr.catch(() => {}); }
+        const d = a.duration || 60, t = a.currentTime, env = Math.max(0, Math.min(1, t / 2.5, (d - t) / 3)), duck = busy('dance') || busy('park') ? 0 : busy('level') ? .25 : cutOpen() ? .45 : replay ? 1.25 : 1;
+        a.volume = Math.max(0, Math.min(1, a.volume + (BGM_VOL * env * duck - a.volume) * .1)); }
+      else if (!a.paused) { a.volume = Math.max(0, a.volume - .006); if (a.volume < .004) a.pause(); } });
     if (!pen.bad) { try { pen.playbackRate = GT.rate; } catch (e) {} const tv = on && performance.now() - walking < 220 && !cutOpen() ? PEN_VOL : 0; pen.volume = Math.max(0, Math.min(1, pen.volume + (tv - pen.volume) * .3)); if (tv && pen.paused) { const pr = pen.play(); if (pr && pr.catch) pr.catch(() => {}); } else if (!tv && pen.volume < .01 && !pen.paused) pen.pause(); }
   }, 80);
-  function setSound(on, quiet) { soundOn = on; try { localStorage.setItem('eumgil-sound', on ? '1' : '0'); } catch (e) {} const b = $('#sndBtn'); b.textContent = on ? '효과음 ♪' : '효과음 끔'; b.setAttribute('aria-pressed', on); b.classList.toggle('off', !on); if (!on) Object.keys(SND).forEach(n => { if (n !== 'bgm') { clearInterval(SND[n].fadeT); SND[n].pause(); } }); else if (!quiet) { kick(); play('pop'); } }
-  function setMusic(on, quiet) { musicOn = on; try { localStorage.setItem('eumgil-music', on ? '1' : '0'); } catch (e) {} const b = $('#musBtn'); b.textContent = on ? '음악 ♪' : '음악 끔'; b.setAttribute('aria-pressed', on); b.classList.toggle('off', !on); if (!on) bgm.pause(); else if (!quiet) { audioKick = false; kick(); } }
+  function setSound(on, quiet) { soundOn = on; try { localStorage.setItem('eumgil-sound', on ? '1' : '0'); } catch (e) {} const b = $('#sndBtn'); b.textContent = on ? '효과음 ♪' : '효과음 끔'; b.setAttribute('aria-pressed', on); b.classList.toggle('off', !on); if (!on) Object.keys(SND).forEach(n => { if (BGN.indexOf(n) < 0) { clearInterval(SND[n].fadeT); SND[n].pause(); } }); else if (!quiet) { kick(); play('pop'); } }
+  function setMusic(on, quiet) { musicOn = on; try { localStorage.setItem('eumgil-music', on ? '1' : '0'); } catch (e) {} const b = $('#musBtn'); b.textContent = on ? '음악 ♪' : '음악 끔'; b.setAttribute('aria-pressed', on); b.classList.toggle('off', !on); if (!on) BGN.forEach(n => { if (SND[n]) SND[n].pause(); }); else if (!quiet) { audioKick = false; kick(); } }
   $('#sndBtn').addEventListener('click', () => setSound(!soundOn)); $('#musBtn').addEventListener('click', () => setMusic(!musicOn)); setSound(soundOn, true); setMusic(musicOn, true);
   ['pointerdown', 'keydown'].forEach(k => addEventListener(k, kick, { passive:true }));
   // 조우 컷씬(마주치면 바로 시작)
@@ -779,7 +817,7 @@
     if (c) typeInto($('#cutCap'), c); }
   function startCut(e) { curEnc = e; encStep = 0; target = null; keys = { l:0, r:0, u:0, d:0 }; closeMemo(); autoKey = 'e' + e.id; const T = ETYPE[e.type], m = isMet(e.id);
     $('#cutLab').textContent = `조우 · 레벨 ${e.lv} · 지름길 밖`; $('#cutName').textContent = T.name; cutEl.classList.remove('open'); void cutEl.offsetWidth; cutEl.classList.add('open');
-    stageDraw(e, m ? true : 0, m ? false : (e.type === 'dog' ? true : 'in')); clearInterval(boilT); let b = 0; if (!reduced) boilT = setInterval(() => { if (stageG) stageG.setAttribute('filter', `url(#hand${++b % 3})`); }, 190);
+    stageDraw(e, m ? true : 0, m ? false : (e.type === 'dog' ? true : 'in')); clearInterval(boilT);
     cutUi(e, m ? T.after : T.line + (T.ask ? ' ' + T.ask : ''));
     if (m) return; if (e.type === 'cats') SFX.meow(); else if (e.type === 'store') SFX.store(); else if (e.type === 'dog') { SFX.bark(); setTimeout(() => { if (curEnc === e && cutOpen()) { meet(e); cutUi(e, T.done + ' ' + T.after); } }, 2700); } }
   function closeCut() { if (!cutOpen()) return; cutEl.classList.remove('open'); fadeOut('dance'); fadeOut('park'); fadeOut('meow', 300); clearInterval(boilT); clearInterval(capT); $('#cutStage').innerHTML = ''; stageG = null; if (curEnc) autoKey = 'e' + curEnc.id; curEnc = null; }
@@ -827,7 +865,7 @@
   function saveImage() {
     const c = map.cloneNode(true); c.removeAttribute('id'); c.setAttribute('xmlns', NS); c.setAttribute('viewBox', `-20 -20 ${WW + 40} ${WH + 40}`); c.setAttribute('width', WW + 40); c.setAttribute('height', WH + 40);
     c.querySelectorAll('.rev:not(.on), .shortcut:not(.on), .ring, .smoke, .goal, animateTransform').forEach(n => n.remove());
-    const st = document.createElementNS(NS, 'style'); st.textContent = "text{font-family:'IBM Plex Mono',monospace;fill:#151515}.serif{font-family:'Times New Roman','Nanum Myeongjo',serif}.tree{opacity:0}.tower.done .tree{opacity:1}.win{fill:#3a3a3a}.house.lit .win{fill:#F2C94C}.shortcut{fill:none;stroke:#4F5CB8;stroke-width:3;stroke-dasharray:3 9;stroke-linecap:round}"; c.insertBefore(st, c.firstChild);
+    const st = document.createElementNS(NS, 'style'); st.textContent = "text{font-family:'IBM Plex Mono',monospace;fill:#151515}.serif{font-family:'Times New Roman','Nanum Myeongjo',serif}.tree{opacity:0}.tower.done .tree{opacity:1}.win{fill:#fff}.house.lit .win{fill:#F2C94C}.shortcut{fill:none;stroke:#4F5CB8;stroke-width:3;stroke-dasharray:3 9;stroke-linecap:round}"; c.insertBefore(st, c.firstChild);
     const bg = document.createElementNS(NS, 'rect'); bg.setAttribute('x', -20); bg.setAttribute('y', -20); bg.setAttribute('width', WW + 40); bg.setAttribute('height', WH + 40); bg.setAttribute('fill', C.paper); c.insertBefore(bg, st.nextSibling);
     const svgText = new XMLSerializer().serializeToString(c), url = URL.createObjectURL(new Blob([svgText], { type:'image/svg+xml;charset=utf-8' }));
     const dl = (href, name) => { const a = document.createElement('a'); a.href = href; a.download = name; document.body.appendChild(a); a.click(); a.remove(); };
@@ -899,11 +937,27 @@
   try { localStorage.removeItem(STORE); } catch (e) {}
   const resumed = false;
   revealAround(HOUSE[0], HOUSE[1], 150); renderHud();
-  { const pal = $('#pal'), SW = ['#A9AEB8', '#6E7BD6', '#4E9C48', '#C8DC3C', '#B84A2A', '#F0B45A', '#7CC4C0', '#8C8CF0'], inp = document.createElement('input'); inp.type = 'color'; inp.value = '#E86FA8'; inp.title = '다른 색 고르기'; inp.setAttribute('aria-label', '다른 색 고르기');
-    const mark = () => { let hit = false; pal.querySelectorAll('button').forEach(b => { const on = b.dataset.c.toLowerCase() === roadCol.toLowerCase(); b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); if (on) hit = true; }); inp.classList.toggle('on', !hit); if (!hit) inp.value = roadCol; if (cartKey) cartKey.setAttribute('stroke', roadCol); };
+  // 길 색: 스포이드가 그려진 색 동그라미 하나. 누르면 색상환이 열리고 그 안에서 고른다
+  { const pal = $('#pal'), btn = document.createElement('button'), pop = document.createElement('div'), cv = document.createElement('canvas'), dot = document.createElement('i'), lum = document.createElement('input'), N = 220, R = N / 2;
+    btn.type = 'button'; btn.className = 'cbtn'; btn.title = '길 색 고르기'; btn.setAttribute('aria-label', '길 색 고르기'); btn.setAttribute('aria-expanded', 'false');
+    btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3.8l5.2 5.2M12.6 6.4l5 5-8 8H6v-3.6z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round"/><path d="M4.2 21.6c0-1 1-2.3 1-2.3s1 1.300 1 2.3a1 1 0 0 1-2 0z" fill="currentColor"/></svg>';
+    pop.className = 'cpop'; pop.hidden = true; cv.width = cv.height = N; lum.type = 'range'; lum.min = 28; lum.max = 84; lum.setAttribute('aria-label', '밝기'); pop.append(cv, dot, lum); pal.append(btn, pop);
+    const ctx = cv.getContext('2d'); let H = 230, S = .6, L = 62;
+    const rgb = (h, sa, l) => { l /= 100; const a = sa * Math.min(l, 1 - l), f = n => { const k = (n + h / 30) % 12; return Math.round((l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1))) * 255); }; return [f(0), f(8), f(4)]; };
+    const hex = c => '#' + c.map(v => v.toString(16).padStart(2, '0')).join('');
+    const toHsl = x => { const r = parseInt(x.slice(1, 3), 16) / 255, g = parseInt(x.slice(3, 5), 16) / 255, b = parseInt(x.slice(5, 7), 16) / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn; let h = 0, sa = 0; if (d) { sa = d / (1 - Math.abs(2 * l - 1)); h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h = (h * 60 + 360) % 360; } return [h, Math.min(1, sa), l * 100]; };
+    function wheel() { const img = ctx.createImageData(N, N), d = img.data; for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { const dx = x - R + .5, dy = y - R + .5, rr = Math.hypot(dx, dy); if (rr > R) continue; const c = rgb((Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360, Math.min(1, rr / (R - 3)), L), i = (y * N + x) * 4; d[i] = c[0]; d[i + 1] = c[1]; d[i + 2] = c[2]; d[i + 3] = rr > R - 1.5 ? 255 * (R - rr) / 1.5 : 255; } ctx.putImageData(img, 0, 0); }
+    const mark = () => { btn.style.background = roadCol; if (cartKey) cartKey.setAttribute('stroke', roadCol); const k = 180 / N, a = H * Math.PI / 180, rr = S * (R - 3); dot.style.left = (10 + (R + Math.cos(a) * rr) * k) + 'px'; dot.style.top = (10 + (R + Math.sin(a) * rr) * k) + 'px'; dot.style.background = roadCol; lum.value = L; };
     const setRoad = (c, quiet) => { roadCol = c; const i = pts.length / 2, last = colLog[colLog.length - 1]; if (last[0] === i) last[1] = c; else colLog.push([i, c]); try { localStorage.setItem('eumgil-road', c); } catch (e) {} mark(); if (!quiet) toast('지금부터 걷는 길이 이 색으로 그려진다'); };
-    SW.forEach(c => { const b = document.createElement('button'); b.type = 'button'; b.dataset.c = c; b.style.background = c; b.title = '길 색 ' + c; b.setAttribute('aria-label', '길 색 ' + c); b.addEventListener('click', () => setRoad(c)); pal.appendChild(b); });
-    inp.addEventListener('input', () => setRoad(inp.value, true)); inp.addEventListener('change', () => setRoad(inp.value)); pal.appendChild(inp); mark(); window.__setRoad = setRoad; }
+    const sync = () => { [H, S, L] = toHsl(roadCol); L = Math.max(28, Math.min(84, L)); wheel(); mark(); };
+    const pick = e => { const b = cv.getBoundingClientRect(), dx = (e.clientX - b.left) / b.width * N - R, dy = (e.clientY - b.top) / b.height * N - R; H = (Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360; S = Math.min(1, Math.hypot(dx, dy) / (R - 3)); setRoad(hex(rgb(H, S, L)), true); };
+    let drag = false; cv.addEventListener('pointerdown', e => { drag = true; try { cv.setPointerCapture(e.pointerId); } catch (er) {} pick(e); }); cv.addEventListener('pointermove', e => { if (drag) pick(e); }); cv.addEventListener('pointerup', () => { if (drag) { drag = false; toast('지금부터 걷는 길이 이 색으로 그려진다'); } });
+    lum.addEventListener('input', () => { L = +lum.value; wheel(); setRoad(hex(rgb(H, S, L)), true); });
+    if (window.EyeDropper) { const ed = document.createElement('button'); ed.type = 'button'; ed.className = 'lnk'; ed.textContent = '화면에서 색 따오기'; ed.addEventListener('click', () => { new EyeDropper().open().then(r => { setRoad(r.sRGBHex); sync(); }).catch(() => {}); }); pop.appendChild(ed); }
+    const openPop = on => { pop.hidden = !on; btn.setAttribute('aria-expanded', on); if (on) sync(); };
+    btn.addEventListener('click', e => { e.stopPropagation(); openPop(pop.hidden); }); pop.addEventListener('pointerdown', e => e.stopPropagation());
+    addEventListener('pointerdown', e => { if (!pop.hidden && !pal.contains(e.target)) openPop(false); });
+    [H, S, L] = toHsl(roadCol); mark(); window.__setRoad = setRoad; }
   { const box = $('#sty'), mark = () => box.querySelectorAll('button').forEach(b => { const on = b.dataset.s === roadSty; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
     STYLES.forEach(([id, name]) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'lnk'; b.dataset.s = id; b.textContent = name; b.addEventListener('click', () => { roadSty = id; const i = pts.length / 2, last = styLog[styLog.length - 1]; if (last[0] === i) last[1] = id; else styLog.push([i, id]); try { localStorage.setItem('eumgil-trail', id); } catch (e) {} mark(); toast(`지금부터 걷는 길이 ${name}(으)로 남는다`); }); box.appendChild(b); }); mark(); }
   { const box = $('#gait'), mark = () => box.querySelectorAll('button').forEach(b => { const on = b.dataset.g === GT.id; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
@@ -952,7 +1006,7 @@
   })();
   if (/[?&]sheet/.test(location.search)) { const sh = document.createElement('div'); sh.className = 'sheet'; sh.innerHTML = '<span class="lab">수상한 산책클럽 · 조우 도감</span><h1>지름길 밖에서 만나는 일곱 가지</h1><p>왼쪽이 만나기 전, 오른쪽이 만난 뒤입니다.</p><div class="sg"></div>'; document.body.appendChild(sh); const sg = sh.querySelector('.sg'); ETYPES.forEach(k => [false, true].forEach(m => { const d = document.createElement('div'); d.className = 'sc'; const sv = el('svg', { class:'art', viewBox:ARTVB }); d.appendChild(sv); drawHand(sv, k, m); d.insertAdjacentHTML('beforeend', `<b>${esc(ETYPE[k].name)}</b>${m ? esc(ETYPE[k].done) : esc(ETYPE[k].act)}`); sg.appendChild(d); })); $('#cover').classList.add('gone'); }
   requestAnimationFrame(loop);
-  window.__riso = { snd:SND, play, gait:() => GT.id, limb:() => WKlimb.getAttribute('d') + ' | ' + WKfig.getAttribute('transform'), tick, start, plant, tune, setOverview, saveImage, meet, startCut, closeCut, encAct, startReplay: () => startReplay(), endReplay: () => endReplay(false), enc:ENC, lv:LV, curLv, goTo:(x, y) => { target = [x, y]; }, towers:TOWERS, state:() => ({ x:Math.round(me.x), y:Math.round(me.y), target, live: live && live.id, nearHouse, visited:visited.length, met:met.length, cut:cutOpen(), replay:replay ? replay.i : null, lv:curLv(), liveEnc: liveEnc && liveEnc.id, pts:pts.length / 2, trailLen:Math.round(trailLen), revealed:REV.filter(i => i.on).length, total:REV.length, overview, memo:memoOpen() }) };
+  window.__riso = { snd:SND, play, gait:() => GT.id, limb:() => 'frame ' + wfr + ' | ' + WKfig.getAttribute('transform'), bg:() => bgI, tick, start, plant, tune, setOverview, saveImage, meet, startCut, closeCut, encAct, startReplay: () => startReplay(), endReplay: () => endReplay(false), enc:ENC, lv:LV, curLv, goTo:(x, y) => { target = [x, y]; }, towers:TOWERS, state:() => ({ x:Math.round(me.x), y:Math.round(me.y), target, live: live && live.id, nearHouse, visited:visited.length, met:met.length, cut:cutOpen(), replay:replay ? replay.i : null, lv:curLv(), liveEnc: liveEnc && liveEnc.id, pts:pts.length / 2, trailLen:Math.round(trailLen), revealed:REV.filter(i => i.on).length, total:REV.length, overview, memo:memoOpen() }) };
 })();
 </script>
 </html>
