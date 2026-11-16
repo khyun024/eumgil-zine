@@ -2,7 +2,7 @@
 <html lang="ko">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>수상한 산책클럽: 에-움-길 우회로 404</title>
+<title>에움길 송전탑</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Nanum+Myeongjo:wght@400;700&display=swap">
 <style>
@@ -127,19 +127,6 @@
   .spinme{animation:spin 2.4s linear infinite;transform-box:fill-box;transform-origin:center}
   .tailw{animation:tail 1.1s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:100% 100%}
   @keyframes tail{from{transform:rotate(-10deg)}to{transform:rotate(14deg)}}
-  .glist{list-style:none;margin:10px 0 4px;padding:0;border-top:1px solid var(--ink)}
-  .glist li{display:grid;grid-template-columns:1fr auto;gap:1px 12px;padding:8px 0;border-bottom:1px dashed var(--ink);align-items:center}
-  .glist b{font-family:var(--f-serif);font-weight:400;font-size:19px}
-  .glist .au{grid-column:1;color:var(--ink-2);font-size:11.5px}
-  .glist .ru{grid-column:1;font-family:var(--f-serif);font-size:14px}
-  .glist .go{grid-column:2;grid-row:1 / span 3}
-  .gamebox.small{aspect-ratio:auto}
-  .enc.amb{pointer-events:none !important;cursor:default}
-  .evt{position:absolute;left:50%;top:46%;z-index:2;pointer-events:none;font-family:var(--f-serif);font-size:clamp(44px,9vw,124px);line-height:1;white-space:nowrap;background:var(--brick);color:var(--sheet);padding:.1em .4em .18em;border:2px solid var(--ink);box-shadow:8px 9px 0 rgba(21,21,21,.25);opacity:0;transform:translate(-50%,-50%) scale(0)}
-  .cut.open.fresh .evt{animation:evt 1.3s cubic-bezier(.2,.9,.3,1.2) both}
-  .cut.open.fresh .cstage{animation-delay:.45s}
-  @keyframes evt{0%{transform:translate(-50%,-50%) rotate(-14deg) scale(.2);opacity:0}16%{transform:translate(-50%,-50%) rotate(-5deg) scale(1.06);opacity:1}68%{transform:translate(-50%,-50%) rotate(-5deg) scale(1);opacity:1}100%{transform:translate(-50%,-50%) rotate(-3deg) scale(1.5);opacity:0}}
-  @media (prefers-reduced-motion:reduce){.cut.open.fresh .evt{animation:none}.cut.open.fresh .cstage{animation-delay:0s}}
   .shortcut{fill:none;stroke:var(--blue-2);stroke-width:3;stroke-dasharray:3 9;stroke-linecap:round;stroke-linejoin:round;opacity:0;transition:opacity 1.2s;pointer-events:none}
   .shortcut.on{opacity:.9}
   .art{display:block;width:100%;max-height:230px;border:1px solid var(--ink);background:var(--paper);margin:8px 0}
@@ -203,11 +190,8 @@
   .cover.gone{opacity:0;pointer-events:none}
   .poster{min-height:calc(100% - 36px);margin:18px;border:1px solid var(--ink);background:var(--sheet);padding:clamp(18px,3vw,40px);display:flex;flex-direction:column;justify-content:space-between;gap:24px}
   .poster .top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;font-size:11px;color:var(--ink-2)}
-  .poster h1{font-size:clamp(46px,8.6vw,124px);line-height:.96;letter-spacing:-.02em}
-  .poster h1 em{font-style:normal;color:var(--blue-2);display:block;font-size:.42em;letter-spacing:0;margin-top:.22em}
-  .poster .txt{max-width:calc(100% - min(46vh,460px) - 48px)}
-  .poster .pv{position:absolute;right:clamp(18px,3vw,40px);top:clamp(58px,8vh,92px);height:min(56vh,560px);aspect-ratio:4/5;border:1px solid var(--ink);box-shadow:8px 9px 0 rgba(21,21,21,.14);transform:rotate(1.4deg);background:#F8F1E4;overflow:hidden}
-  .poster .pv video{display:block;width:100%;height:100%;object-fit:cover}
+  .poster h1{font-size:clamp(60px,13vw,180px);line-height:.92;letter-spacing:-.02em}
+  .poster h1 em{font-style:normal;color:var(--blue-2)}
   .poster .lead{font-family:var(--f-serif);font-size:clamp(17px,2vw,24px);line-height:1.35;max-width:30em;margin:14px 0 0}
   .how{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 22px}
   .how li{border-top:1px solid var(--ink);padding-top:8px;font-size:12px}
@@ -223,8 +207,6 @@
   .poster .foot .lnk.on{font-family:var(--f-serif);font-size:20px;padding:8px 16px;border-radius:8px}
 
   @media (max-width:760px){
-    .poster .txt{max-width:none}
-    .poster .pv{position:relative;right:auto;top:auto;height:auto;width:min(72%,280px);align-self:center;transform:rotate(1deg)}
     .side{width:min(340px,90vw)}
     .keys{display:none}
     .plate p{font-size:10.5px}
@@ -234,12 +216,12 @@
   }
 </style>
 
-<svg id="map" aria-label="수상한 산책클럽: 에-움-길 우회로 404 지도"></svg>
+<svg id="map" aria-label="에움길 송전탑 지도"></svg>
 <div class="grain" aria-hidden="true"></div>
 
 <header class="plate">
-  <span class="lab">수상한 산책클럽 <span style="opacity:.85">✶ 에-움-길 우회로 404</span></span>
-  <p><b id="lvText" style="color:var(--ink);font-weight:500">레벨 1 / 4</b> · <span id="steps">0</span> 걸음 · 거점 <span id="foundCnt">0</span> / 7 · 조우 <span id="metCnt">0</span> / <span id="metTot">0</span> · 에움 ×<span id="ratio">1.0</span></p>
+  <span class="lab">수상한 산책클럽 <span style="opacity:.85">✶ 에움길 송전탑</span></span>
+  <p><b id="lvText" style="color:var(--ink);font-weight:500">레벨 1 / 4</b> · <span id="steps">0</span> 걸음 · 신호 <span id="foundCnt">0</span> / 21 · 조우 <span id="metCnt">0</span> / <span id="metTot">0</span> · 에움 ×<span id="ratio">1.0</span></p>
 </header>
 <nav class="tools" aria-label="도구">
   <button class="lnk" id="mapBtn" title="M">내 지도 보기 ⤢</button>
@@ -266,7 +248,7 @@
     <button class="lnk x" id="sideClose">닫기 ✕</button>
     <span class="lab">2026 · 파프리 스튜디오</span>
     <h2>수상한 산책클럽</h2>
-    <p>에-움-길 우회로 404. 빈 종이 위를 걸으면 걸은 자리가 길이 되고, 지나간 곳의 풍경이 찍혀 나옵니다. 거점 일곱 곳에는 참여자 스물한 명이 이태원 골목에서 만든 게임이 세 편씩 묶여 있습니다.</p>
+    <p>에-움-길 우회로 404. 빈 종이 위를 걸으면 걸은 자리가 길이 되고, 지나간 곳의 풍경이 찍혀 나옵니다. 표식 스물하나는 참여자 스물한 명이 이태원 골목에서 만든 게임입니다.</p>
     <button class="lnk on" id="moreBtn">프로그램 소개 ▾</button>
     <div class="more">
       <h3>프로그램 소개</h3>
@@ -279,7 +261,7 @@
     <div class="cohort"><div><b>1기</b>청소년 3명 · 가장 안쪽</div><div><b>3기</b>청년 6명 · 둘째 고리</div><div><b>2기</b>청년 6명 · 셋째 고리</div><div><b>4기</b>청년 6명 · 바깥 고리</div></div>
     <h3>만난 것들 <span id="jCnt"></span></h3>
     <div class="journal" id="journal"></div>
-    <h3>거점 7 · 누르면 나침반이 그곳을 가리킵니다</h3>
+    <h3>거점 21 · 누르면 나침반이 그곳을 가리킵니다</h3>
     <ul id="trail"></ul>
     <p style="margin-top:14px"><a class="lnk play" href="https://khyun024.github.io/suspicious-walk-club/" target="_blank" rel="noopener">모든 게임 플레이하기 ↗</a></p>
   </div>
@@ -296,7 +278,6 @@
 <div class="toast" id="toast"></div>
 <div class="flash" id="flash"></div>
 <div class="cut" id="cut" aria-live="polite">
-  <div class="evt" aria-hidden="true">이벤트 발생!</div>
   <div class="cbar ctop"><span class="lab o" id="cutLab"></span><b id="cutName"></b><button class="lnk" id="cutSkip">건너뛰기 ✕</button></div>
   <div class="cstage" id="cutStage"></div>
   <div class="cbar cbot"><p id="cutCap"></p><div class="cacts" id="cutActs"></div></div>
@@ -304,19 +285,19 @@
 
 <div class="cover" id="cover">
   <div class="poster">
-    <div class="pv"><video src="img/poster.mp4" poster="img/poster.jpg" autoplay muted loop playsinline aria-label="수상한 산책클럽 포스터"></video></div>
+    <div class="swirl" aria-hidden="true"><svg viewBox="-200 -200 400 400" id="swirl"></svg></div>
     <div class="top"><span class="lab">2026 서울문화예술교육지원사업 ✶ 파프리 스튜디오</span><span>SHEET 1 / 1 · SCALE 1 : 걸음 · 지도는 아직 비어 있음</span></div>
-    <div class="txt">
-      <h1>수상한<br>산책클럽<em>에-움-길 우회로 404</em></h1>
-      <p class="lead">빈 종이 한 장에서 시작합니다. 걷는 자리마다 길이 그려지고, 지나간 곳의 언덕과 숲이 찍혀 나옵니다. 거점 일곱 곳은 집을 중심으로 소용돌이처럼 놓여 있어, 빙글빙글 돌아 나가며 찾게 됩니다. 거점마다 참여자 게임이 세 편씩 들어 있습니다. 다 찾으면 누구와도 같지 않은 당신의 지도가 남습니다.</p>
+    <div>
+      <h1>에움길<br><em>송전탑</em></h1>
+      <p class="lead">빈 종이 한 장에서 시작합니다. 걷는 자리마다 길이 그려지고, 지나간 곳의 언덕과 숲이 찍혀 나옵니다. 표식 스물하나는 집을 중심으로 소용돌이처럼 놓여 있어, 빙글빙글 돌아 나가며 찾게 됩니다. 다 찾으면 누구와도 같지 않은 당신의 지도가 남습니다.</p>
     </div>
     <ol class="how">
       <li><b><i>01</i>걷는다</b>종이를 누르면 그곳까지 걷습니다. 방향키로 직접 걸어도 됩니다. 걸은 자리가 길입니다.</li>
       <li><b><i>02</i>지름길과 에움길</b>레벨마다 앱이 알려준 지름길이 파란 점선으로 그려집니다. 따라가도 되고, 벗어나도 됩니다.</li>
-      <li><b><i>03</i>만난다</b>지름길 밖에는 춤추는 할머니, 고양이 세 마리, 편의점 사장님, 반사경이 있습니다. 마주치면 화면 가득 이벤트가 열립니다.</li>
+      <li><b><i>03</i>만난다</b>지름길 밖에는 춤추는 할머니, 고양이 세 마리, 편의점 사장님이 있습니다. 나침반의 붉은 점이 인기척입니다.</li>
       <li><b><i>04</i>게임을 열고 지도를 본다</b>신호의 주파수를 맞추면 그 자리의 게임이 열립니다. 네 레벨을 지나면 내 지도가 완성됩니다.</li>
     </ol>
-    <div class="foot"><span style="color:var(--ink-2);font-size:11.5px" id="coverNote">Seven places, twenty-one games. No road yet.</span><button class="lnk on" id="bStart">빈 종이에서 걷기 ↓</button></div>
+    <div class="foot"><span style="color:var(--ink-2);font-size:11.5px" id="coverNote">Twenty-one signals. No road yet. Yours to draw.</span><button class="lnk on" id="bStart">빈 종이에서 걷기 ↓</button></div>
   </div>
 </div>
 
@@ -329,7 +310,7 @@
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
   function rng(seed) { let h = 1779033703 ^ seed.length; for (let i = 0; i < seed.length; i++) { h = Math.imul(h ^ seed.charCodeAt(i), 3432918353); h = h << 13 | h >>> 19; } return () => { h = Math.imul(h ^ h >>> 16, 2246822507); h = Math.imul(h ^ h >>> 13, 3266489909); return ((h ^= h >>> 16) >>> 0) / 4294967296; }; }
   const C = { ink:'#151515', grey:'#A9AEB8', blue:'#6E7BD6', green:'#4E9C48', green2:'#2F7A34', lime:'#C8DC3C', olive:'#8A8433', brick:'#B84A2A', paper:'#EDEBE5', sheet:'#F7F6F2' };
-  const STORE = 'eumgil-riso-v11';
+  const STORE = 'eumgil-riso-v6';
 
   // ── 데이터 ─────────────────────────────────────────────
   const WW = 3200, WH = 1800, HOUSE = [1600, 900], START = [1600, 952];
@@ -345,10 +326,7 @@
   const PLACES = ['이태원 능선', '앤틱가구 거리', '녹사평 지하보도', '경리단길 계단', '회나무로 골목 끝', '이태원 시장 뒷골목', '기지 담장 아래', '보광동 언덕', '한강진 굴다리', '우사단로 옥상', '이슬람사원 앞 계단', '해방촌 오거리', '남산 둘레길 입구', '고양이 골목', 'CCTV 관제실', '이태원역 3번 출구', '꼼데가르송길', '보광초 담벼락'];
   const FOOTS = ['여기서 무슨 일이 있었는지는 산책자가 적어 줄 것이다.', '규칙 한 줄을 받으면 이 자리에 적힌다.', '이 골목에서 채집한 규칙은 수합 중이다.', '그날의 산책 기록이 여기 붙는다.'];
   const KINDS = ['tower', 'antenna', 'tank', 'windmill', 'lamp', 'sign'];
-  // 참여자 게임 스물한 편을 거점 일곱 곳에 세 편씩 묶는다
-  const GAMES = []; ORDER.forEach(c => { const named = NAMED[c] || []; for (let i = 0; i < COHORTS[c].n; i++) { const nm = named[i]; GAMES.push(nm ? { cohort:c, place:nm.place, foot:nm.foot, g:nm.g } : { cohort:c, g:G('이름 미정', '참여자 [확인]', COHORTS[c].name, '게임 설명을 수합 중입니다.', '규칙 한 줄 [확인]', null) }); } });
-  const TOWERS = []; { let pi = 0; ORDER.forEach(c => { const gs = GAMES.filter(x => x.cohort === c), k = Math.ceil(gs.length / 3), grps = Array.from({ length:k }, () => []); gs.forEach((x, i) => grps[i % k].push(x));
-    grps.forEach(grp => { const nm = grp.find(x => x.place), n = TOWERS.length + 1; TOWERS.push({ id:'p' + n, n, cohort:c, name:nm ? nm.place : PLACES[pi++ % PLACES.length], foot:nm ? nm.foot : FOOTS[n % FOOTS.length], placeholder:!nm, games:grp.map(x => x.g), game:(nm || grp[0]).g }); }); }); }
+  const TOWERS = []; { let pi = 0, gi = 0; ORDER.forEach(c => { const named = NAMED[c] || []; for (let i = 0; i < COHORTS[c].n; i++) { const nm = named[i], n = ++gi; TOWERS.push(nm ? { id:'g' + n, n, cohort:c, name:nm.place, foot:nm.foot, game:nm.g } : { id:'g' + n, n, cohort:c, name:PLACES[pi % PLACES.length], foot:FOOTS[n % FOOTS.length], placeholder:true, game:G('이름 미정', '참여자 [확인]', COHORTS[c].name, '게임 설명을 수합 중입니다.', '규칙 한 줄 [확인]', null) }); if (!nm) pi++; } }); }
   const TOTAL = TOWERS.length;
   const TOOLS = [['사운드 저니', BASE], ['도형 카메라', BASE + 'camera/'], ['캐릭터 메이커', BASE + 'character.html'], ['산책 기록', BASE + 'walk.html'], ['관찰 빙고', BASE], ['산책 교향곡', BASE], ['옥상 파쿠르', BASE + 'parkour.html'], ['B-SCENE', BASE]];
   const INSTR = [['도시 해킹', BASE + 'games/itaewon/index.html'], ['감시 놀이', BASE + 'games/itaewon/cctv.html'], ['손동작 콜라주', BASE + 'games/itaewon/hand.html'], ['숲속 미생물 탐험기', BASE + 'games/itaewon/microbe.html'], ['초현실 카메라 놀이', BASE + 'games/surreal/index.html']];
@@ -375,17 +353,14 @@
     poop:{ name:'개똥', act:'치운다', line:'길 한가운데 개똥이 있다.', ask:'모른 척 지나갈 수도 있다.', btn:'치운다', done:'치운 자리에 꽃이 한 송이 올라왔다.', after:'치운 자리에 꽃이 올라왔다. 누군가는 이 길을 편하게 지나갈 것이다.' },
     park:{ name:'공원 운동기구', act:'타면 음악이 나온다', line:'작은 공원에 운동기구가 놓여 있다.', ask:'큰 바퀴를 빙글빙글 돌리면 뭔가 나올 것 같다.', btn:'바퀴를 돌린다', done:'바퀴를 돌리자 음악이 나왔다.', after:'돌리는 만큼 음악이 나온다. 빙글빙글.' },
   };
-  const ETYPES = ['granny', 'cats', 'store', 'mirror'];
-  const PLAN = [['cats'], ['store', 'dog'], ['granny', 'dog'], ['mirror']];
+  const ETYPES = ['granny', 'cats', 'store', 'dog', 'mirror', 'poop', 'park'];
+  const PLAN = [['cats', 'poop'], ['store', 'mirror', 'dog'], ['granny', 'poop', 'mirror'], ['park', 'dog', 'poop']];
   const ENC = [];
   LV.forEach((L, li) => { const a = TOWERS.indexOf(L.towers[0]), b = a + L.towers.length, cands = []; for (let k = a; k < b; k += .25) cands.push(k / TOTAL);
     PLAN[li].forEach((type, j) => { const st = Math.floor((j + .5) / PLAN[li].length * cands.length); let pos = null, fb = null;
       for (let k = 0; k < cands.length && !pos; k++) for (const sg of [1, -1]) { const q = spiralLen(SPL * cands[(st + k) % cands.length]), dx = q[0] - HOUSE[0], dy = q[1] - HOUSE[1], m = Math.hypot(dx, dy) || 1, c = [Math.round(q[0] + dx / m * sg * 108), Math.round(q[1] + dy / m * sg * 108)]; if (!fb) fb = c;
         if (c[0] > 90 && c[0] < WW - 90 && c[1] > 130 && c[1] < WH - 50 && Math.hypot(c[0] - HOUSE[0], c[1] - HOUSE[1]) > 200 && TOWERS.every(t => Math.hypot(t.p[0] - c[0], t.p[1] - c[1]) > 140) && ENC.every(e => Math.hypot(e.x - c[0], e.y - c[1]) > 210) && offShort(c) > 92) { pos = c; break; } }
       pos = pos || fb; ENC.push({ id:`e${li + 1}${j}`, type, lv:li + 1, x:pos[0], y:pos[1], cx:pos[0], cy:pos[1], t:0, ph:li * 1.7 + j, follow:0 }); }); });
-
-  // 도그워커는 이벤트 없이 그냥 지나간다(세지 않는다)
-  const DOGS = ENC.filter(e => e.type === 'dog'); DOGS.forEach(d => ENC.splice(ENC.indexOf(d), 1)); const ENCALL = ENC.concat(DOGS);
 
   // ── 지도 바탕 ───────────────────────────────────────────
   const map = $('#map');
@@ -409,11 +384,6 @@
   const PLAIN = ['#F7F6F2', '#fff', '#DCE3F7', '#EEF1FB', '#D6D6CC'];
   function crayon(g) { g.querySelectorAll('path,rect,circle,ellipse').forEach(n => { const f = n.getAttribute('fill'); if (!f || f === 'none' || f.indexOf('url(') === 0 || PLAIN.indexOf(f) >= 0) return; if (n.tagName === 'circle' && +n.getAttribute('r') < 4) return; n.setAttribute('fill', crayPat(f)); if (!n.getAttribute('stroke')) { n.setAttribute('stroke', C.ink); n.setAttribute('stroke-width', 1.3); n.setAttribute('stroke-linejoin', 'round'); } }); }
   const fig = el('g', { id:'walkfig' }, defs); el('circle', { cy:-9, r:4, fill:C.ink }, fig); el('path', { d:'M0 -5 V6 M0 6 L-5 15 M0 6 L5 15 M-6 0 L0 -2 L6 2', fill:'none', stroke:C.ink, 'stroke-width':2.4, 'stroke-linecap':'round' }, fig);
-
-  // 포스터에 쓰인 프로그램 아이콘. 저장하는 지도에도 담기도록 데이터 URL로 바꿔 둔다
-  const ICON = { cat1:[320, 253], cat2:[168, 320], cat3:[320, 265], dog:[216, 320], leap:[179, 320], tree1:[291, 320], tree2:[174, 320], plant:[250, 320], vine:[320, 170], bird1:[320, 302], bird2:[303, 320], snail:[292, 320], worm:[320, 98], cone:[217, 320], sign:[189, 320], house:[320, 239], skull:[230, 320], txt1:[104, 420], txt2:[420, 162], txt4:[420, 331], paw:[320, 146], birdprint:[320, 210], title:[459, 560] }, iconUrl = {};
-  function icon(name, w, a = {}, par) { const [iw, ih] = ICON[name], h = +(w * ih / iw).toFixed(1), n = el('image', Object.assign({ href:iconUrl[name] || `img/${name}.png`, width:w, height:h, x:-w / 2, y:-h, 'data-icon':name }, a), par); return n; }
-  Object.keys(ICON).forEach(k => { fetch(`img/${k}.png`).then(r => r.ok ? r.blob() : Promise.reject()).then(b => { const fr = new FileReader(); fr.onload = () => { iconUrl[k] = fr.result; document.querySelectorAll(`image[data-icon="${k}"]`).forEach(n => n.setAttribute('href', fr.result)); }; fr.readAsDataURL(b); }).catch(() => {}); });
 
   const base = el('g', {}, map);
   el('rect', { x:8, y:10, width:WW, height:WH, fill:C.ink, opacity:.1 }, base);
@@ -457,10 +427,6 @@
     ORDER.forEach(c => { const t = TOWERS.find(x => x.cohort === c), txt = `레벨 ${ORDER.indexOf(c) + 1} · ${COHORTS[c].name} · ${COHORTS[c].who} · ${COHORTS[c].when}`, w = txt.length * 8.6 + 24, x = t.p[0], y = t.p[1] - 140, g = el('g', { transform:`translate(${x} ${y}) rotate(${c % 2 ? -2 : 2})` }, map); el('rect', { x:-w / 2, y:-13, width:w, height:26, rx:6, fill:C.ink }, g); const tx = el('text', { 'text-anchor':'middle', 'dominant-baseline':'central', 'font-size':12.5, style:'fill:#F7F6F2' }, g); tx.textContent = txt; reg(g, x, y, 120); });
   }
 
-  // 포스터의 그림들을 지도 곳곳에 찍어 둔다(지나가면 드러난다)
-  { const r = rng('stamps-v11'), placed = [], ST = [['txt4', 150], ['txt2', 170], ['txt1', 44], ['vine', 150], ['house', 92], ['plant', 96], ['tree1', 84], ['worm', 124], ['paw', 130], ['birdprint', 128], ['bird1', 78], ['bird2', 62], ['snail', 66], ['leap', 70], ['dog', 52], ['skull', 56], ['sign', 50], ['cone', 46], ['tree2', 54], ['tree1', 70], ['bird1', 60], ['cone', 40], ['plant', 80], ['paw', 110], ['tree2', 60], ['snail', 54], ['vine', 120]];
-    ST.forEach(([nm, w]) => { for (let k = 0; k < 60; k++) { const x = 120 + r() * (WW - 240), y = 170 + r() * (WH - 250); if (!clear(x, y, 150) || placed.some(q => Math.hypot(q[0] - x, q[1] - y) < 240)) continue; placed.push([x, y]); const g = el('g', { transform:`translate(${x.toFixed(0)} ${y.toFixed(0)}) rotate(${((r() - .5) * 10).toFixed(1)})` }, TG); icon(nm, w, {}, g); reg(g, x, y - 20, 64); break; } }); }
-
   // ── 내가 걸은 길 · 전선 ──────────────────────────────────
   const trailA = el('g', { fill:'none', stroke:C.grey, 'stroke-width':26, 'stroke-linejoin':'round', 'stroke-linecap':'round', style:'mix-blend-mode:multiply' }, map);
   const trailB = el('g', { fill:'none', stroke:C.sheet, 'stroke-width':1.6, 'stroke-dasharray':'10 12', 'stroke-linejoin':'round' }, map);
@@ -499,8 +465,8 @@
       if (m) { const o = fx ? at(g, -34, 0, 'walkin') : at(g, -34, 0), d = at(o, 0, 0, 'dance'); d.style.animationDelay = '-.35s'; person(d, C.blue, { arms:'up', h:54 }); }
       note(g, -58, -66, C.blue, 0); note(g, 30, -78, C.green2, .7); note(g, 72, -50, C.blue, 1.3); if (m) { note(g, -76, -40, C.brick, .3); note(g, 6, -92, C.blue, 1); } },
     cats(g, m, fx) { const n = m === true ? 3 : (m || 0); el('rect', { x:-84, y:-66, width:168, height:14, fill:DIAG, stroke:C.olive, 'stroke-width':1 }, g); P(g, 'M-84 0 H84', { 'stroke-width':1.4, 'stroke-dasharray':'3 5' });
-      [['cat3', -50, 52], ['cat1', 8, 54], ['cat2', 64, 31]].forEach(([nm, x, w], i) => { let par = g; if (fx === 'in') { par = at(g, 0, 0, 'walkin'); par.style.animationDelay = (i * .22) + 's'; } icon(nm, w, {}, at(par, x)); });
-      [-50, 8, 64].forEach((x, i) => { if (i < n) { const b = at(g, x, 13, fx && fx !== 'in' && i === n - 1 ? 'dropin' : ''); el('path', { d:'M-9 -6 h18 l-4 6 h-10 z', fill:C.blue }, b); el('ellipse', { cx:0, cy:-6, rx:7, ry:2.2, fill:C.lime }, b); } });
+      [[-46, C.ink, 1.15, false], [4, C.olive, 1, false], [60, C.grey, 1.1, true]].forEach(([x, col, sc, fl], i) => { let par = g; if (fx === 'in') { par = at(g, 0, 0, 'walkin'); par.style.animationDelay = (i * .22) + 's'; } cat(par, x, col, sc, fl); });
+      [-30, 18, 44].forEach((x, i) => { if (i < n) { const b = at(g, x, 0, fx && fx !== 'in' && i === n - 1 ? 'dropin' : ''); el('path', { d:'M-9 -6 h18 l-4 6 h-10 z', fill:C.blue }, b); el('ellipse', { cx:0, cy:-6, rx:7, ry:2.2, fill:C.lime }, b); } });
       const t = el('text', { x:-4, y:-78, 'font-size':11, 'text-anchor':'middle' }, g); t.textContent = n >= 3 ? '냠냠냠' : n ? '야옹!' : '야옹'; },
     store(g, m, fx) { el('rect', { x:-78, y:-74, width:98, height:74, fill:C.sheet, stroke:C.ink, 'stroke-width':1.6 }, g); el('rect', { x:-78, y:-92, width:98, height:18, fill:C.blue, stroke:C.ink, 'stroke-width':1.6 }, g);
       const t = el('text', { x:-29, y:-79, 'font-size':11, 'text-anchor':'middle', style:'fill:#F7F6F2' }, g); t.textContent = '24 편의점';
@@ -546,14 +512,14 @@
     MARK[t.kind](g);
     const tr = tree(-36, 6, .8, C.green2, g); tr.setAttribute('class', 'tree');
     const nm = el('text', { y:22, 'text-anchor':'middle', 'font-size':11.5 }, g); nm.textContent = `${t.n} ${t.name.replace('이태원 ', '')}`;
-    const sub = el('text', { y:36, 'text-anchor':'middle', 'font-size':10, style:'fill:#5C5B57' }, g); sub.textContent = `${COHORTS[t.cohort].name} · ${t.placeholder ? '게임 ' + t.games.length + '편' : '〈' + t.game.title + '〉 외 ' + (t.games.length - 1) + '편'}`;
+    const sub = el('text', { y:36, 'text-anchor':'middle', 'font-size':10, style:'fill:#5C5B57' }, g); sub.textContent = t.placeholder ? `${COHORTS[t.cohort].name} · 이름 미정` : `${COHORTS[t.cohort].name} · 〈${t.game.title}〉`;
     const tt = el('title', {}, g); tt.textContent = t.name;
     towerEls[t.id] = g; reg(g, t.p[0], t.p[1], 40, { tower:t });
   });
 
   // ── 산책자 ──────────────────────────────────────────
   const encG = el('g', {}, map);
-  ENCALL.forEach(e => { const g = el('g', { class:'enc', 'data-id':e.id, transform:`translate(${e.x} ${e.y}) scale(.9)`, tabindex:'0', role:'button' }, encG); e.g = g; const tt = el('title', {}, g); tt.textContent = ETYPE[e.type].name; e.art = el('g', {}, g); drawHand(e.art, e.type, false); if (e.type === 'dog') g.classList.add('rev', 'amb'); else reg(g, e.x, e.y, 45, { enc:e }); });
+  ENC.forEach(e => { const g = el('g', { class:'enc', 'data-id':e.id, transform:`translate(${e.x} ${e.y}) scale(.9)`, tabindex:'0', role:'button' }, encG); e.g = g; const tt = el('title', {}, g); tt.textContent = ETYPE[e.type].name; e.art = el('g', {}, g); drawHand(e.art, e.type, false); if (e.type === 'dog') g.classList.add('rev'); else reg(g, e.x, e.y, 45, { enc:e }); });
   const WK = el('g', {}, map), WKin = el('g', {}, WK);
   el('circle', { r:13, fill:'none', stroke:C.ink, 'stroke-width':1, 'stroke-dasharray':'3 3' }, WKin); el('use', { href:'#walkfig' }, WKin);
 
@@ -562,7 +528,6 @@
   el('rect', { x:6, y:7, width:640, height:172, fill:C.ink, opacity:.14 }, cart);
   el('rect', { width:640, height:172, fill:C.sheet, stroke:C.ink, 'stroke-width':1.2 }, cart);
   { const t = el('text', { class:'serif', x:22, y:58, 'font-size':44 }, cart); t.textContent = '나의 에움길 지도'; }
-  icon('title', 104, {}, el('g', { transform:'translate(566 150)' }, cart));
   const cartL1 = el('text', { x:24, y:92, 'font-size':17 }, cart), cartL2 = el('text', { x:24, y:118, 'font-size':17 }, cart);
   { const k = el('g', { transform:'translate(24 140)' }, cart); el('path', { d:'M0 6 H60', stroke:C.grey, 'stroke-width':14, 'stroke-linecap':'round' }, k); const a = el('text', { x:72, y:11, 'font-size':15 }, k); a.textContent = '내가 걸은 길'; el('path', { d:'M230 6 H290', fill:'none', stroke:'#4F5CB8', 'stroke-width':3.5, 'stroke-dasharray':'3 9', 'stroke-linecap':'round' }, k); const b = el('text', { x:302, y:11, 'font-size':15 }, k); b.textContent = '파란 점선 = 앱이 알려준 지름길'; }
 
@@ -590,13 +555,13 @@
     const L = LV[t.lv - 1], doneLv = L.towers.every(x => planted(x.id));
     if (doneLv && lvWalk[t.lv - 1] == null) { lvWalk[t.lv - 1] = Math.round(trailLen - lvStart); lvStart = trailLen; renderHud(); }
     if (!silent) { log.push({ k:'t', id, i:pts.length / 2 - 1 }); SFX.signal(); }
-    if (!silent) { $('#memoTree').hidden = false; toast(doneLv ? `레벨 ${t.lv} 완료 · 거점 ${visited.length} / ${TOTAL}${t.lv < 4 ? ' · 다음 지름길이 그려졌다' : ''}` : `지도 조각이 찍혔다 · 거점 ${visited.length} / ${TOTAL}`); if (doneLv) { if (L.n === 4) pendingLv = L; else setTimeout(() => SFX.level(), 900); } }
+    if (!silent) { $('#memoTree').hidden = false; toast(doneLv ? `레벨 ${t.lv} 완료 · 신호 ${visited.length} / ${TOTAL}` : `지도 조각이 찍혔다 · 신호 ${visited.length} / ${TOTAL}`); if (doneLv) pendingLv = L; }
   }
   function renderHud() {
     const lv = curLv(); $('#lvText').textContent = lv > 4 ? '완주' : `레벨 ${lv} / 4 · ${COHORTS[ORDER[lv - 1]].name}`;
     $('#foundCnt').textContent = visited.length; $('#metCnt').textContent = met.length; $('#metTot').textContent = ENC.length; $('#steps').textContent = Math.round(trailLen / 8).toLocaleString();
     const sc = shortcut(); $('#ratio').textContent = sc > 0 ? (trailLen / sc).toFixed(1) : '1.0';
-    houseG.classList.toggle('lit', visited.length >= TOTAL); houseHint.textContent = visited.length >= TOTAL ? '불이 켜졌다 ✶ 안내서가 열린다' : `거점 ${visited.length} / ${TOTAL}`; refreshShortcuts();
+    houseG.classList.toggle('lit', visited.length >= TOTAL); houseHint.textContent = visited.length >= TOTAL ? '불이 켜졌다 ✶ 안내서가 열린다' : `신호 ${visited.length} / ${TOTAL}`; refreshShortcuts();
   }
   function renderList() {
     listDirty = false; const ul = $('#trail');
@@ -641,12 +606,12 @@
     nearHouse = Math.hypot(HOUSE[0] - me.x, HOUSE[1] - me.y) < 110;
     // 조우
     const lvNow = curLv(); let ne = null, ned = 1e9, hint = null, hd = 1e9;
-    for (const e of ENCALL) {
-      if (e.type === 'dog') { e.t += dt; const a = e.t * .0055 + e.ph, dir = -Math.sin(a) >= 0 ? 1 : -1; e.x = e.cx + Math.cos(a) * 190; e.y = e.cy + Math.sin(a) * 80; e.g.setAttribute('transform', `translate(${e.x.toFixed(1)} ${e.y.toFixed(1)}) scale(${dir * .9} .9)`); const d = Math.hypot(e.x - me.x, e.y - me.y); e.g.classList.toggle('on', d < 340 && !overview); if (e.cool > 0) e.cool -= dt; else if (d < 90 && !coverOn() && !overview && !cutOpen()) { e.cool = 1800; SFX.bark(); } continue; }
+    for (const e of ENC) {
+      if (e.type === 'dog') { e.t += dt; const a = e.t * .0055 + e.ph, dir = -Math.sin(a) >= 0 ? 1 : -1; e.x = e.cx + Math.cos(a) * 190; e.y = e.cy + Math.sin(a) * 80; e.g.setAttribute('transform', `translate(${e.x.toFixed(1)} ${e.y.toFixed(1)}) scale(${dir * .9} .9)`); const d = Math.hypot(e.x - me.x, e.y - me.y); e.g.classList.toggle('on', d < 320 || isMet(e.id)); if (e.cool > 0) e.cool -= dt; if (d < 78 && !isMet(e.id) && !(e.cool > 0) && !coverOn() && !overview && !cutOpen() && !memoOpen()) { e.cool = 600; startCut(e); } continue; }
       if (e.follow > 0) { e.follow -= dt; e.x += (me.x - 46 - e.x) * .04 * dt; e.y += (me.y + 8 - e.y) * .04 * dt; e.g.setAttribute('transform', `translate(${e.x.toFixed(1)} ${e.y.toFixed(1)}) scale(.9)`); continue; }
       const d = Math.hypot(e.x - me.x, e.y - me.y); if (e.seen && d < ned) { ned = d; ne = e; } if (!isMet(e.id) && e.lv <= lvNow && d < hd) { hd = d; hint = e; }
     }
-    const le = ned < 115 && ned <= nd ? ne : null; if (le) { if (live) { live = null; Object.values(towerEls).forEach(g => g.classList.remove('live')); } } liveEnc = le;
+    const le = ned < 95 && ned <= nd ? ne : null; if (le) { if (live) { live = null; Object.values(towerEls).forEach(g => g.classList.remove('live')); } } liveEnc = le;
     const hintOn = !!hint && hd < 700; $('#needle2').style.display = hintOn ? '' : 'none'; if (hintOn) $('#needle2').setAttribute('transform', `rotate(${(Math.atan2(hint.y - me.y, hint.x - me.x) * 180 / Math.PI + 90).toFixed(0)})`);
     const tgt = sig ? sig.p : HOUSE, ang = Math.atan2(tgt[1] - me.y, tgt[0] - me.x) * 180 / Math.PI + 90;
     $('#needle').setAttribute('transform', `rotate(${ang.toFixed(0)})`);
@@ -674,15 +639,16 @@
   const memo = $('#memo'), body = $('#memoBody'), foot = $('#memoFoot'); let cur = null, typeT = null;
   function memoOpen() { return memo.classList.contains('open'); }
   function openMemo(t) {
-    cur = t; SFX.page(); const locked = t.lv > curLv() && !planted(t.id), fresh = !locked && !planted(t.id);
-    body.innerHTML = `<span class="lab">레벨 ${t.lv} · 거점 ${t.n} / ${TOTAL} · ${COHORTS[t.cohort].name} · 주파수 ${t.freq}</span>
-      <h2>${esc(t.name)}</h2>
-      <div class="meta">${esc(COHORTS[t.cohort].who)} · ${esc(COHORTS[t.cohort].when)} · 이 거점에 게임 ${t.games.length}편</div>
-      <ol class="glist">${t.games.map(g => `<li><b>〈${esc(g.title)}〉</b><span class="au">산책자 · ${esc(g.author)}</span><span class="ru">“${esc(g.rule)}”</span><span class="go">${g.url ? `<a class="lnk play" href="${g.url}" target="_blank" rel="noopener">플레이 ➹</a>` : '<span class="lab b">링크 수합 중</span>'}</span></li>`).join('')}</ol>
-      <div class="gamebox small" id="gamebox"><div class="cta">${locked ? `<span class="lab">잠긴 신호</span><span>레벨 ${t.lv}의 거점입니다. 레벨 ${curLv()}의 거점을 찾으면 주파수가 잡힙니다.</span>` : `<span class="lab g">${fresh ? '신호를 기록했다' : '이미 찾은 거점'}</span><span>들어오기만 하면 기록됩니다. 세 편이 한꺼번에 지도에 찍힙니다.</span>`}</div></div>
-      <div class="memo-actions"><button class="lnk" id="memoGo">닫고 계속 걷기</button></div>`;
+    cur = t; const g = t.game; SFX.page();
+    body.innerHTML = `<span class="lab">레벨 ${t.lv} · 거점 ${t.n} · ${COHORTS[t.cohort].name} · ${esc(t.name)} · 주파수 ${t.freq}</span>
+      <h2>〈${esc(g.title)}〉</h2>
+      <div class="meta">산책자 · ${esc(g.author)} · ${esc(COHORTS[t.cohort].who)} · ${esc(COHORTS[t.cohort].when)}</div>
+      <p><b>게임 소개.</b> ${esc(g.desc)}</p>
+      <p style="font-family:var(--f-serif);font-size:15px">“${esc(g.rule)}”</p>
+      <div class="gamebox" id="gamebox">${g.url ? `<div class="cta"><button class="lnk play" id="playBtn">게임 플레이 하기 ➹</button><span>이 자리에서 바로 열립니다. 주변 지도가 찍히고 나무가 자랍니다.</span></div>` : `<div class="cta"><span class="lab b">링크 수합 중</span><span>참여자 게임 결과물을 받으면 여기서 바로 플레이할 수 있습니다.</span><button class="lnk on" id="playBtn">${planted(t.id) ? '이미 찾은 신호' : '신호 기록하기'}</button></div>`}</div>
+      <div class="memo-actions">${g.url ? `<a class="lnk" href="${g.url}" target="_blank" rel="noopener">새 창에서 열기 ↗</a>` : ''}<button class="lnk" id="memoGo">닫고 계속 걷기</button></div>`;
+    if (t.lv > curLv() && !planted(t.id)) $('#gamebox').innerHTML = `<div class="cta"><span class="lab">잠긴 신호</span><span>레벨 ${t.lv}의 신호입니다. 레벨 ${curLv()}의 신호를 모두 찾으면 주파수가 잡힙니다.</span></div>`;
     $('#memoTree').hidden = !planted(t.id); memo.classList.add('open'); typewrite(`거점 ${t.n}에서는 무슨 일이 있었을까? ${t.foot}`);
-    if (fresh) plant(t.id);
   }
   function openHouse() {
     cur = null; const all = visited.length >= TOTAL;
@@ -690,9 +656,9 @@
       <p>여기서 출발해 여기로 돌아옵니다. 강사진이 만든 도구 여덟 개와 게임 다섯 편이 있습니다.</p>
       <p><b>도구</b></p><ul style="columns:2;padding-left:18px;margin:4px 0 10px">${TOOLS.map(([n, u]) => `<li><a class="lnk" href="${u}" target="_blank" rel="noopener">${esc(n)} ↗</a></li>`).join('')}</ul>
       <p><b>이끔이가 만든 게임</b></p><ul style="columns:2;padding-left:18px;margin:4px 0 12px">${INSTR.map(([n, u]) => `<li><a class="lnk" href="${u}" target="_blank" rel="noopener">${esc(n)} ↗</a></li>`).join('')}</ul>
-      ${all ? `<p><a class="lnk play" href="../zine/" style="font-family:var(--f-serif);font-size:20px;padding:8px 14px;border-radius:8px">스물한 편 책장 넘기기 ➹</a> <a class="lnk play" href="${BASE}" target="_blank" rel="noopener" style="margin-left:8px">플레이하기 ↗</a></p>` : `<p style="color:var(--ink-2)">거점 ${visited.length} / ${TOTAL}. 일곱 곳을 모두 찾으면 창에 불이 켜지고 안내서가 열립니다.</p>`}
+      ${all ? `<p><a class="lnk play" href="../zine/" style="font-family:var(--f-serif);font-size:20px;padding:8px 14px;border-radius:8px">스물한 편 책장 넘기기 ➹</a> <a class="lnk play" href="${BASE}" target="_blank" rel="noopener" style="margin-left:8px">플레이하기 ↗</a></p>` : `<p style="color:var(--ink-2)">신호 ${visited.length} / ${TOTAL}. 스물하나를 모두 찾으면 창에 불이 켜지고 안내서가 열립니다.</p>`}
       <div class="memo-actions"><button class="lnk" id="memoGo">닫고 계속 걷기</button><a class="lnk" href="../walk/">아홉 층 지도로</a><a class="lnk" href="../zine/">진으로</a></div>`;
-    $('#memoTree').hidden = true; memo.classList.add('open'); typewrite(all ? '일곱 그루가 자랐다. 창문에 불이 켜지고, 걸어온 길이 한 장의 지도가 됐다.' : '지름길은 없다. 돌아서 가는 길이 지도를 만든다.');
+    $('#memoTree').hidden = true; memo.classList.add('open'); typewrite(all ? '스물한 그루가 자랐다. 창문에 불이 켜지고, 걸어온 길이 한 장의 지도가 됐다.' : '지름길은 없다. 돌아서 가는 길이 지도를 만든다.');
   }
   function typewrite(text) { clearInterval(typeT); let i = 0; foot.textContent = ''; typeT = setInterval(() => { i++; foot.textContent = text.slice(0, i); if (i >= text.length) clearInterval(typeT); }, reduced ? 0 : 24); }
   function closeMemo() { if (!memoOpen()) return; memo.classList.remove('open'); clearInterval(typeT); if (pendingLv) { const L = pendingLv; pendingLv = null; target = null; keys = { l:0, r:0, u:0, d:0 }; openLevel(L); } }
@@ -704,33 +670,28 @@
     park() { [523, 587, 659, 784, 880, 784, 659, 587, 523, 659, 784, 1047].forEach((f, i) => tone(f, i * .22, .3, 'sine', .08)); },
     meow() { tone(760, 0, .35, 'sine', .07, 520); }, shutter() { tone(2400, 0, .03, 'square', .06); tone(900, .05, .05, 'square', .05); }, pop() { tone(300, 0, .12, 'sine', .08, 700); }, sweep() { tone(300, 0, .12, 'sine', .08, 700); },
     talk() { [0, .09, .18].forEach((t, i) => tone(220 + i * 40, t, .07, 'square', .03)); }, store() { tone(660, 0, .25, 'sine', .06); tone(523, .28, .4, 'sine', .06); }, bark() { tone(420, 0, .09, 'sawtooth', .05, 300); tone(420, .14, .09, 'sawtooth', .05, 300); },
-    signal() { tone(520, 0, .12, 'sine', .05, 780); tone(1040, .14, .5, 'sine', .05); }, level() { [523, 659, 784, 1047].forEach((f, i) => tone(f, i * .14, .3, 'triangle', .06)); }, page() { tone(180, 0, .06, 'triangle', .03, 120); }, event() { tone(660, 0, .1, 'triangle', .06); tone(990, .12, .3, 'triangle', .06); },
+    signal() { tone(520, 0, .12, 'sine', .05, 780); tone(1040, .14, .5, 'sine', .05); }, level() { [523, 659, 784, 1047].forEach((f, i) => tone(f, i * .14, .3, 'triangle', .06)); }, page() { tone(180, 0, .06, 'triangle', .03, 120); },
   };
-  const VOL = { meow:.5, bark:.22, shutter:.55, sweep:.5, store:.34, signal:.42, level:.45, page:.4, pop:.45, dance:.5, park:.5, event:.42 }, BGM_VOL = .2, PEN_VOL = .3, SND = {};
+  const VOL = { meow:.5, bark:.42, shutter:.55, sweep:.5, store:.34, signal:.42, level:.45, page:.4, pop:.45, dance:.5, park:.5 }, BGM_VOL = .2, PEN_VOL = .2, SND = {};
   function aud(n) { if (!SND[n]) { const a = new Audio('audio/' + n + '.mp3'); a.preload = 'auto'; a.addEventListener('error', () => { a.bad = true; }); SND[n] = a; } return SND[n]; }
   function play(n) { if (!soundOn) return; if (!VOL[n]) { if (SYN[n]) SYN[n](); return; } const a = aud(n), fb = () => { if (SYN[n]) SYN[n](); };
     if (a.bad) { fb(); return; } clearInterval(a.fadeT); try { a.currentTime = 0; } catch (e) {} a.volume = VOL[n]; const pr = a.play(); if (pr && pr.catch) pr.catch(fb); }
   function fadeOut(n, ms = 500) { const a = SND[n]; if (!a || a.paused) return; clearInterval(a.fadeT); const v0 = a.volume, t0 = performance.now(); a.fadeT = setInterval(() => { const k = (performance.now() - t0) / ms; if (k >= 1) { clearInterval(a.fadeT); a.pause(); } else a.volume = v0 * (1 - k); }, 40); }
   const SFX = new Proxy({}, { get: (_, n) => () => play(n) });
-  // 배경음악은 찾은 만큼 변주가 바뀐다(레벨마다 한 곡). 발소리는 걸을 때만 조용히
-  const BGN = ['bgm', 'bgm2', 'bgm3', 'bgm4'], bgOf = i => { const a = aud(BGN[i]); a.loop = true; return a; }, pen = aud('steps'); pen.loop = true; pen.volume = 0;
-  const lvFor = () => { if (replay) { for (const L of LV) if (!L.towers.every(t => replay.found[t.id])) return L.n; return 5; } return curLv(); };
-  let audioKick = false, walking = 0, bgI = 0; bgOf(bgI).volume = 0;
-  function kick() { if (audioKick) return; audioKick = true; const a = bgOf(bgI); if (musicOn && !a.bad) { const pr = a.play(); if (pr && pr.catch) pr.catch(() => { audioKick = false; }); } }
+  // 배경음악과 연필 소리: 볼륨만 천천히 움직인다
+  const bgm = aud('bgm'), pen = aud('pencil'); bgm.loop = true; pen.loop = true; bgm.volume = 0; pen.volume = 0;
+  let audioKick = false, walking = 0;
+  function kick() { if (audioKick) return; audioKick = true; if (musicOn && !bgm.bad) { const pr = bgm.play(); if (pr && pr.catch) pr.catch(() => { audioKick = false; }); } }
   function busy(n) { const a = SND[n]; return a && !a.paused && !a.ended; }
   setInterval(() => {
     if (!audioKick) return; const on = soundOn && !document.hidden, mon = musicOn && !document.hidden;
-    let want = Math.min(3, Math.max(0, lvFor() - 1)); if (bgOf(want).bad) want = 0; if (want !== bgI) { bgI = want; const a = bgOf(bgI); if (a.paused) a.volume = 0; }
-    BGN.forEach((n, i) => { const a = SND[n]; if (!a || a.bad) return;
-      if (!mon) { if (!a.paused) a.pause(); return; }
-      if (i === bgI) { if (a.paused) { const pr = a.play(); if (pr && pr.catch) pr.catch(() => {}); }
-        const d = a.duration || 60, t = a.currentTime, env = Math.max(0, Math.min(1, t / 2.5, (d - t) / 3)), duck = busy('dance') ? 0 : busy('level') ? .25 : cutOpen() ? .45 : replay ? 1.25 : 1;
-        a.volume = Math.max(0, Math.min(1, a.volume + (BGM_VOL * env * duck - a.volume) * .1)); }
-      else if (!a.paused) { a.volume = Math.max(0, a.volume - .008); if (a.volume < .004) a.pause(); } });
+    if (!bgm.bad) { if (!mon) { if (!bgm.paused) bgm.pause(); } else { if (bgm.paused) { const pr = bgm.play(); if (pr && pr.catch) pr.catch(() => {}); }
+      const d = bgm.duration || 60, t = bgm.currentTime, env = Math.max(0, Math.min(1, t / 2.5, (d - t) / 3)), duck = busy('dance') || busy('park') ? 0 : busy('level') ? .25 : cutOpen() ? .45 : replay ? 1.25 : 1;
+      bgm.volume = Math.max(0, Math.min(1, bgm.volume + (BGM_VOL * env * duck - bgm.volume) * .18)); } }
     if (!pen.bad) { const tv = on && performance.now() - walking < 220 && !cutOpen() ? PEN_VOL : 0; pen.volume = Math.max(0, Math.min(1, pen.volume + (tv - pen.volume) * .3)); if (tv && pen.paused) { const pr = pen.play(); if (pr && pr.catch) pr.catch(() => {}); } else if (!tv && pen.volume < .01 && !pen.paused) pen.pause(); }
   }, 80);
-  function setSound(on, quiet) { soundOn = on; try { localStorage.setItem('eumgil-sound', on ? '1' : '0'); } catch (e) {} const b = $('#sndBtn'); b.textContent = on ? '효과음 ♪' : '효과음 끔'; b.setAttribute('aria-pressed', on); b.classList.toggle('off', !on); if (!on) Object.keys(SND).forEach(n => { if (BGN.indexOf(n) < 0) { clearInterval(SND[n].fadeT); SND[n].pause(); } }); else if (!quiet) { kick(); play('pop'); } }
-  function setMusic(on, quiet) { musicOn = on; try { localStorage.setItem('eumgil-music', on ? '1' : '0'); } catch (e) {} const b = $('#musBtn'); b.textContent = on ? '음악 ♪' : '음악 끔'; b.setAttribute('aria-pressed', on); b.classList.toggle('off', !on); if (!on) BGN.forEach(n => { if (SND[n]) SND[n].pause(); }); else if (!quiet) { audioKick = false; kick(); } }
+  function setSound(on, quiet) { soundOn = on; try { localStorage.setItem('eumgil-sound', on ? '1' : '0'); } catch (e) {} const b = $('#sndBtn'); b.textContent = on ? '효과음 ♪' : '효과음 끔'; b.setAttribute('aria-pressed', on); b.classList.toggle('off', !on); if (!on) Object.keys(SND).forEach(n => { if (n !== 'bgm') { clearInterval(SND[n].fadeT); SND[n].pause(); } }); else if (!quiet) { kick(); play('pop'); } }
+  function setMusic(on, quiet) { musicOn = on; try { localStorage.setItem('eumgil-music', on ? '1' : '0'); } catch (e) {} const b = $('#musBtn'); b.textContent = on ? '음악 ♪' : '음악 끔'; b.setAttribute('aria-pressed', on); b.classList.toggle('off', !on); if (!on) bgm.pause(); else if (!quiet) { audioKick = false; kick(); } }
   $('#sndBtn').addEventListener('click', () => setSound(!soundOn)); $('#musBtn').addEventListener('click', () => setMusic(!musicOn)); setSound(soundOn, true); setMusic(musicOn, true);
   ['pointerdown', 'keydown'].forEach(k => addEventListener(k, kick, { passive:true }));
   // 조우 컷씬(마주치면 바로 시작)
@@ -748,10 +709,10 @@
     else acts.innerHTML = `<button class="lnk play" id="encBtn">${esc(T.btn)}</button>`;
     if (c) typeInto($('#cutCap'), c); }
   function startCut(e) { curEnc = e; encStep = 0; target = null; keys = { l:0, r:0, u:0, d:0 }; closeMemo(); autoKey = 'e' + e.id; const T = ETYPE[e.type], m = isMet(e.id);
-    $('#cutLab').textContent = `이벤트 발생 · 레벨 ${e.lv} · 지름길 밖`; cutEl.classList.toggle('fresh', !m); $('#cutName').textContent = T.name; cutEl.classList.remove('open'); void cutEl.offsetWidth; cutEl.classList.add('open');
+    $('#cutLab').textContent = `조우 · 레벨 ${e.lv} · 지름길 밖`; $('#cutName').textContent = T.name; cutEl.classList.remove('open'); void cutEl.offsetWidth; cutEl.classList.add('open');
     stageDraw(e, m ? true : 0, m ? false : (e.type === 'dog' ? true : 'in')); clearInterval(boilT); let b = 0; if (!reduced) boilT = setInterval(() => { if (stageG) stageG.setAttribute('filter', `url(#hand${++b % 3})`); }, 190);
     cutUi(e, m ? T.after : T.line + (T.ask ? ' ' + T.ask : ''));
-    if (m) return; SFX.event(); setTimeout(() => { if (curEnc !== e || !cutOpen()) return; if (e.type === 'cats') SFX.meow(); else if (e.type === 'store') SFX.store(); }, 750); }
+    if (m) return; if (e.type === 'cats') SFX.meow(); else if (e.type === 'store') SFX.store(); else if (e.type === 'dog') { SFX.bark(); setTimeout(() => { if (curEnc === e && cutOpen()) { meet(e); cutUi(e, T.done + ' ' + T.after); } }, 2700); } }
   function closeCut() { if (!cutOpen()) return; cutEl.classList.remove('open'); fadeOut('dance'); fadeOut('park'); fadeOut('meow', 300); clearInterval(boilT); clearInterval(capT); $('#cutStage').innerHTML = ''; stageG = null; if (curEnc) autoKey = 'e' + curEnc.id; curEnc = null; }
   function wiggle(ms) { WKin.classList.add('dance'); setTimeout(() => WKin.classList.remove('dance'), ms); }
   function encAct(e) { const k = e.type; let cap = '';
@@ -769,7 +730,7 @@
   });
   // 레벨 완료 카드
   function openLevel(L) { cur = null; curEnc = null; const walk = lvWalk[L.n - 1] || 0, encs = ENC.filter(e => e.lv === L.n), em = encs.filter(e => isMet(e.id)).length, r = walk / L.len, last = L.n === 4;
-    body.innerHTML = `<span class="lab b">레벨 ${L.n} / 4 완료 · ${COHORTS[L.cohort].name} 고리</span><h2>${last ? '일곱 거점을 모두 찾았다' : r < 1.25 ? '거의 지름길로 왔다' : '돌아온 만큼 만났다'}</h2>
+    body.innerHTML = `<span class="lab b">레벨 ${L.n} / 4 완료 · ${COHORTS[L.cohort].name} 고리</span><h2>${last ? '스물한 신호를 모두 찾았다' : r < 1.25 ? '거의 지름길로 왔다' : '돌아온 만큼 만났다'}</h2>
       <table class="lvt"><tr><td>앱이 알려준 지름길</td><td>${Math.round(L.len / 8).toLocaleString()} 걸음</td></tr><tr><td>내가 걸은 길</td><td>${Math.round(walk / 8).toLocaleString()} 걸음</td></tr><tr><td>에움</td><td>×${r.toFixed(1)}</td></tr><tr><td>이 고리에서 만난 것</td><td>${em} / ${encs.length}</td></tr></table>
       <p>${em < encs.length ? `지름길 밖에 아직 ${encs.length - em}번의 만남이 남아 있다. 나침반의 붉은 점이 인기척이다. 지나간 레벨로 돌아가도 된다.` : '이 고리의 만남을 모두 겪었다.'}</p>
       <div class="memo-actions">${last ? '<button class="lnk play" id="lvMap">완성된 지도 보기 ⤢</button>' : `<button class="lnk play" id="memoGo">레벨 ${L.n + 1} 걷기 →</button>`}</div>`;
@@ -790,9 +751,9 @@
     if (!on && replay) endReplay(false);
     overview = on; document.body.classList.toggle('overview', on); closeMemo(); target = null; $('#mapBtn').textContent = on ? '가까이 보기 ⤡' : '내 지도 보기 ⤢'; $('#mapBtn').classList.toggle('on', on);
     if (!on) return; const sc = shortcut(), st = Math.round(trailLen / 8), d = new Date(), ds = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
-    cartL1.textContent = `${ds} · 거점 ${visited.length} / ${TOTAL} · 조우 ${met.length} / ${ENC.length} · ${st.toLocaleString()} 걸음`;
+    cartL1.textContent = `${ds} · 신호 ${visited.length} / ${TOTAL} · 조우 ${met.length} / ${ENC.length} · ${st.toLocaleString()} 걸음`;
     cartL2.textContent = sc > 0 ? `지름길 ${Math.round(sc / 8).toLocaleString()} 걸음 → 내 에움길 ${st.toLocaleString()} 걸음 (×${(trailLen / sc).toFixed(1)})` : '아직 찾은 신호가 없다. 걸은 길만 그려져 있다';
-    $('#doneTitle').textContent = visited.length >= TOTAL ? '지도 완성' : '지금까지의 지도'; $('#doneStat').textContent = `거점 ${visited.length} / ${TOTAL} · 조우 ${met.length} / ${ENC.length} · ${st.toLocaleString()} 걸음${sc > 0 ? ' · 에움 ×' + (trailLen / sc).toFixed(1) : ''}`; $('#zineLink').hidden = visited.length < TOTAL; save(true);
+    $('#doneTitle').textContent = visited.length >= TOTAL ? '지도 완성' : '지금까지의 지도'; $('#doneStat').textContent = `신호 ${visited.length} / ${TOTAL} · 조우 ${met.length} / ${ENC.length} · ${st.toLocaleString()} 걸음${sc > 0 ? ' · 에움 ×' + (trailLen / sc).toFixed(1) : ''}`; $('#zineLink').hidden = visited.length < TOTAL; save(true);
   }
   function saveImage() {
     const c = map.cloneNode(true); c.removeAttribute('id'); c.setAttribute('xmlns', NS); c.setAttribute('viewBox', `-20 -20 ${WW + 40} ${WH + 40}`); c.setAttribute('width', WW + 40); c.setAttribute('height', WH + 40);
@@ -820,7 +781,7 @@
   function endReplay(done) { if (!replay) return; replay = null; document.body.classList.remove('replaying'); $('#replayBtn').textContent = '처음부터 다시 보기 ▶'; $('#replayBtn').classList.remove('on');
     REV.forEach(it => it.n.classList.toggle('on', it.on)); TOWERS.forEach(t => towerEls[t.id].classList.toggle('done', planted(t.id))); ENC.forEach(drawSprite); refreshShortcuts();
     clearInk(); for (let i = 2; i < pts.length; i += 2) inkTo(pts[i], pts[i + 1], pts[i - 2], pts[i - 1]);
-    const sc = shortcut(), st = Math.round(trailLen / 8); $('#doneStat').textContent = `거점 ${visited.length} / ${TOTAL} · 조우 ${met.length} / ${ENC.length} · ${st.toLocaleString()} 걸음${sc > 0 ? ' · 에움 ×' + (trailLen / sc).toFixed(1) : ''}`; if (done) toast('여기까지가 당신이 걸은 순서다'); }
+    const sc = shortcut(), st = Math.round(trailLen / 8); $('#doneStat').textContent = `신호 ${visited.length} / ${TOTAL} · 조우 ${met.length} / ${ENC.length} · ${st.toLocaleString()} 걸음${sc > 0 ? ' · 에움 ×' + (trailLen / sc).toFixed(1) : ''}`; if (done) toast('여기까지가 당신이 걸은 순서다'); }
   $('#replayBtn').addEventListener('click', () => { if (replay) endReplay(false); else startReplay(); });
 
   // ── 입력 ─────────────────────────────────────────────
@@ -828,7 +789,7 @@
   map.addEventListener('click', e => {
     if (overview) { setOverview(false); return; }
     const tw = e.target.closest('.tower'), hs = e.target.closest('.house'), en = e.target.closest('.enc');
-    if (en) { const x = ENC.find(q => q.id === en.dataset.id); if (!x) return; if (liveEnc && liveEnc.id === x.id) startCut(x); else if (x.type === 'dog') toast('도그워커는 멈추지 않는다. 그냥 스쳐 지나간다'); else { autoKey = null; target = [x.x, x.y + 30]; } return; }
+    if (en) { const x = ENC.find(q => q.id === en.dataset.id); if (liveEnc && liveEnc.id === x.id) startCut(x); else if (x.type === 'dog') toast('도그워커는 멈추지 않는다. 가까이 가면 스쳐 지나간다'); else { autoKey = null; target = [x.x, x.y + 30]; } return; }
     if (tw) { const t = TOWERS.find(x => x.id === tw.dataset.id); if (live && live.id === t.id) openMemo(t); else { autoKey = null; target = [t.p[0], t.p[1] + 54]; } return; }
     if (hs) { if (nearHouse) openHouse(); else { autoKey = null; target = [START[0], START[1]]; } return; }
     if (memoOpen()) { closeMemo(); return; }
@@ -863,16 +824,16 @@
   let toastT; function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2800); }
   addEventListener('pagehide', () => { if (pts.length) save(true); });
 
-  if ($('#swirl')) { const sw = $('#swirl'); let d = ''; for (let a = 0; a < Math.PI * 2 * 4.2; a += .08) { const r = 14 + a * 6.6; d += (a ? ' L' : 'M') + (Math.cos(a) * r).toFixed(1) + ' ' + (Math.sin(a) * r).toFixed(1); } el('path', { d, fill:'none', stroke:C.grey, 'stroke-width':9, 'stroke-linecap':'round' }, sw); el('path', { d, fill:'none', stroke:C.sheet, 'stroke-width':1, 'stroke-dasharray':'5 7' }, sw); for (let i = 0; i < 21; i++) { const a = 1.2 + i * 1.2, r = 14 + a * 6.6; el('circle', { cx:Math.cos(a) * r, cy:Math.sin(a) * r, r:4.2, fill:i % 3 ? C.blue : C.green2 }, sw); } }
+  { const sw = $('#swirl'); let d = ''; for (let a = 0; a < Math.PI * 2 * 4.2; a += .08) { const r = 14 + a * 6.6; d += (a ? ' L' : 'M') + (Math.cos(a) * r).toFixed(1) + ' ' + (Math.sin(a) * r).toFixed(1); } el('path', { d, fill:'none', stroke:C.grey, 'stroke-width':9, 'stroke-linecap':'round' }, sw); el('path', { d, fill:'none', stroke:C.sheet, 'stroke-width':1, 'stroke-dasharray':'5 7' }, sw); for (let i = 0; i < 21; i++) { const a = 1.2 + i * 1.2, r = 14 + a * 6.6; el('circle', { cx:Math.cos(a) * r, cy:Math.sin(a) * r, r:4.2, fill:i % 3 ? C.blue : C.green2 }, sw); } }
   // ── 시작 ─────────────────────────────────────────────
   const resumed = restore();
   revealAround(HOUSE[0], HOUSE[1], 150); renderHud();
   if (resumed) { $('#bStart').textContent = `이어 걷기 (${visited.length} / ${TOTAL}) ↓`; $('#coverNote').textContent = `지난 산책이 남아 있다 · ${Math.round(trailLen / 8).toLocaleString()} 걸음`; }
-  function start() { const c = $('#cover'); if (c.classList.contains('gone')) return; c.classList.add('gone'); const pv = $('.pv video'); if (pv) pv.pause(); kick(); SFX.page(); toast(resumed ? '걷던 자리에서 이어서' : '종이를 누르면 그곳까지 걷는다. 걸은 자리가 길이 된다'); }
+  function start() { const c = $('#cover'); if (c.classList.contains('gone')) return; c.classList.add('gone'); kick(); SFX.page(); toast(resumed ? '걷던 자리에서 이어서' : '종이를 누르면 그곳까지 걷는다. 걸은 자리가 길이 된다'); }
   $('#bStart').addEventListener('click', e => { e.stopPropagation(); start(); });
-  if (/[?&]sheet/.test(location.search)) { const sh = document.createElement('div'); sh.className = 'sheet'; sh.innerHTML = '<span class="lab">수상한 산책클럽 · 조우 도감</span><h1>지름길 밖에서 만나는 네 가지</h1><p>왼쪽이 만나기 전, 오른쪽이 만난 뒤입니다.</p><div class="sg"></div>'; document.body.appendChild(sh); const sg = sh.querySelector('.sg'); ETYPES.forEach(k => [false, true].forEach(m => { const d = document.createElement('div'); d.className = 'sc'; const sv = el('svg', { class:'art', viewBox:ARTVB }); d.appendChild(sv); drawHand(sv, k, m); d.insertAdjacentHTML('beforeend', `<b>${esc(ETYPE[k].name)}</b>${m ? esc(ETYPE[k].done) : esc(ETYPE[k].act)}`); sg.appendChild(d); })); $('#cover').classList.add('gone'); }
+  if (/[?&]sheet/.test(location.search)) { const sh = document.createElement('div'); sh.className = 'sheet'; sh.innerHTML = '<span class="lab">에움길 송전탑 · 조우 도감</span><h1>지름길 밖에서 만나는 일곱 가지</h1><p>왼쪽이 만나기 전, 오른쪽이 만난 뒤입니다.</p><div class="sg"></div>'; document.body.appendChild(sh); const sg = sh.querySelector('.sg'); ETYPES.forEach(k => [false, true].forEach(m => { const d = document.createElement('div'); d.className = 'sc'; const sv = el('svg', { class:'art', viewBox:ARTVB }); d.appendChild(sv); drawHand(sv, k, m); d.insertAdjacentHTML('beforeend', `<b>${esc(ETYPE[k].name)}</b>${m ? esc(ETYPE[k].done) : esc(ETYPE[k].act)}`); sg.appendChild(d); })); $('#cover').classList.add('gone'); }
   requestAnimationFrame(loop);
-  window.__riso = { snd:SND, play, dogs:DOGS, bg:() => bgI, reveal:() => REV.forEach(it => { it.on = true; it.n.classList.add('on'); }), tick, start, plant, tune, setOverview, saveImage, meet, startCut, closeCut, encAct, startReplay: () => startReplay(), endReplay: () => endReplay(false), enc:ENC, lv:LV, curLv, goTo:(x, y) => { target = [x, y]; }, towers:TOWERS, state:() => ({ x:Math.round(me.x), y:Math.round(me.y), target, live: live && live.id, nearHouse, visited:visited.length, met:met.length, cut:cutOpen(), replay:replay ? replay.i : null, lv:curLv(), liveEnc: liveEnc && liveEnc.id, pts:pts.length / 2, trailLen:Math.round(trailLen), revealed:REV.filter(i => i.on).length, total:REV.length, overview, memo:memoOpen() }) };
+  window.__riso = { snd:SND, play, tick, start, plant, tune, setOverview, saveImage, meet, startCut, closeCut, encAct, startReplay: () => startReplay(), endReplay: () => endReplay(false), enc:ENC, lv:LV, curLv, goTo:(x, y) => { target = [x, y]; }, towers:TOWERS, state:() => ({ x:Math.round(me.x), y:Math.round(me.y), target, live: live && live.id, nearHouse, visited:visited.length, met:met.length, cut:cutOpen(), replay:replay ? replay.i : null, lv:curLv(), liveEnc: liveEnc && liveEnc.id, pts:pts.length / 2, trailLen:Math.round(trailLen), revealed:REV.filter(i => i.on).length, total:REV.length, overview, memo:memoOpen() }) };
 })();
 </script>
 </html>
