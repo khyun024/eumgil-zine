@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Nanum+Myeongjo:wght@400;700&display=swap">
 <style>
   :root{
-    --paper:#F2F0EB; --paper-2:#FAF9F6; --ink:#151515; --ink-2:#5C5B57;
+    --paper:#EDEBE5; --sheet:#F7F6F2; --ink:#151515; --ink-2:#5C5B57; --line:#CFCCC2;
     --grey:#A9AEB8; --blue:#6E7BD6; --blue-2:#4F5CB8; --green:#4E9C48; --green-2:#2F7A34; --lime:#C8DC3C; --olive:#8A8433; --brick:#B84A2A;
     --f-serif:'Times New Roman','Nanum Myeongjo','Noto Serif KR',serif; --f-mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
   }
@@ -17,87 +17,82 @@
   button{font:inherit;color:inherit;cursor:pointer;background:none;border:0;padding:0}
   a{color:inherit}
   h1,h2,h3{font-family:var(--f-serif);font-weight:400;margin:0;line-height:1.1;text-wrap:balance}
-  .lab{display:inline-block;background:var(--ink);color:var(--paper);padding:.2em .5em .25em;border-radius:6px;line-height:1.25;font-size:12px}
+  .lab{display:inline-block;background:var(--ink);color:var(--sheet);padding:.2em .5em .25em;border-radius:6px;line-height:1.25;font-size:12px}
   .lab.b{background:var(--blue-2)} .lab.g{background:var(--green-2)} .lab.o{background:var(--brick)}
   .lnk{font-family:var(--f-mono);font-size:12.5px;padding:2px 0;border-bottom:1px solid transparent;text-decoration:none;line-height:1.3;white-space:nowrap}
   .lnk:hover{border-bottom-color:var(--ink)}
-  .lnk.on{background:var(--ink);color:var(--paper);padding:2px 7px;border-radius:5px}
+  .lnk.on{background:var(--ink);color:var(--sheet);padding:3px 8px;border-radius:5px}
   .lnk.play{background:var(--blue-2);color:#fff;padding:3px 9px;border-radius:5px}
   .lnk.play:hover{background:var(--ink)}
   .lnk:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--blue-2);outline-offset:2px}
+  .card{background:var(--sheet);border:1px solid var(--ink);box-shadow:4px 4px 0 var(--grey)}
   .grain{position:fixed;inset:0;pointer-events:none;z-index:40;opacity:.16;mix-blend-mode:multiply;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.15 0 0 0 0 0.15 0 0 0 0 0.12 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 
-  /* ── 무대: 세로로 긴 지도, 산책자를 따라 내려간다 ─── */
-  #stage{position:fixed;inset:0;overflow:hidden}
-  #view{position:absolute;left:50%;top:0;width:min(100vw - 24px, 760px);transform:translateX(-50%);will-change:transform}
-  body.sidebar-open #view{left:calc(50% - 170px)}
-  #map{display:block;width:100%;height:auto;user-select:none;-webkit-user-select:none}
+  /* ── 지도 ─────────────────────────────── */
+  #map{position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;display:block;touch-action:none;cursor:crosshair;user-select:none;-webkit-user-select:none}
   #map text{font-family:var(--f-mono);fill:var(--ink)}
-  .tower{cursor:pointer}
+  #map .serif{font-family:var(--f-serif)}
+  .rev{opacity:0;transition:opacity .9s ease;pointer-events:none}
+  .rev.on{opacity:1;pointer-events:auto}
+  .ov-only{opacity:0;transition:opacity .6s;pointer-events:none}
+  body.overview .ov-only{opacity:1}
+  body.overview #map{cursor:zoom-in}
+  .tower,.house{cursor:pointer}
   .tower .ring{fill:none;stroke:var(--ink);stroke-width:1;opacity:0;transform-box:fill-box;transform-origin:center}
   .tower.live .ring{animation:ring 2.4s ease-out infinite}
   .tower.live .ring:nth-child(2){animation-delay:.8s}.tower.live .ring:nth-child(3){animation-delay:1.6s}
   @keyframes ring{0%{transform:scale(.2);opacity:.8}100%{transform:scale(1);opacity:0}}
-  .tower .nm{font-size:11px;text-anchor:middle}
-  .tower.done .tree{opacity:1;transform:none}
-  .tower .tree{opacity:0;transform:translateY(10px) scale(.6);transform-box:fill-box;transform-origin:center bottom;transition:transform .6s cubic-bezier(.3,1.4,.5,1),opacity .4s}
-  .house{cursor:pointer}
+  .tower .tree{opacity:0;transition:opacity .6s}
+  .tower.done .tree{opacity:1}
   .house .win{fill:#3a3a3a}
   .house.lit .win{fill:#F2C94C}
   .smoke{animation:smoke 3.4s ease-out infinite;transform-box:fill-box;transform-origin:center bottom;opacity:0}
   .smoke:nth-child(2){animation-delay:1.2s}.smoke:nth-child(3){animation-delay:2.3s}
   @keyframes smoke{0%{transform:translateY(0) scale(.5);opacity:.5}100%{transform:translateY(-34px) translateX(6px) scale(1.3);opacity:0}}
   .twinkle{animation:tw 3s ease-in-out infinite}
-  @keyframes tw{50%{opacity:.35}}
+  @keyframes tw{50%{opacity:.4}}
   .flow{stroke-dasharray:6 10;animation:flow 6s linear infinite}
   @keyframes flow{to{stroke-dashoffset:-32}}
-  .bob{animation:bob 2.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
-  @keyframes bob{50%{transform:translateY(-3px)}}
-  .worn{fill:none;stroke:var(--ink);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:.55;stroke-dasharray:3 6}
-  .rev{opacity:0;transition:opacity .8s ease;pointer-events:none}
-  .rev.on{opacity:1;pointer-events:auto}
-  .rev.ink{transition-delay:.25s}
-  #roadGrey{transition:stroke-dasharray .25s linear}
-  #loopHint{opacity:0;transition:opacity .8s}
-  #loopHint.on{opacity:.35}
-  .tip{transform-box:fill-box;transform-origin:center}
-  body.overview .signal,body.overview .junction{visibility:hidden}
-  #view{transition:transform .9s cubic-bezier(.5,0,.2,1)}
-  body.overview #view{transition:transform 1.4s cubic-bezier(.5,0,.2,1)}
-  .donebar{position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:9;display:none;gap:12px;align-items:center;background:var(--paper-2);border:1px solid var(--ink);padding:8px 14px;box-shadow:4px 4px 0 var(--grey);font-size:12px}
-  .donebar.on{display:flex}
-  .donebar b{font-family:var(--f-serif);font-weight:400;font-size:20px}
-  .progress{position:fixed;right:22px;top:18px;z-index:5;width:6px;height:calc(100vh - 36px);border:1px solid var(--ink);background:var(--paper-2)}
-  body.sidebar-open .progress{right:362px}
-  .progress i{position:absolute;left:0;right:0;top:0;background:var(--grey);height:0;transition:height .2s}
-  .progress b{position:absolute;left:-4px;width:12px;height:12px;border-radius:50%;background:var(--ink);transform:translateY(-50%)}
-  body.overview .progress{visibility:hidden}
-  @media (prefers-reduced-motion:reduce){.tower.live .ring,.smoke,.twinkle,.flow,.bob{animation:none}.tower .tree{transition:none}}
+  .goal{pointer-events:none;opacity:0;transition:opacity .3s}
+  .goal.on{opacity:1}
+  @media (prefers-reduced-motion:reduce){.tower.live .ring,.smoke,.twinkle,.flow{animation:none}.rev,.tower .tree{transition:none}}
 
-  /* ── 명판 · 수신 표시 ─────────────────── */
-  .plate{position:fixed;left:20px;top:18px;z-index:5;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
-  .plate p{margin:0;color:var(--ink-2);font-size:11.5px}
-  .signal{position:fixed;left:20px;top:78px;z-index:5;background:var(--paper-2);border:1px solid var(--ink);padding:8px 12px;width:230px;display:flex;flex-direction:column;gap:4px}
-  .signal .bars{display:flex;gap:3px;align-items:flex-end;height:22px}
-  .signal .bars i{width:10px;background:#D5D3CC;display:block}
+  /* ── HUD ──────────────────────────────── */
+  .plate{position:fixed;left:18px;top:16px;z-index:5;display:flex;flex-direction:column;gap:6px;align-items:flex-start;pointer-events:none}
+  .plate p{margin:0;color:var(--ink-2);font-size:11.5px;background:var(--paper);padding:0 4px}
+  .tools{position:fixed;right:18px;top:16px;z-index:5;display:flex;gap:6px 14px;flex-wrap:wrap;justify-content:flex-end;align-items:center;background:var(--paper);padding:2px 6px}
+  .signal{position:fixed;left:18px;bottom:18px;z-index:5;padding:10px 12px;width:268px;display:grid;grid-template-columns:58px 1fr;gap:4px 12px;align-items:center}
+  .signal .compass{grid-row:1 / span 2;width:58px;height:58px}
+  .signal .bars{display:flex;gap:3px;align-items:flex-end;height:18px}
+  .signal .bars i{width:9px;background:#D5D3CC;display:block}
   .signal .bars i.on{background:var(--green-2)}
-  .signal .bars i:nth-child(1){height:6px}.signal .bars i:nth-child(2){height:10px}.signal .bars i:nth-child(3){height:14px}.signal .bars i:nth-child(4){height:18px}.signal .bars i:nth-child(5){height:22px}
-  .signal .t{font-size:11px;color:var(--ink-2)}
+  .signal .bars i:nth-child(1){height:5px}.signal .bars i:nth-child(2){height:8px}.signal .bars i:nth-child(3){height:11px}.signal .bars i:nth-child(4){height:14px}.signal .bars i:nth-child(5){height:18px}
+  .signal .t{font-size:11px;color:var(--ink-2);line-height:1.4}
   .signal .t b{color:var(--ink);font-weight:500}
-  .signal .tune{margin-top:4px;display:none}
+  .signal .tune{grid-column:1 / -1;display:none;justify-self:start;margin-top:4px}
   .signal.can .tune{display:inline-block}
+  .keys{position:fixed;right:18px;bottom:18px;z-index:5;color:var(--ink-2);font-size:11px;background:var(--paper);padding:2px 6px}
+  .keys .k{border:1px solid var(--ink-2);padding:0 5px;font-size:10.5px;border-radius:3px}
+  body.overview .signal,body.overview .keys{visibility:hidden}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:20;background:var(--ink);color:var(--sheet);padding:6px 12px;border-radius:6px;opacity:0;transition:opacity .3s;pointer-events:none;font-size:12px;max-width:calc(100vw - 40px);text-align:center}
+  .toast.on{opacity:1}
+  body.overview .toast{bottom:86px}
+  .donebar{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:9;display:none;gap:8px 14px;align-items:center;flex-wrap:wrap;justify-content:center;padding:10px 16px;font-size:12px;max-width:calc(100vw - 36px)}
+  body.overview .donebar{display:flex}
+  .donebar b{font-family:var(--f-serif);font-weight:400;font-size:20px}
 
-  /* ── 우측 사이드바 ────────────────────── */
-  .side{position:fixed;right:0;top:0;bottom:0;width:340px;z-index:6;transform:translateX(100%);transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+  /* ── 목록(사이드바) ───────────────────── */
+  .side{position:fixed;right:0;top:0;bottom:0;width:340px;z-index:8;transform:translateX(100%);transition:transform .45s cubic-bezier(.2,.8,.2,1)}
   body.sidebar-open .side{transform:none}
-  .side .roll{position:absolute;left:-30px;top:14px;bottom:14px;width:30px;background:var(--paper);border:1px solid var(--ink);border-right:0;border-radius:15px 0 0 15px;display:flex;align-items:center;justify-content:center;cursor:pointer;writing-mode:vertical-rl;font-size:11px;letter-spacing:.1em}
-  .side .inner{position:absolute;inset:14px 14px 14px 0;background:var(--paper-2);border:1px solid var(--ink);overflow:auto;padding:18px 20px 24px}
+  .side .inner{position:absolute;inset:12px 12px 12px 0;background:var(--sheet);border:1px solid var(--ink);overflow:auto;padding:16px 20px 24px}
+  .side .x{position:absolute;right:14px;top:10px}
   .side h2{font-size:24px;margin:8px 0 4px}
   .side h3{font-size:12px;font-weight:600;margin:18px 0 4px;padding-bottom:3px;border-bottom:1px solid var(--ink)}
   .side ul{list-style:none;margin:0;padding:0}
-  .side li{padding:3px 0;border-bottom:1px dotted #CFCCC2;display:flex;gap:8px;align-items:baseline}
+  .side li{padding:3px 0;border-bottom:1px dotted var(--line);display:flex;gap:8px;align-items:baseline}
   .side li button{text-align:left;flex:1}
   .side li button:hover{text-decoration:underline}
+  .side li.unseen button{color:var(--ink-2)}
   .side .chk{width:11px;height:11px;border:1px solid var(--ink);flex:none;position:relative;top:1px}
   .side .chk.on{background:var(--green-2);border-color:var(--green-2)}
   .side .cohort{display:grid;grid-template-columns:1fr 1fr;gap:6px}
@@ -105,130 +100,126 @@
   .side .cohort b{display:block;font-family:var(--f-serif);font-weight:400;font-size:22px;line-height:1}
   .side p{margin:0 0 8px;font-size:12px}
   .side .more{display:none}.side.expanded .more{display:block}
-  .side .video{aspect-ratio:16/9;border:1px solid var(--ink);display:grid;place-items:center;font-size:11px;color:var(--ink-2);background:repeating-linear-gradient(0deg,transparent 0 4px,rgba(78,156,72,.35) 4px 6px);margin:6px 0}
 
   /* ── 거점 메모(게임 창) ───────────────── */
-  .memo{position:fixed;z-index:7;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,calc(100vw - 40px));max-height:calc(100vh - 60px);background:var(--paper-2);border:1px solid var(--ink);display:none;flex-direction:column;box-shadow:6px 6px 0 var(--grey)}
+  .memo{position:fixed;z-index:10;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,calc(100vw - 32px));max-height:calc(100vh - 48px);display:none;flex-direction:column}
   .memo.open{display:flex}
-  .tabs{display:flex;gap:4px;padding:10px 14px 0;flex-wrap:wrap}
-  .tab{font-size:11.5px;padding:3px 10px;border:1px solid var(--ink);border-bottom:0;background:var(--paper);position:relative;top:1px}
-  .tab.on{background:var(--paper-2);font-weight:600}
-  .memo-body{padding:12px 20px 16px;overflow:auto;border-top:1px solid var(--ink)}
-  .memo-body h2{font-size:26px;margin:6px 0 6px}
+  .memo-body{padding:16px 20px 16px;overflow:auto}
+  .memo-body h2{font-size:26px;margin:8px 0 6px}
   .memo-body .meta{color:var(--ink-2);font-size:11.5px;margin-bottom:8px}
   .memo-body p{margin:0 0 8px;max-width:52ch}
   .gamebox{position:relative;aspect-ratio:4/3;border:1px solid var(--ink);background:repeating-linear-gradient(90deg,transparent 0 5px,rgba(78,156,72,.28) 5px 7px);margin:10px 0;display:grid;place-items:center;overflow:hidden}
   .gamebox iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff}
-  .gamebox .cta{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;font-size:11.5px;color:var(--ink-2);padding:12px;background:var(--paper-2);border:1px solid var(--ink);margin:12px}
+  .gamebox .cta{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;font-size:11.5px;color:var(--ink-2);padding:12px;background:var(--sheet);border:1px solid var(--ink);margin:12px}
   .gamebox .cta .lnk.play{font-family:var(--f-serif);font-size:22px;padding:8px 16px;border-radius:8px}
   .memo-actions{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:6px}
   .memo-foot{border-top:1px dashed var(--ink);padding:8px 20px 10px;font-family:var(--f-serif);font-size:15px;min-height:38px;color:var(--ink-2)}
-  .memo .close{position:absolute;right:12px;top:8px}
-  .memo .planted{position:absolute;right:20px;top:34px;width:64px;pointer-events:none}
-
-  /* ── 조작 ─────────────────────────────── */
-  .ctl{position:fixed;left:20px;bottom:18px;z-index:5;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
-  .ctl .k{border:1px solid var(--ink-2);padding:0 5px;font-size:10.5px;border-radius:3px;color:var(--ink-2)}
-  .pad{display:none;gap:6px}
-  .pad button{width:44px;height:44px;border:1px solid var(--ink);border-radius:8px;background:var(--paper-2);font-size:18px}
-  .pad button:active{background:var(--ink);color:var(--paper)}
-  .toast{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);z-index:20;background:var(--ink);color:var(--paper);padding:6px 12px;border-radius:6px;opacity:0;transition:opacity .3s;pointer-events:none;font-size:12px}
-  .toast.on{opacity:1}
-  .junction{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);z-index:8;background:var(--blue-2);color:#fff;padding:8px 14px;border-radius:8px;display:none;gap:12px;align-items:center;font-size:12px}
-  .junction.on{display:flex}
-  .junction .lnk{color:#fff;border-bottom-color:#fff}
+  .memo .close{position:absolute;right:12px;top:8px;z-index:1}
+  .memo .planted{position:absolute;right:20px;top:34px;width:56px;pointer-events:none}
 
   /* ── 표지 ─────────────────────────────── */
-  .cover{position:fixed;inset:0;z-index:30;background:var(--paper);transition:opacity .8s;overflow:hidden}
+  .cover{position:fixed;inset:0;z-index:30;background:var(--paper);transition:opacity .8s;overflow:auto;background-image:radial-gradient(var(--line) 1px,transparent 1.2px);background-size:22px 22px}
   .cover.gone{opacity:0;pointer-events:none}
-  .cover .poster{position:absolute;inset:18px;border:1px solid var(--ink);padding:clamp(18px,3vw,40px);display:grid;grid-template-columns:1fr minmax(0,1fr);gap:24px;align-items:end;background:var(--paper)}
-  .cover .txt{display:flex;flex-direction:column;justify-content:space-between;height:100%}
-  .cover h1{font-size:clamp(56px,11vw,150px);line-height:.92;letter-spacing:-.02em;margin:auto 0 16px}
-  .cover h1 em{font-style:normal;color:var(--blue-2)}
-  .cover p{margin:0 0 12px;max-width:46ch;font-size:12.5px}
-  .cover .foot{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-  .cover .mini{height:100%;min-height:0;display:flex;align-items:center;justify-content:center}
-  .cover .mini svg{max-height:calc(100vh - 100px);width:auto;max-width:100%}
+  .poster{min-height:calc(100% - 36px);margin:18px;border:1px solid var(--ink);background:var(--sheet);padding:clamp(18px,3vw,40px);display:flex;flex-direction:column;justify-content:space-between;gap:24px}
+  .poster .top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;font-size:11px;color:var(--ink-2)}
+  .poster h1{font-size:clamp(60px,13vw,180px);line-height:.92;letter-spacing:-.02em}
+  .poster h1 em{font-style:normal;color:var(--blue-2)}
+  .poster .lead{font-family:var(--f-serif);font-size:clamp(17px,2vw,24px);line-height:1.35;max-width:30em;margin:14px 0 0}
+  .how{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 22px}
+  .how li{border-top:1px solid var(--ink);padding-top:8px;font-size:12px}
+  .how b{display:block;font-family:var(--f-serif);font-weight:400;font-size:20px;margin-bottom:2px}
+  .how i{font-style:normal;color:var(--blue-2);font-family:var(--f-serif);margin-right:6px}
+  .poster{position:relative;overflow:hidden}
+  .poster > *{position:relative}
+  .poster .swirl{position:absolute;right:-6%;top:50%;width:min(62vw,760px);aspect-ratio:1;transform:translateY(-50%);pointer-events:none;opacity:.5}
+  .poster .swirl svg{width:100%;height:100%;animation:spin 90s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){.poster .swirl svg{animation:none}}
+  .poster .foot{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+  .poster .foot .lnk.on{font-family:var(--f-serif);font-size:20px;padding:8px 16px;border-radius:8px}
+
   @media (max-width:760px){
-    body.sidebar-open #view{left:50%}
-    .side{width:min(340px,86vw)}
-    .signal{width:calc(100vw - 40px)}
-    .pad{display:flex}
-    .ctl .hintk{display:none}
-    .plate p{display:none}
-    .cover .poster{grid-template-columns:1fr}
-    .cover .mini{display:none}
-    .progress{display:none}
-    .donebar{left:12px;right:12px;transform:none;flex-wrap:wrap}
+    .side{width:min(340px,90vw)}
+    .keys{display:none}
+    .plate p{font-size:10.5px}
+    .tools{top:auto;bottom:112px;right:12px}
+    .signal{width:calc(100vw - 36px);bottom:12px;left:18px}
+    .toast{bottom:150px}
   }
 </style>
 
-<div id="stage"><div id="view"><svg id="map" viewBox="0 0 1000 1500" aria-label="에움길 송전탑 지도"></svg></div></div>
+<svg id="map" aria-label="에움길 송전탑 지도"></svg>
 <div class="grain" aria-hidden="true"></div>
 
 <header class="plate">
   <span class="lab">수상한 산책클럽 <span style="opacity:.85">✶ 에움길 송전탑</span></span>
-  <p><span id="steps">0</span> 걸음 · <span id="clock">00:00</span> · 심은 나무 <span id="stampCnt">0</span> / 21</p>
+  <p><span id="steps">0</span> 걸음 · 찾은 신호 <span id="foundCnt">0</span> / 21 · 에움 ×<span id="ratio">1.0</span></p>
 </header>
-<div class="signal" id="signal">
+<nav class="tools" aria-label="도구">
+  <button class="lnk" id="mapBtn" title="M">내 지도 보기 ⤢</button>
+  <button class="lnk" id="listBtn" title="L">거점 목록</button>
+  <button class="lnk" id="resetBtn">새 종이</button>
+</nav>
+
+<div class="signal card" id="signal">
+  <svg class="compass" viewBox="-30 -30 60 60" aria-hidden="true">
+    <circle r="27" fill="none" stroke="#151515" stroke-width="1"/>
+    <g stroke="#151515" stroke-width="1"><path d="M0 -27 V-22 M0 27 V22 M-27 0 H-22 M27 0 H22"/></g>
+    <g id="needle"><path d="M0 -20 L7 6 L0 2 L-7 6 Z" fill="#4F5CB8"/><circle r="2.4" fill="#151515"/></g>
+  </svg>
   <div class="bars"><i></i><i></i><i></i><i></i><i></i></div>
-  <div class="t" id="sigText">수신 없음 · 길을 따라 내려가세요</div>
+  <div class="t" id="sigText">신호를 찾는 중</div>
   <button class="lnk on tune" id="tuneBtn">주파수 맞추기 ↵</button>
 </div>
+<div class="keys"><span class="k">클릭</span> 그곳까지 걷기 · <span class="k">방향키</span> 직접 걷기 · <span class="k">Enter</span> 주파수 · <span class="k">M</span> 내 지도</div>
 
 <aside class="side" id="side">
-  <button class="roll" id="rollBtn" aria-label="사이드바">수상한 산책클럽 ✶ 더 보기</button>
   <div class="inner">
+    <button class="lnk x" id="sideClose">닫기 ✕</button>
     <span class="lab">2026 · 파프리 스튜디오</span>
     <h2>수상한 산책클럽</h2>
-    <p>에-움-길 우회로 404. 회색 길을 따라 내려가면 네 기수의 구역을 지나며 거점 스물하나가 띄엄띄엄 서 있습니다. 표식 가까이 가면 신호가 잡히고, 주파수를 맞추면 그 자리에서 만든 게임이 열립니다. 게임을 열 때마다 나무 한 그루가 자라고, 스물한 그루가 자라면 집에 불이 켜집니다.</p>
-    <button class="lnk on" id="moreBtn">더 자세히 보기 ▾</button>
+    <p>에-움-길 우회로 404. 빈 종이 위를 걸으면 걸은 자리가 길이 되고, 지나간 곳의 풍경이 찍혀 나옵니다. 표식 스물하나는 참여자 스물한 명이 이태원 골목에서 만든 게임입니다.</p>
+    <button class="lnk on" id="moreBtn">프로그램 소개 ▾</button>
     <div class="more">
       <h3>프로그램 소개</h3>
-      <div class="video">홍보영상 자리 (16:9)</div>
       <p><b>기획 개요.</b> 이태원·용산 골목을 소리, 이미지, 움직임으로 다시 걷고, 발견한 규칙을 보드게임과 AI 바이브코딩으로 장소특정형 웹 게임으로 옮긴 뒤, 서로의 게임을 따라 동네를 걷는 5회 과정.</p>
       <p><b>세부 교육 프로그램.</b> 1 소리산책 → 2 이미지산책 → 3 움직임산책 → 4 게임산책 → 5 에움길 안내서.</p>
-      <p><a class="lnk" href="https://www.instagram.com/" target="_blank" rel="noopener">파프리 인스타 ↗</a> <span style="color:var(--ink-2)">(주소 확인 필요)</span></p>
       <h3>산책 이끔이들</h3>
       <ul><li><span>이광현</span><span style="color:var(--ink-2)">기획 총괄 · 주강사 · 웹 도구</span></li><li><span>이우경</span><span style="color:var(--ink-2)">소리산책 · 움직임산책</span></li><li><span>백서윤</span><span style="color:var(--ink-2)">이미지산책 · 보드게임 · 홍보</span></li></ul>
     </div>
     <h3>산책자들</h3>
-    <div class="cohort"><div><b>1기</b>청소년 3명 · 6/6~7/4</div><div><b>2기</b>청년 6명 · 7/5~8/2</div><div><b>3기</b>청년 6명 · 6/6~7/4</div><div><b>4기</b>청년 6명 · 7/5~8/2</div></div>
-    <h3>거점 21 · 참여자 게임</h3>
+    <div class="cohort"><div><b>1기</b>청소년 3명 · 가장 안쪽</div><div><b>3기</b>청년 6명 · 둘째 고리</div><div><b>2기</b>청년 6명 · 셋째 고리</div><div><b>4기</b>청년 6명 · 바깥 고리</div></div>
+    <h3>거점 21 · 누르면 나침반이 그곳을 가리킵니다</h3>
     <ul id="trail"></ul>
-    <h3>우회로</h3>
-    <p>파란 고리가 우회로입니다. 갈림길에서 <span class="lab b">우회로로</span>를 누르면 집(파프리 스튜디오)을 지나 도구 여덟 개를 만나고 다시 길로 돌아옵니다.</p>
     <p style="margin-top:14px"><a class="lnk play" href="https://khyun024.github.io/suspicious-walk-club/" target="_blank" rel="noopener">모든 게임 플레이하기 ↗</a></p>
   </div>
 </aside>
 
-<section class="memo" id="memo" aria-live="polite">
+<section class="memo card" id="memo" aria-live="polite">
   <button class="lnk close" id="memoClose">닫기 ✕</button>
   <svg class="planted" id="memoTree" viewBox="0 0 60 60" hidden><path d="M30 8 C16 10 10 30 18 38 C10 44 20 54 30 50 C40 54 50 44 42 38 C50 30 44 10 30 8Z" fill="#2F7A34"/><rect x="28" y="48" width="4" height="10" fill="#151515"/></svg>
-  <div class="tabs" id="tabs"></div>
   <div class="memo-body" id="memoBody"></div>
   <div class="memo-foot" id="memoFoot"></div>
 </section>
-<div class="junction" id="junction"><span>갈림길. 파란 고리는 우회로입니다.</span><button class="lnk" id="jLoop">우회로로 →</button><button class="lnk" id="jStay">그냥 내려간다 ↓</button></div>
 
-<div class="donebar" id="done"><b>지도 완성</b><span id="doneStat"></span><button class="lnk on" id="doneView">완성된 지도 보기 ⤢</button><button class="lnk" id="doneWalk">다시 걷기 ↓</button><a class="lnk play" href="../zine/">책장 넘기기 ➹</a></div>
-<div class="progress" aria-hidden="true"><i id="progFill"></i><b id="progDot"></b></div>
-<footer class="ctl">
-  <span class="hintk"><span class="k">↓</span> <span class="k">↑</span> 걷기 · <span class="k">Enter</span> 주파수 맞추기 · <span class="k">→</span> 갈림길에서 우회로 · <span class="k">S</span> 사이드바 · 표식 클릭 = 자동 걷기</span>
-  <div class="pad"><button data-dir="-1" aria-label="위로">▲</button><button data-dir="1" aria-label="아래로">▼</button><button id="padEnter" aria-label="주파수">↵</button></div>
-  <button class="lnk" id="resetBtn">나무 지우기</button>
-</footer>
+<div class="donebar card" id="done"><b id="doneTitle">나의 에움길 지도</b><span id="doneStat"></span><button class="lnk on" id="saveBtn">지도 저장 ↓</button><button class="lnk" id="backBtn">계속 걷기</button><a class="lnk play" id="zineLink" href="../zine/" hidden>책장 넘기기 ➹</a></div>
 <div class="toast" id="toast"></div>
 
 <div class="cover" id="cover">
   <div class="poster">
-    <div class="txt">
-      <div><span class="lab">2026 서울문화예술교육지원사업 ✶ 파프리 스튜디오</span></div>
+    <div class="swirl" aria-hidden="true"><svg viewBox="-200 -200 400 400" id="swirl"></svg></div>
+    <div class="top"><span class="lab">2026 서울문화예술교육지원사업 ✶ 파프리 스튜디오</span><span>SHEET 1 / 1 · SCALE 1 : 걸음 · 지도는 아직 비어 있음</span></div>
+    <div>
       <h1>에움길<br><em>송전탑</em></h1>
-      <p>〈수상한 산책클럽〉 참여자 스물한 명의 게임이 길가의 표식 스물하나가 되었습니다. 길은 걷는 만큼 앞으로 그려지고, 1기부터 4기까지 네 구역을 지나 내려갑니다. 표식의 신호를 잡아 주파수를 맞추면 그 자리의 게임이 열립니다. 파란 고리는 우회로. 길 끝에 닿으면 완성된 지도 한 장이 됩니다.</p>
-      <div class="foot"><span style="color:var(--ink-2);font-size:11.5px">Twenty-one stops, four districts, one detour.</span><button class="lnk on" id="bStart">길로 내려가기 ↓</button></div>
+      <p class="lead">빈 종이 한 장에서 시작합니다. 걷는 자리마다 길이 그려지고, 지나간 곳의 언덕과 숲이 찍혀 나옵니다. 표식 스물하나는 집을 중심으로 소용돌이처럼 놓여 있어, 빙글빙글 돌아 나가며 찾게 됩니다. 다 찾으면 누구와도 같지 않은 당신의 지도가 남습니다.</p>
     </div>
-    <div class="mini" id="mini"></div>
+    <ol class="how">
+      <li><b><i>01</i>걷는다</b>종이를 누르면 그곳까지 걷습니다. 방향키로 직접 걸어도 됩니다. 걸은 자리가 길입니다.</li>
+      <li><b><i>02</i>빙글빙글 돈다</b>나침반이 소용돌이의 다음 표식을 가리킵니다. 점선을 따라 안에서 밖으로 돌아 나가도, 가로질러 가도 됩니다.</li>
+      <li><b><i>03</i>게임을 연다</b>주파수를 맞추면 그 자리에서 만든 게임이 열리고, 나무가 자라고, 전선이 이어집니다.</li>
+      <li><b><i>04</i>지도를 본다</b>언제든 내 지도를 펼쳐 보고 그림으로 저장합니다. 지름길과 내 에움길의 차이가 적힙니다.</li>
+    </ol>
+    <div class="foot"><span style="color:var(--ink-2);font-size:11.5px" id="coverNote">Twenty-one signals. No road yet. Yours to draw.</span><button class="lnk on" id="bStart">빈 종이에서 걷기 ↓</button></div>
   </div>
 </div>
 
@@ -240,10 +231,11 @@
   const el = (n, a = {}, p) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; };
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
   function rng(seed) { let h = 1779033703 ^ seed.length; for (let i = 0; i < seed.length; i++) { h = Math.imul(h ^ seed.charCodeAt(i), 3432918353); h = h << 13 | h >>> 19; } return () => { h = Math.imul(h ^ h >>> 16, 2246822507); h = Math.imul(h ^ h >>> 13, 3266489909); return ((h ^= h >>> 16) >>> 0) / 4294967296; }; }
-  const C = { ink:'#151515', grey:'#A9AEB8', blue:'#6E7BD6', green:'#4E9C48', green2:'#2F7A34', lime:'#C8DC3C', olive:'#8A8433', brick:'#B84A2A', paper:'#F2F0EB' };
+  const C = { ink:'#151515', grey:'#A9AEB8', blue:'#6E7BD6', green:'#4E9C48', green2:'#2F7A34', lime:'#C8DC3C', olive:'#8A8433', brick:'#B84A2A', paper:'#EDEBE5', sheet:'#F7F6F2' };
+  const STORE = 'eumgil-riso-v6';
 
   // ── 데이터 ─────────────────────────────────────────────
-  const MAPW = 1000, MAPH = 6200;
+  const WW = 3200, WH = 1800, HOUSE = [1600, 900], START = [1600, 952];
   const G = (title, author, cohort, desc, rule, url) => ({ title, author, cohort, desc, rule, url });
   const COHORTS = { 1:{ name:'1기', who:'청소년 3명', when:'6/6 ~ 7/4 토 17:00', n:3 }, 3:{ name:'3기', who:'청년 6명', when:'6/6 ~ 7/4 토 14:00', n:6 }, 2:{ name:'2기', who:'청년 6명', when:'7/5 ~ 8/2 일 16:00', n:6 }, 4:{ name:'4기', who:'청년 6명', when:'7/5 ~ 8/2 일 19:00', n:6 } };
   const ORDER = [1, 3, 2, 4];
@@ -256,26 +248,19 @@
   const PLACES = ['이태원 능선', '앤틱가구 거리', '녹사평 지하보도', '경리단길 계단', '회나무로 골목 끝', '이태원 시장 뒷골목', '기지 담장 아래', '보광동 언덕', '한강진 굴다리', '우사단로 옥상', '이슬람사원 앞 계단', '해방촌 오거리', '남산 둘레길 입구', '고양이 골목', 'CCTV 관제실', '이태원역 3번 출구', '꼼데가르송길', '보광초 담벼락'];
   const FOOTS = ['여기서 무슨 일이 있었는지는 산책자가 적어 줄 것이다.', '규칙 한 줄을 받으면 이 자리에 적힌다.', '이 골목에서 채집한 규칙은 수합 중이다.', '그날의 산책 기록이 여기 붙는다.'];
   const KINDS = ['tower', 'antenna', 'tank', 'windmill', 'lamp', 'sign'];
-  const TOWERS = []; let pi = 0, gi = 0;
-  ORDER.forEach(c => { const named = NAMED[c] || []; for (let i = 0; i < COHORTS[c].n; i++) { const nm = named[i]; const n = ++gi; TOWERS.push(nm ? { id:'g' + n, n, cohort:c, name:nm.place, foot:nm.foot, games:[nm.g] } : { id:'g' + n, n, cohort:c, name:PLACES[pi % PLACES.length], foot:FOOTS[n % FOOTS.length], placeholder:true, games:[G('이름 미정', '참여자 [확인]', COHORTS[c].name, '게임 설명을 수합 중입니다.', '규칙 한 줄 [확인]', null)] }); if (!nm) pi++; } });
-  const TOOLS = [['사운드 저니', BASE], ['도형 카메라', BASE + 'camera/'], ['캐릭터 메이커', BASE + 'character.html'], ['산책 기록', BASE + 'walk.html'], ['관찰 빙고', BASE], ['산책 교향곡', BASE], ['옥상 파쿠르', BASE + 'parkour.html'], ['B-SCENE', BASE]];
-  const INSTR = [G('도시 해킹', '파프리 스튜디오', '이끔이', '골목의 규칙을 뒤집어 다른 길을 만드는 게임.', '고양이가 다니는 길만 따라 걷는다', BASE + 'games/itaewon/index.html'), G('감시 놀이', '파프리 스튜디오', '이끔이', '관제실 카메라의 시선을 피하고 훔쳐보는 놀이.', '카메라가 보는 동안 움직이지 않는다', BASE + 'games/itaewon/cctv.html'), G('손동작 콜라주', '파프리 스튜디오', '이끔이', '손 모양으로 능선을 잘라 붙이는 카메라 놀이.', '손으로 프레임을 만들어 능선을 잘라낸다', BASE + 'games/itaewon/hand.html'), G('숲속 미생물 탐험기', '파프리 스튜디오', '이끔이', '골목 아래 보이지 않는 것들을 찾는 탐험.', '가장 작은 것부터 찾는다', BASE + 'games/itaewon/microbe.html'), G('초현실 카메라 놀이', '파프리 스튜디오', '이끔이', '도형 카메라로 골목의 수상한 장면을 포착한다.', '보이는 것을 도형으로만 찍는다', BASE + 'games/surreal/index.html')];
+  const TOWERS = []; { let pi = 0, gi = 0; ORDER.forEach(c => { const named = NAMED[c] || []; for (let i = 0; i < COHORTS[c].n; i++) { const nm = named[i], n = ++gi; TOWERS.push(nm ? { id:'g' + n, n, cohort:c, name:nm.place, foot:nm.foot, game:nm.g } : { id:'g' + n, n, cohort:c, name:PLACES[pi % PLACES.length], foot:FOOTS[n % FOOTS.length], placeholder:true, game:G('이름 미정', '참여자 [확인]', COHORTS[c].name, '게임 설명을 수합 중입니다.', '규칙 한 줄 [확인]', null) }); if (!nm) pi++; } }); }
   const TOTAL = TOWERS.length;
+  const TOOLS = [['사운드 저니', BASE], ['도형 카메라', BASE + 'camera/'], ['캐릭터 메이커', BASE + 'character.html'], ['산책 기록', BASE + 'walk.html'], ['관찰 빙고', BASE], ['산책 교향곡', BASE], ['옥상 파쿠르', BASE + 'parkour.html'], ['B-SCENE', BASE]];
+  const INSTR = [['도시 해킹', BASE + 'games/itaewon/index.html'], ['감시 놀이', BASE + 'games/itaewon/cctv.html'], ['손동작 콜라주', BASE + 'games/itaewon/hand.html'], ['숲속 미생물 탐험기', BASE + 'games/itaewon/microbe.html'], ['초현실 카메라 놀이', BASE + 'games/surreal/index.html']];
+  // 거점 위치: 집을 중심으로 빙글빙글 돌아 나가는 소용돌이 위에 놓는다
+  const SX = 1.7, TH0 = 0.9, TURNS = 2.25, R0 = 215, R1 = 715;
+  const spiralAt = f => { const th = TH0 + f * TURNS * Math.PI * 2, r = R0 + (R1 - R0) * f; return [HOUSE[0] + Math.cos(th) * r * SX, HOUSE[1] + Math.sin(th) * r]; };
+  const SP = []; { let L = 0, prev = spiralAt(0); for (let i = 0; i <= 1500; i++) { const q = spiralAt(i / 1500); L += Math.hypot(q[0] - prev[0], q[1] - prev[1]); SP.push([q[0], q[1], L]); prev = q; } }
+  const SPL = SP[SP.length - 1][2], spiralLen = l => { let i = 0; while (i < SP.length - 1 && SP[i][2] < l) i++; return SP[i]; };
+  TOWERS.forEach((t, i) => { const r = rng('pos-' + t.id), q = spiralLen(SPL * (i + .5) / TOTAL); t.p = [Math.round(q[0] + (r() - .5) * 50), Math.round(q[1] + (r() - .5) * 40)]; t.kind = KINDS[i % KINDS.length]; t.freq = (88.1 + t.n * 0.6).toFixed(1); });
 
-  // ── 길 생성(긴 지그재그) ──────────────────────────────
-  const R0 = rng('road-v5');
-  const ROAD_PTS = [[380, 60]]; { let y = 60, left = false; while (y < MAPH - 420) { y += 330 + R0() * 260; const x = left ? 250 + R0() * 120 : 620 + R0() * 130; ROAD_PTS.push([Math.round(x), Math.round(y)]); left = !left; } ROAD_PTS.push([500, MAPH - 60]); }
-  const JUNCTION_I = 1;
-  const [jx, jy] = ROAD_PTS[JUNCTION_I];
-  const LOOP_BASE = 'M470 600 C560 590 590 530 600 470 C610 400 700 380 780 400 C880 420 940 380 930 320 C920 260 850 250 800 280 C740 310 690 300 660 260 C630 220 570 210 540 240 C500 280 540 330 590 330 C640 330 660 290 640 250';
-  const flipL = jx < 500;
-  const LOOP_D = LOOP_BASE.replace(/(-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?)/g, (m, x, y) => `${flipL ? jx - (+x - 470) : jx + (+x - 470)} ${jy + (+y - 600)}`);
-  const HOUSE = [flipL ? jx - 90 : jx + 90, jy - 130];
-  const SIG_R = 230;
-
-  const map = $('#map'), view = $('#view');
-  map.setAttribute('viewBox', `0 0 ${MAPW} ${MAPH}`);
-  // ── 패턴 ──────────────────────────────────────────────
+  // ── 지도 바탕 ───────────────────────────────────────────
+  const map = $('#map');
   const defs = el('defs', {}, map);
   const pat = (id, w, h, draw) => { const p = el('pattern', { id, width:w, height:h, patternUnits:'userSpaceOnUse' }, defs); draw(p); return `url(#${id})`; };
   const VSTR = pat('vstr', 6, 6, p => el('rect', { x:0, y:0, width:2.6, height:6, fill:C.green }, p));
@@ -287,63 +272,62 @@
   const DIAG = pat('diag', 8, 8, p => el('path', { d:'M0 8 L8 0', stroke:C.olive, 'stroke-width':1.6 }, p));
   const OLIVE = pat('oliveh', 5, 5, p => { el('rect', { width:5, height:5, fill:C.olive }, p); el('rect', { width:5, height:1.6, fill:'#6E6A22' }, p); });
   const HOUSEH = pat('househ', 4, 4, p => { el('rect', { width:4, height:4, fill:'#8C8C8C' }, p); el('path', { d:'M0 2 H4', stroke:'#4b4b4b', 'stroke-width':1 }, p); });
-  const CPAT = { 1:VSTR, 3:HSTR, 2:CROSS, 4:DOTS };
+  const GRID = pat('grid', 40, 40, p => el('circle', { cx:20, cy:20, r:1.1, fill:'#CFCCC2' }, p));
+  const CPAT = { 1:CROSS, 3:CROSSL, 2:DOTS, 4:CROSS };
+  const fig = el('g', { id:'walkfig' }, defs); el('circle', { cy:-9, r:4, fill:C.ink }, fig); el('path', { d:'M0 -5 V6 M0 6 L-5 15 M0 6 L5 15 M-6 0 L0 -2 L6 2', fill:'none', stroke:C.ink, 'stroke-width':2.4, 'stroke-linecap':'round' }, fig);
 
-  const blob = (cx, cy, rx, ry, seed, n = 14) => { const r = rng(seed), pts = []; for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2, k = .78 + r() * .44; pts.push([cx + Math.cos(a) * rx * k, cy + Math.sin(a) * ry * k]); } let d = ''; for (let i = 0; i < n; i++) { const p0 = pts[(i - 1 + n) % n], p1 = pts[i], p2 = pts[(i + 1) % n], p3 = pts[(i + 2) % n]; const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6], c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6]; d += (i ? '' : `M${p1[0]} ${p1[1]} `) + `C${c1[0]} ${c1[1]} ${c2[0]} ${c2[1]} ${p2[0]} ${p2[1]} `; } return d + 'Z'; };
-  const hill = (cx, cy, w, h, seed) => { const r = rng(seed); let d = `M${cx - w / 2} ${cy}`; const n = 7; for (let i = 1; i <= n; i++) { const x = cx - w / 2 + w * i / n, y = cy - h * (0.35 + 0.65 * Math.sin(Math.PI * i / n) * (0.7 + r() * .5)); d += ` Q${cx - w / 2 + w * (i - .5) / n} ${y - h * .25 * r()} ${x} ${i === n ? cy : y}`; } return d + ' Z'; };
+  const base = el('g', {}, map);
+  el('rect', { x:8, y:10, width:WW, height:WH, fill:C.ink, opacity:.1 }, base);
+  el('rect', { x:0, y:0, width:WW, height:WH, fill:C.sheet }, base);
+  el('rect', { x:0, y:0, width:WW, height:WH, fill:GRID }, base);
+  el('rect', { x:0, y:0, width:WW, height:WH, fill:'none', stroke:C.ink, 'stroke-width':1 }, base);
+  { const tk = el('g', { 'font-size':11 }, base); for (let x = 300, i = 0; x < WW; x += 300, i++) { el('path', { d:`M${x} 0 V14`, stroke:C.ink, 'stroke-width':1 }, tk); const t = el('text', { x:x + 6, y:22, style:'fill:#5C5B57' }, tk); t.textContent = String.fromCharCode(65 + i); } for (let y = 300, i = 1; y < WH; y += 300, i++) { el('path', { d:`M0 ${y} H14`, stroke:C.ink, 'stroke-width':1 }, tk); const t = el('text', { x:18, y:y - 5, style:'fill:#5C5B57' }, tk); t.textContent = i; } }
 
-  // ── 길과 거점 배치 ────────────────────────────────────
-  const L = el('g', {}, map);
-  el('rect', { x:0, y:0, width:MAPW, height:MAPH, fill:C.paper }, L);
-  const roadD = 'M' + ROAD_PTS.map(p => p.join(' ')).join(' L');
-  const road = el('path', { d:roadD, fill:'none', stroke:'none' }, L), loop = el('path', { d:LOOP_D, fill:'none', stroke:'none' }, L);
-  const RL = road.getTotalLength(), LL = loop.getTotalLength();
-  // 거점: 길을 따라 띄엄띄엄, 좌우로 번갈아
-  { const start = 700, end = RL - 260, R1 = rng('stops'); TOWERS.forEach((t, i) => { const l = start + (end - start) * (i + .5) / TOTAL + (R1() - .5) * 90; const q = road.getPointAtLength(l), q2 = road.getPointAtLength(l + 4), a = Math.atan2(q2.y - q.y, q2.x - q.x), side = i % 2 ? 1 : -1, off = 150 + R1() * 70; t.p = [Math.round(q.x + Math.cos(a + Math.PI / 2) * side * off), Math.round(q.y + Math.sin(a + Math.PI / 2) * side * off)]; if (t.p[0] < 90) t.p[0] = 90; if (t.p[0] > MAPW - 90) t.p[0] = MAPW - 90; t.len = l; t.kind = KINDS[i % KINDS.length]; }); }
-  const farFromStops = (x, y, r = 150) => TOWERS.every(t => Math.hypot(t.p[0] - x, t.p[1] - y) > r) && Math.hypot(HOUSE[0] - x, HOUSE[1] - y) > 170;
-
-  // ── 지형(기수 구역별) ─────────────────────────────────
-  const tree = (x, y, s, col, p = L) => { const g = el('g', { transform:`translate(${x} ${y}) scale(${s})` }, p); el('path', { d:'M0 -40 C-14 -38 -20 -18 -12 -10 C-20 -4 -10 6 0 2 C10 6 20 -4 12 -10 C20 -18 14 -38 0 -40Z', fill:col }, g); el('rect', { x:-2, y:0, width:4, height:14, fill:C.ink }, g); return g; };
-  const pine = (x, y, s, col, p = L) => { const g = el('g', { transform:`translate(${x} ${y}) scale(${s})` }, p); el('path', { d:'M0 -44 L-12 -22 L-6 -22 L-16 -6 L-8 -6 L-18 10 L18 10 L8 -6 L16 -6 L6 -22 L12 -22 Z', fill:col }, g); el('rect', { x:-2, y:10, width:4, height:10, fill:C.ink }, g); return g; };
-  const bands = []; { let y0 = 700; ORDER.forEach(c => { const ts = TOWERS.filter(t => t.cohort === c); const y1 = ts[ts.length - 1].p[1] + 160; bands.push({ c, y0, y1 }); y0 = y1; }); }
-  bands.forEach(({ c, y0, y1 }, bi) => {
-    const r = rng('band' + c), P = CPAT[c], H = y1 - y0;
-    const place = (fn, tries = 14) => { for (let k = 0; k < tries; k++) { const x = 80 + r() * (MAPW - 160), y = y0 + 60 + r() * (H - 120); if (farFromStops(x, y)) { fn(x, y); return; } } };
-    // 언덕 3 · 구름 3 · 무늬밭 2 · 못 1 · 나무 무리 3 · 바위 4 · 울타리 2
-    for (let i = 0; i < 3; i++) place((x, y) => el('path', { d:hill(x, y, 220 + r() * 160, 90 + r() * 90, 'h' + c + i), fill:r() < .6 ? VSTR : HSTR2 }, L));
-    for (let i = 0; i < 3; i++) place((x, y) => el('path', { d:blob(x, y, 110 + r() * 60, 40 + r() * 30, 'b' + c + i), fill:r() < .7 ? HSTR : HSTR2 }, L));
-    for (let i = 0; i < 2; i++) place((x, y) => el('path', { d:blob(x, y, 50 + r() * 40, 80 + r() * 60, 'x' + c + i, 10), fill:P, class:'twinkle' }, L));
-    place((x, y) => { el('ellipse', { cx:x, cy:y, rx:36 + r() * 24, ry:20 + r() * 14, fill:c === 4 ? C.blue : OLIVE }, L); });
-    for (let i = 0; i < 3; i++) place((x, y) => { const n = 2 + Math.floor(r() * 4); for (let k = 0; k < n; k++) { const col = [C.green2, C.green, C.blue, C.lime][Math.floor(r() * 4)]; (r() < .5 ? tree : pine)(x + (k - n / 2) * 26 + r() * 10, y + (r() - .5) * 20, .7 + r() * .5, col); } });
-    for (let i = 0; i < 4; i++) place((x, y) => el('ellipse', { cx:x, cy:y, rx:8 + r() * 10, ry:5 + r() * 5, fill:DIAG, stroke:C.olive, 'stroke-width':.8 }, L), 6);
-    for (let i = 0; i < 2; i++) place((x, y) => { const g = el('g', { stroke:C.ink, 'stroke-width':1.6 }, L); const w = 90 + r() * 80; el('path', { d:`M${x - w / 2} ${y} H${x + w / 2}`, 'stroke-dasharray':'2 6' }, g); for (let k = 0; k <= 5; k++) el('path', { d:`M${x - w / 2 + w * k / 5} ${y - 9} V${y + 4}` }, g); }, 6);
-    // 새 떼
-    place((x, y) => { const g = el('g', { fill:'none', stroke:C.ink, 'stroke-width':1.3 }, L); for (let k = 0; k < 5; k++) { const bx = x + (r() - .5) * 90, by = y + (r() - .5) * 40; el('path', { d:`M${bx - 7} ${by} q3.5 -5 7 0 q3.5 -5 7 0` }, g); } });
-    // 구역 라벨
-    const q = road.getPointAtLength(TOWERS.find(t => t.cohort === c).len - 120); const lx = q.x < 500 ? q.x + 120 : q.x - 120; const txt = `${COHORTS[c].name} · ${COHORTS[c].who} · ${COHORTS[c].when}`; const w = txt.length * 8.4 + 22; const lg = el('g', { transform:`translate(${lx} ${q.y - 30}) rotate(${(r() - .5) * 5})` }, L); el('rect', { x:-w / 2, y:-13, width:w, height:26, rx:6, fill:C.ink }, lg); const lt = el('text', { 'text-anchor':'middle', 'dominant-baseline':'central', 'font-size':12.5, style:'fill:#F2F0EB' }, lg); lt.textContent = txt;
-    // 강 하나(짝수 구역)
-    if (bi % 2 === 1) { const ry = y0 + H * .55, d = `M0 ${ry} C200 ${ry - 60} 350 ${ry + 70} 500 ${ry} C650 ${ry - 70} 800 ${ry + 60} ${MAPW} ${ry - 20}`; el('path', { d, fill:'none', stroke:C.blue, 'stroke-width':10, opacity:.85, 'stroke-linecap':'round' }, L); el('path', { d, fill:'none', stroke:'#fff', 'stroke-width':1, 'stroke-dasharray':'6 10', opacity:.6, class:'flow' }, L); }
-  });
-  // 철길 한 토막(마지막 구역)
-  { const b = bands[bands.length - 1], ry = b.y1 - 80, g = el('g', {}, L); el('path', { d:`M40 ${ry} H${MAPW - 40}`, stroke:C.grey, 'stroke-width':6 }, g); for (let x = 50; x < MAPW - 40; x += 18) el('path', { d:`M${x} ${ry - 8} V${ry + 8}`, stroke:C.ink, 'stroke-width':1.4 }, g); }
-
-  // ── 길 그리기 ─────────────────────────────────────────
-  const roadGrey = el('path', { id:'roadGrey', d:roadD, fill:'none', stroke:C.grey, 'stroke-width':30, 'stroke-linejoin':'miter', 'stroke-linecap':'butt', opacity:.95, pathLength:1000, 'stroke-dasharray':'0 1000' }, L);
-  el('path', { id:'loopHint', d:LOOP_D, fill:'none', stroke:C.blue, 'stroke-width':4, 'stroke-dasharray':'8 12', 'stroke-linecap':'round' }, L);
-  const loopBg = el('path', { d:LOOP_D, fill:'none', stroke:C.blue, 'stroke-width':22, 'stroke-linecap':'round', 'stroke-linejoin':'round', pathLength:1000, 'stroke-dasharray':'0 1000' }, L);
-  const loopFlow = el('path', { d:LOOP_D, fill:'none', stroke:'#fff', 'stroke-width':1.2, 'stroke-linecap':'round', opacity:.5, class:'flow', pathLength:1000, 'stroke-dasharray':'0 1000' }, L);
-  const worn = el('path', { d:roadD, class:'worn', pathLength:1000, 'stroke-dasharray':'0 1000' }, L);
-  const tip = el('g', { class:'tip' }, L); el('circle', { r:9, fill:C.grey }, tip); el('circle', { r:3, fill:C.ink }, tip);
-  let jLen = 0; { let bd = 1e9; for (let l = 0; l < RL; l += 2) { const q = road.getPointAtLength(l), d = Math.hypot(q.x - jx, q.y - jy); if (d < bd) { bd = d; jLen = l; } } }
-  // 전선: 거점 꼭대기를 잇는 늘어진 선
-  const TOP = { tower:96, antenna:110, tank:70, windmill:92, lamp:74, sign:52 };
-  { const g = el('g', { fill:'none', stroke:C.ink, 'stroke-width':1, opacity:.8 }, L); for (let i = 0; i < TOTAL - 1; i++) { const a = TOWERS[i], b = TOWERS[i + 1]; const ax = a.p[0], ay = a.p[1] - TOP[a.kind], bx = b.p[0], by = b.p[1] - TOP[b.kind]; el('path', { d:`M${ax} ${ay} Q${(ax + bx) / 2} ${Math.max(ay, by) + 60} ${bx} ${by}` }, g); } }
-
-  // 드러나기: 지형 요소마다 y를 기록한다(길이 그 높이에 닿으면 찍힌다)
+  // ── 지형(지나가면 찍혀 나온다) ─────────────────────────
+  const TG = el('g', { style:'mix-blend-mode:multiply' }, map);
   const REV = [];
-  [...L.children].forEach(n => { if (n === roadGrey || n === loopBg || n === loopFlow || n === road || n === loop || n === worn || n === tip || n.id === 'loopHint' || n.tagName === 'rect') return; let y = 0; try { const b = n.getBBox(); y = b.y + b.height * .35; } catch (e) {} n.classList.add('rev'); n.dataset.y = y; REV.push(n); });
+  const reg = (n, x, y, r = 60, extra = {}) => { n.classList.add('rev'); const it = Object.assign({ n, x, y, r, on:false }, extra); REV.push(it); return it; };
+  const blob = (cx, cy, rx, ry, seed, n = 14) => { const r = rng(seed), pts = []; for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2, k = .78 + r() * .44; pts.push([cx + Math.cos(a) * rx * k, cy + Math.sin(a) * ry * k]); } let d = ''; for (let i = 0; i < n; i++) { const p0 = pts[(i - 1 + n) % n], p1 = pts[i], p2 = pts[(i + 1) % n], p3 = pts[(i + 2) % n]; const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6], c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6]; d += (i ? '' : `M${p1[0].toFixed(1)} ${p1[1].toFixed(1)} `) + `C${c1[0].toFixed(1)} ${c1[1].toFixed(1)} ${c2[0].toFixed(1)} ${c2[1].toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)} `; } return d + 'Z'; };
+  const hill = (cx, cy, w, h, seed) => { const r = rng(seed); let d = `M${cx - w / 2} ${cy}`; const n = 7; for (let i = 1; i <= n; i++) { const x = cx - w / 2 + w * i / n, y = cy - h * (0.35 + 0.65 * Math.sin(Math.PI * i / n) * (0.7 + r() * .5)); d += ` Q${cx - w / 2 + w * (i - .5) / n} ${y - h * .25 * r()} ${x} ${i === n ? cy : y}`; } return d + ' Z'; };
+  const tree = (x, y, s, col, p) => { const g = el('g', { transform:`translate(${x} ${y}) scale(${s})` }, p); el('path', { d:'M0 -40 C-14 -38 -20 -18 -12 -10 C-20 -4 -10 6 0 2 C10 6 20 -4 12 -10 C20 -18 14 -38 0 -40Z', fill:col }, g); el('rect', { x:-2, y:0, width:4, height:14, fill:C.ink }, g); return g; };
+  const pine = (x, y, s, col, p) => { const g = el('g', { transform:`translate(${x} ${y}) scale(${s})` }, p); el('path', { d:'M0 -44 L-12 -22 L-6 -22 L-16 -6 L-8 -6 L-18 10 L18 10 L8 -6 L16 -6 L6 -22 L12 -22 Z', fill:col }, g); el('rect', { x:-2, y:10, width:4, height:10, fill:C.ink }, g); return g; };
+  const clear = (x, y, r = 135) => TOWERS.every(t => Math.hypot(t.p[0] - x, t.p[1] - y) > r) && Math.hypot(HOUSE[0] - x, HOUSE[1] - y) > 170;
+  const cohortAt = (x, y) => { const r = Math.hypot((x - HOUSE[0]) / SX, y - HOUSE[1]); return r < 300 ? 1 : r < 450 ? 3 : r < 590 ? 2 : 4; };
+  { const r = rng('terrain-v6');
+    for (let pass = 0; pass < 2; pass++) for (let gx = 0; gx < 11; gx++) for (let gy = 0; gy < 6; gy++) {
+      const cx = gx * 300 + 150 + (r() - .5) * 220 + pass * 40, cy = gy * 300 + 150 + (r() - .5) * 220 - pass * 30, k = r(), seed = `t${pass}-${gx}-${gy}`;
+      if (pass === 1 && r() < .45) continue;
+      if (cx < 60 || cx > WW - 60 || cy < 70 || cy > WH - 50 || !clear(cx, cy)) continue;
+      const g = el('g', {}, TG);
+      if (k < .2) { const w = 200 + r() * 170; el('path', { d:hill(cx, cy + 40, w, 90 + r() * 90, seed), fill:r() < .6 ? VSTR : HSTR2 }, g); reg(g, cx, cy, w / 2.4); }
+      else if (k < .38) { const rx = 100 + r() * 70; el('path', { d:blob(cx, cy, rx, 38 + r() * 30, seed), fill:r() < .7 ? HSTR : HSTR2 }, g); reg(g, cx, cy, rx * .8); }
+      else if (k < .52) { el('path', { d:blob(cx, cy, 46 + r() * 36, 78 + r() * 56, seed, 10), fill:CPAT[cohortAt(cx, cy)], class:'twinkle' }, g); reg(g, cx, cy, 70); }
+      else if (k < .6) { el('ellipse', { cx, cy, rx:34 + r() * 26, ry:18 + r() * 14, fill:r() < .5 ? OLIVE : C.blue }, g); reg(g, cx, cy, 40); }
+      else if (k < .78) { const n = 2 + Math.floor(r() * 4); for (let i = 0; i < n; i++) (r() < .5 ? tree : pine)(cx + (i - n / 2) * 26 + r() * 10, cy + (r() - .5) * 22, .7 + r() * .5, [C.green2, C.green, C.blue, C.lime][Math.floor(r() * 4)], g); reg(g, cx, cy, 60); }
+      else if (k < .82) { let d = ''; for (let a = 0; a < 15; a += .3) d += (a ? ' L' : 'M') + (cx + Math.cos(a) * a * 3.2).toFixed(1) + ' ' + (cy + Math.sin(a) * a * 3.2).toFixed(1); el('path', { d, fill:'none', stroke:r() < .5 ? C.blue : C.ink, 'stroke-width':1.6, 'stroke-linecap':'round' }, g); reg(g, cx, cy, 50); }
+      else if (k < .86) { for (let i = 0; i < 4; i++) el('ellipse', { cx:cx + (r() - .5) * 90, cy:cy + (r() - .5) * 50, rx:8 + r() * 10, ry:5 + r() * 5, fill:DIAG, stroke:C.olive, 'stroke-width':.8 }, g); reg(g, cx, cy, 50); }
+      else if (k < .93) { const w = 90 + r() * 80; el('path', { d:`M${cx - w / 2} ${cy} H${cx + w / 2}`, stroke:C.ink, 'stroke-width':1.6, 'stroke-dasharray':'2 6' }, g); for (let i = 0; i <= 5; i++) el('path', { d:`M${cx - w / 2 + w * i / 5} ${cy - 9} V${cy + 4}`, stroke:C.ink, 'stroke-width':1.6 }, g); reg(g, cx, cy, w / 2); }
+      else { for (let i = 0; i < 5; i++) { const bx = cx + (r() - .5) * 90, by = cy + (r() - .5) * 40; el('path', { d:`M${bx - 7} ${by} q3.5 -5 7 0 q3.5 -5 7 0`, fill:'none', stroke:C.ink, 'stroke-width':1.3 }, g); } reg(g, cx, cy, 50); }
+    }
+    // 강(조각조각 드러난다)
+    const ry = x => 690 + 60 * Math.sin(x / 260) + 34 * Math.sin(x / 97 + 1);
+    for (let x = 0; x < WW; x += 150) { let d = ''; for (let k = 0; k <= 150; k += 25) d += (k ? ' L' : 'M') + (x + k) + ' ' + ry(x + k).toFixed(1); const g = el('g', {}, TG); el('path', { d, fill:'none', stroke:C.blue, 'stroke-width':13, 'stroke-linecap':'round', 'stroke-linejoin':'round' }, g); el('path', { d, fill:'none', stroke:'#fff', 'stroke-width':1.1, opacity:.6, class:'flow' }, g); reg(g, x + 75, ry(x + 75), 60); }
+    // 철길
+    for (let x = 0; x < WW; x += 150) { if (!clear(x + 75, 1150, 100)) continue; const g = el('g', {}, TG), y = 1150; el('path', { d:`M${x} ${y} H${x + 150}`, stroke:C.grey, 'stroke-width':6 }, g); for (let k = 6; k < 150; k += 18) el('path', { d:`M${x + k} ${y - 8} V${y + 8}`, stroke:C.ink, 'stroke-width':1.4 }, g); reg(g, x + 75, y, 60); }
+    // 소용돌이 길잡이(점선, 조각조각 드러난다)
+    for (let i = 0; i < SP.length - 1; i += 30) { let d = ''; for (let k = i; k <= Math.min(SP.length - 1, i + 30); k += 3) d += (k > i ? ' L' : 'M') + SP[k][0].toFixed(1) + ' ' + SP[k][1].toFixed(1); const m = SP[Math.min(SP.length - 1, i + 15)], g = el('path', { d, fill:'none', stroke:C.ink, 'stroke-width':1.2, 'stroke-dasharray':'1.5 9', 'stroke-linecap':'round', opacity:.55 }, map); reg(g, m[0], m[1], 70); }
+    // 기수 라벨(각 기수의 첫 표식 위)
+    ORDER.forEach(c => { const t = TOWERS.find(x => x.cohort === c), txt = `${COHORTS[c].name} · ${COHORTS[c].who} · ${COHORTS[c].when}`, w = txt.length * 8.6 + 24, x = t.p[0], y = t.p[1] - 140, g = el('g', { transform:`translate(${x} ${y}) rotate(${c % 2 ? -2 : 2})` }, map); el('rect', { x:-w / 2, y:-13, width:w, height:26, rx:6, fill:C.ink }, g); const tx = el('text', { 'text-anchor':'middle', 'dominant-baseline':'central', 'font-size':12.5, style:'fill:#F7F6F2' }, g); tx.textContent = txt; reg(g, x, y, 120); });
+  }
+
+  // ── 내가 걸은 길 · 전선 ──────────────────────────────────
+  const trailA = el('g', { fill:'none', stroke:C.grey, 'stroke-width':26, 'stroke-linejoin':'round', 'stroke-linecap':'round', style:'mix-blend-mode:multiply' }, map);
+  const trailB = el('g', { fill:'none', stroke:C.sheet, 'stroke-width':1.6, 'stroke-dasharray':'10 12', 'stroke-linejoin':'round' }, map);
+  const wires = el('g', { fill:'none', stroke:C.ink, 'stroke-width':1.1, opacity:.85 }, map);
+  const goal = el('g', { class:'goal' }, map); el('circle', { r:9, fill:'none', stroke:C.blue, 'stroke-width':2 }, goal); el('path', { d:'M-14 0 H-6 M6 0 H14 M0 -14 V-6 M0 6 V14', stroke:C.blue, 'stroke-width':2 }, goal);
+
   // ── 집(파프리 스튜디오) ─────────────────────────────
-  const houseG = el('g', { class:'house rev ink', 'data-y':HOUSE[1] + 140, transform:`translate(${HOUSE[0]} ${HOUSE[1]})`, tabindex:'0', role:'button' }, map); REV.push(houseG);
+  const houseG = el('g', { class:'house', transform:`translate(${HOUSE[0]} ${HOUSE[1]})`, tabindex:'0', role:'button' }, map);
   el('rect', { x:-42, y:-30, width:44, height:40, fill:HOUSEH, stroke:C.ink, 'stroke-width':1.2 }, houseG);
   el('path', { d:'M-46 -30 L-20 -56 L6 -30 Z', fill:'#8C8C8C', stroke:C.ink, 'stroke-width':1.2 }, houseG);
   el('rect', { x:4, y:-22, width:34, height:32, fill:C.brick }, houseG);
@@ -351,171 +335,216 @@
   el('rect', { x:-30, y:-18, width:10, height:10, class:'win' }, houseG); el('rect', { x:14, y:-12, width:8, height:10, class:'win' }, houseG);
   el('rect', { x:-8, y:-54, width:6, height:14, fill:C.ink }, houseG);
   for (let i = 0; i < 3; i++) el('circle', { cx:-5 + i * 2, cy:-58, r:5, fill:'#9a9a9a', class:'smoke' }, houseG);
-  const ht = el('text', { y:26, 'text-anchor':'middle', 'font-size':11 }, houseG); ht.textContent = '파프리 스튜디오';
-  const hh = el('text', { y:40, 'text-anchor':'middle', 'font-size':10, style:'fill:#5C5B57', id:'houseHint' }, houseG); hh.textContent = `나무 ${TOTAL}그루를 심으면 불이 켜진다`;
-  const htt = el('title', {}, houseG); htt.textContent = '파프리 스튜디오 · 우회로 위의 집';
+  { const t = el('text', { y:27, 'text-anchor':'middle', 'font-size':11.5 }, houseG); t.textContent = '파프리 스튜디오'; }
+  const houseHint = el('text', { y:41, 'text-anchor':'middle', 'font-size':10, style:'fill:#5C5B57' }, houseG);
+  { const t = el('title', {}, houseG); t.textContent = '파프리 스튜디오 · 모든 산책이 시작되는 집'; }
 
-  // ── 거점 표식(송전탑 · 안테나 · 물탱크 · 풍차 · 가로등 · 표지판) ──
+  // ── 거점 표식 6종 ───────────────────────────────────
+  const TOP = { tower:96, antenna:110, tank:70, windmill:92, lamp:80, sign:52 };
   const MARK = {
     tower: g => { const tw = el('g', { fill:'none', stroke:C.ink, 'stroke-width':2.2, 'stroke-linejoin':'round' }, g); el('path', { d:'M-16 0 L-6 -78 L6 -78 L16 0 Z', 'stroke-width':2 }, tw); el('path', { d:'M-16 0 L16 0 M-14 -18 L14 -18 M-12 -36 L12 -36 M-10 -54 L10 -54 M-24 -62 H24 M-20 -50 H20', 'stroke-width':1.6 }, tw); el('path', { d:'M-14 -18 L12 -36 M14 -18 L-12 -36 M-12 -36 L10 -54 M12 -36 L-10 -54 M-16 0 L14 -18 M16 0 L-14 -18', 'stroke-width':1.2 }, tw); el('path', { d:'M-24 -62 L-20 -50 M24 -62 L20 -50 M0 -78 V-92', 'stroke-width':1.6 }, tw); el('circle', { cy:-95, r:3, fill:C.ink }, g); },
-    antenna: g => { const a = el('g', { fill:'none', stroke:C.ink, 'stroke-width':2 }, g); el('path', { d:'M0 0 V-100 M-10 0 H10 M-14 -30 H14 M-10 -50 H10 M-6 -70 H6', }, a); el('path', { d:'M-14 -30 L0 -50 L14 -30 M-10 -50 L0 -70 L10 -50' , 'stroke-width':1.2 }, a); el('circle', { cy:-104, r:4, fill:C.brick, stroke:'none', class:'twinkle' }, g); el('path', { d:'M-12 -108 q12 -10 24 0 M-18 -114 q18 -14 36 0', fill:'none', stroke:C.ink, 'stroke-width':1.2, opacity:.6 }, g); },
+    antenna: g => { const a = el('g', { fill:'none', stroke:C.ink, 'stroke-width':2 }, g); el('path', { d:'M0 0 V-100 M-10 0 H10 M-14 -30 H14 M-10 -50 H10 M-6 -70 H6' }, a); el('path', { d:'M-14 -30 L0 -50 L14 -30 M-10 -50 L0 -70 L10 -50', 'stroke-width':1.2 }, a); el('circle', { cy:-104, r:4, fill:C.brick, class:'twinkle' }, g); el('path', { d:'M-12 -108 q12 -10 24 0 M-18 -114 q18 -14 36 0', fill:'none', stroke:C.ink, 'stroke-width':1.2, opacity:.6 }, g); },
     tank: g => { el('path', { d:'M-14 0 L-10 -40 M14 0 L10 -40 M-4 0 L-2 -40 M4 0 L2 -40 M-12 -14 H12 M-11 -28 H11', fill:'none', stroke:C.ink, 'stroke-width':1.8 }, g); el('ellipse', { cy:-40, rx:22, ry:6, fill:C.grey, stroke:C.ink, 'stroke-width':1.5 }, g); el('rect', { x:-22, y:-66, width:44, height:26, fill:HSTR2, stroke:C.ink, 'stroke-width':1.5 }, g); el('ellipse', { cy:-66, rx:22, ry:6, fill:C.lime, stroke:C.ink, 'stroke-width':1.5 }, g); },
-    windmill: g => { el('path', { d:'M-10 0 L-4 -60 L4 -60 L10 0 Z M-8 -14 H8 M-6 -30 H6', fill:'none', stroke:C.ink, 'stroke-width':1.8 }, g); const b = el('g', { transform:'translate(0 -66)', class:'spin' }, g); for (let k = 0; k < 4; k++) el('path', { d:'M0 0 L-5 -26 L5 -26 Z', fill:C.paper, stroke:C.ink, 'stroke-width':1.5, transform:`rotate(${k * 90})` }, b); el('circle', { cy:-66, r:3, fill:C.ink }, g); const am = el('animateTransform', { attributeName:'transform', type:'rotate', from:'0 0 -66', to:'360 0 -66', dur:'9s', repeatCount:'indefinite', additive:'sum' }, b); },
+    windmill: g => { el('path', { d:'M-10 0 L-4 -60 L4 -60 L10 0 Z M-8 -14 H8 M-6 -30 H6', fill:'none', stroke:C.ink, 'stroke-width':1.8 }, g); const b = el('g', {}, g); for (let k = 0; k < 4; k++) el('path', { d:'M0 -66 L-5 -92 L5 -92 Z', fill:C.sheet, stroke:C.ink, 'stroke-width':1.5, transform:`rotate(${k * 90} 0 -66)` }, b); if (!reduced) el('animateTransform', { attributeName:'transform', type:'rotate', from:'0 0 -66', to:'360 0 -66', dur:'9s', repeatCount:'indefinite' }, b); el('circle', { cy:-66, r:3, fill:C.ink }, g); },
     lamp: g => { el('path', { d:'M0 0 V-64 Q0 -74 10 -74 H18', fill:'none', stroke:C.ink, 'stroke-width':2.4 }, g); el('path', { d:'M12 -80 H26 L22 -70 H16 Z', fill:C.ink }, g); el('circle', { cx:19, cy:-66, r:5, fill:'#F2C94C', class:'twinkle' }, g); el('path', { d:'M-6 0 H6', stroke:C.ink, 'stroke-width':2.4 }, g); },
     sign: g => { el('path', { d:'M0 0 V-52', stroke:C.ink, 'stroke-width':2.4 }, g); el('path', { d:'M-4 -50 H30 L38 -42 L30 -34 H-4 Z', fill:C.blue, stroke:C.ink, 'stroke-width':1.2 }, g); el('path', { d:'M4 -30 H-26 L-34 -22 L-26 -14 H4 Z', fill:C.lime, stroke:C.ink, 'stroke-width':1.2 }, g); },
   };
-  const towerEls = {}, treeEls = {};
+  const towerEls = {};
   TOWERS.forEach(t => {
-    const g = el('g', { class:'tower rev ink', 'data-id':t.id, 'data-y':t.p[1] + 40, transform:`translate(${t.p[0]} ${t.p[1]})`, tabindex:'0', role:'button' }, map); REV.push(g);
-    for (let i = 0; i < 3; i++) el('circle', { r:SIG_R * .5, class:'ring' }, g);
+    const g = el('g', { class:'tower', 'data-id':t.id, transform:`translate(${t.p[0]} ${t.p[1]})`, tabindex:'0', role:'button' }, map);
+    for (let i = 0; i < 3; i++) el('circle', { r:110, class:'ring' }, g);
     MARK[t.kind](g);
-    const tr = tree(-36, 6, .8, C.green2, g); tr.setAttribute('class', 'tree'); treeEls[t.id] = tr;
-    const nm = el('text', { class:'nm', y:22 }, g); nm.textContent = `${t.n} ${t.name.replace('이태원 ', '')}`;
-    const sub = el('text', { class:'nm', y:35, style:'fill:#5C5B57', 'font-size':'10' }, g); sub.textContent = t.placeholder ? `${COHORTS[t.cohort].name} · 이름 미정` : `${COHORTS[t.cohort].name} · 〈${t.games[0].title}〉`;
+    const tr = tree(-36, 6, .8, C.green2, g); tr.setAttribute('class', 'tree');
+    const nm = el('text', { y:22, 'text-anchor':'middle', 'font-size':11.5 }, g); nm.textContent = `${t.n} ${t.name.replace('이태원 ', '')}`;
+    const sub = el('text', { y:36, 'text-anchor':'middle', 'font-size':10, style:'fill:#5C5B57' }, g); sub.textContent = t.placeholder ? `${COHORTS[t.cohort].name} · 이름 미정` : `${COHORTS[t.cohort].name} · 〈${t.game.title}〉`;
     const tt = el('title', {}, g); tt.textContent = t.name;
-    towerEls[t.id] = g;
+    towerEls[t.id] = g; reg(g, t.p[0], t.p[1], 40, { tower:t });
   });
 
   // ── 산책자 ──────────────────────────────────────────
   const WK = el('g', {}, map);
-  el('circle', { r:13, fill:'none', stroke:C.ink, 'stroke-width':1, 'stroke-dasharray':'3 3' }, WK);
-  el('use', { href:'#walkfig' }, WK);
-  const fig = el('g', { id:'walkfig' }, defs); el('circle', { cy:-9, r:4, fill:C.ink }, fig); el('path', { d:'M0 -5 V6 M0 6 L-5 15 M0 6 L5 15 M-6 0 L0 -2 L6 2', fill:'none', stroke:C.ink, 'stroke-width':2.4, 'stroke-linecap':'round' }, fig);
-  const prints = el('g', {}, map);
+  el('circle', { r:13, fill:'none', stroke:C.ink, 'stroke-width':1, 'stroke-dasharray':'3 3' }, WK); el('use', { href:'#walkfig' }, WK);
+
+  // ── 완성 지도 표제(내 지도 보기에서만) ─────────────────
+  const cart = el('g', { class:'ov-only', transform:'translate(64 56)' }, map);
+  el('rect', { x:6, y:7, width:640, height:172, fill:C.ink, opacity:.14 }, cart);
+  el('rect', { width:640, height:172, fill:C.sheet, stroke:C.ink, 'stroke-width':1.2 }, cart);
+  { const t = el('text', { class:'serif', x:22, y:58, 'font-size':44 }, cart); t.textContent = '나의 에움길 지도'; }
+  const cartL1 = el('text', { x:24, y:92, 'font-size':17 }, cart), cartL2 = el('text', { x:24, y:118, 'font-size':17 }, cart);
+  { const k = el('g', { transform:'translate(24 140)' }, cart); el('path', { d:'M0 6 H60', stroke:C.grey, 'stroke-width':14, 'stroke-linecap':'round' }, k); const a = el('text', { x:72, y:11, 'font-size':15 }, k); a.textContent = '내가 걸은 길'; el('path', { d:'M250 0 Q280 16 310 0', fill:'none', stroke:C.ink, 'stroke-width':1.4 }, k); const b = el('text', { x:322, y:11, 'font-size':15 }, k); b.textContent = '전선 = 가장 짧은 연결'; }
 
   // ── 상태 ─────────────────────────────────────────────
-  let onLoop = false, p = 0, target = null, moving = 0, steps = 0, lastPrint = 0, camY = 0, lastT = 0, live = null, nearHouse = false, reach = 0, loopReach = 0, done = false, overview = false, ovY = 70, ovSc = .5;
-  const AHEAD = 150;
-  const keys = { d:false, u:false };
-  let stamps = new Set(); try { stamps = new Set(JSON.parse(localStorage.getItem('eumgil-riso-trees') || '[]')); } catch (e) {}
-  const t0 = Date.now();
-  const pos = () => onLoop ? loop.getPointAtLength(Math.max(0, Math.min(LL, p))) : road.getPointAtLength(Math.max(0, Math.min(RL, p)));
-  function frame(now = performance.now()) {
-    const dt = Math.min(3, lastT ? (now - lastT) / 16.7 : 1); lastT = now; const sp = 3.4 * dt;
-    let mv = 0;
-    if (target != null) { const d = target - p; if (Math.abs(d) < sp) { p = target; target = null; } else { p += Math.sign(d) * sp; mv = Math.sign(d); } }
-    else if (keys.d) { p += sp; mv = 1; } else if (keys.u) { p -= sp; mv = -1; }
-    if (onLoop) { if (p >= LL) { onLoop = false; p = jLen + 4; toast('우회로를 돌아 길로 내려왔다'); } if (p < 0) { onLoop = false; p = jLen; } }
-    else { p = Math.max(0, Math.min(RL, p)); if (!onLoop && mv && Math.abs(p - jLen) < 2) showJunction(true); }
-    if (mv) { steps += Math.abs(sp) / 8; if (!onLoop) { const ml = +worn.dataset.max || 0; if (p > ml) { worn.dataset.max = p; worn.setAttribute('stroke-dasharray', `${p / RL * 1000} 1000`); } } closeMemo(); if (Math.abs(p - jLen) > 30 || onLoop) showJunction(false); }
-    // 길이 앞으로 자란다
-    if (!onLoop) reach = Math.max(reach, Math.min(RL, p + AHEAD)); else loopReach = Math.max(loopReach, Math.min(LL, p + AHEAD));
-    roadGrey.setAttribute('stroke-dasharray', `${reach / RL * 1000} 1000`);
-    loopBg.setAttribute('stroke-dasharray', `${loopReach / LL * 1000} 1000`); loopFlow.setAttribute('stroke-dasharray', `${loopReach / LL * 1000} 1000`);
-    if (reach >= jLen && loopReach < LL) $('#loopHint').classList.add('on'); else $('#loopHint').classList.remove('on');
-    const tp = road.getPointAtLength(reach); tip.setAttribute('transform', `translate(${tp.x} ${tp.y})`); tip.style.opacity = reach >= RL ? 0 : 1;
-    const lineY = Math.max(tp.y, onLoop ? loop.getPointAtLength(loopReach).y + 120 : 0);
-    REV.forEach(n => { if (!n.classList.contains('on') && (+n.dataset.y <= lineY + 20 || (loopReach > 0 && n === houseG && loopReach > LL * .1))) n.classList.add('on'); });
-    $('#progFill').style.height = (reach / RL * 100) + '%'; $('#progDot').style.top = (Math.min(RL, p) / RL * 100) + '%';
-    if (!done && reach >= RL - 1 && p >= RL - 2) { done = true; $('#doneStat').textContent = `${Math.round(steps)} 걸음 · 나무 ${stamps.size} / ${TOTAL}`; $('#done').classList.add('on'); toast('길 끝에 닿았다. 완성된 지도를 볼 수 있다'); setTimeout(() => setOverview(true), 1600); }
-    const q = pos(); WK.setAttribute('transform', `translate(${q.x} ${q.y})`);
-    // 발자국
-    if (mv && Math.abs(p - lastPrint) > 20) { lastPrint = p; el('circle', { cx:q.x + (Math.round(p / 20) % 2 ? 5 : -5), cy:q.y, r:2, fill:C.ink, opacity:.5 }, prints); if (prints.childNodes.length > 400) prints.removeChild(prints.firstChild); }
-    // 신호
-    let best = null, bd = 1e9; TOWERS.forEach(t => { const d = Math.hypot(q.x - t.p[0], q.y - t.p[1]); if (d < bd) { bd = d; best = t; } });
-    const strength = bd < SIG_R ? Math.max(1, Math.min(5, Math.round((1 - bd / SIG_R) * 4 + 1.6))) : 0;
-    document.querySelectorAll('.signal .bars i').forEach((b, i) => b.classList.toggle('on', i < strength));
-    const nl = bd < SIG_R ? best : null;
-    if (nl !== live) { live = nl; Object.values(towerEls).forEach(g => g.classList.toggle('live', live && g.dataset.id === live.id)); }
-    $('#sigText').innerHTML = live ? `<b>${esc(live.name)}</b> · 수신 ${strength}/5 · 게임 ${live.games.length}편` : (onLoop ? '우회로 위 · 집과 도구가 있다' : '수신 없음 · 길을 따라 내려가세요');
-    $('#signal').classList.toggle('can', !!live && strength >= 2);
-    const nh = Math.hypot(q.x - HOUSE[0], q.y - HOUSE[1]) < 80; if (nh !== nearHouse) { nearHouse = nh; if (nh) toast(stamps.size >= TOTAL ? '집에 불이 켜졌다. 클릭하면 안내서가 열린다' : '파프리 스튜디오. 클릭하면 도구와 이끔이 게임이 열린다'); }
-    // 카메라: 산책자를 화면 40% 높이에 둔다 (완성 보기에서는 전체를 맞춘다)
-    if (!overview) { const vh = view.offsetHeight || 1, scale = vh / MAPH, ty = -(q.y * scale - innerHeight * .42); const maxTy = Math.min(0, innerHeight - vh);
-      camY += (Math.max(maxTy, Math.min(0, ty)) - camY) * (reduced ? 1 : .1); view.style.transform = `translateX(-50%) translateY(${camY}px)`; }
-    $('#steps').textContent = Math.round(steps);
-    const s = Math.floor((Date.now() - t0) / 1000); $('#clock').textContent = `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
-    requestAnimationFrame(frame);
+  const me = { x:START[0], y:START[1] };
+  let target = null, keys = { l:0, r:0, u:0, d:0 }, pts = [START[0], START[1]], trailLen = 0, visited = [], beacon = null, live = null, nearHouse = false, autoKey = 'house', overview = false, lastT = 0, dirty = false, saveT = 0, chunk = null, listDirty = true;
+  const cam = { x:me.x, y:me.y, w:1000 };
+  const planted = id => visited.includes(id);
+  function newChunk(x, y) { chunk = { d:`M${x} ${y}`, n:0, a:el('path', {}, trailA), b:el('path', {}, trailB) }; }
+  function trailTo(x, y) { if (!chunk || chunk.n >= 160) newChunk(pts[pts.length - 2], pts[pts.length - 1]); const px = pts[pts.length - 2], py = pts[pts.length - 1]; trailLen += Math.hypot(x - px, y - py); pts.push(Math.round(x), Math.round(y)); chunk.d += ` L${Math.round(x)} ${Math.round(y)}`; chunk.n++; chunk.a.setAttribute('d', chunk.d); chunk.b.setAttribute('d', chunk.d); dirty = true; }
+  function revealAround(x, y, R) { for (const it of REV) { if (it.on) continue; if (Math.hypot(it.x - x, it.y - y) < R + it.r) { it.on = true; it.n.classList.add('on'); if (it.tower) { it.tower.seen = true; listDirty = true; } } } }
+  const nodes = () => [[HOUSE[0], HOUSE[1] - 56], ...visited.map(id => { const t = TOWERS.find(x => x.id === id); return [t.p[0], t.p[1] - TOP[t.kind]]; })];
+  const shortcut = () => { const n = nodes(); let s = 0; for (let i = 1; i < n.length; i++) s += Math.hypot(n[i][0] - n[i - 1][0], n[i][1] - n[i - 1][1]); return s; };
+  function drawWires() { wires.innerHTML = ''; const n = nodes(); for (let i = 1; i < n.length; i++) { const [ax, ay] = n[i - 1], [bx, by] = n[i]; el('path', { d:`M${ax} ${ay} Q${(ax + bx) / 2} ${Math.max(ay, by) + 70} ${bx} ${by}` }, wires); } }
+  function plant(id, silent) {
+    if (planted(id)) return; const t = TOWERS.find(x => x.id === id); visited.push(id); towerEls[id].classList.add('done'); t.seen = true;
+    revealAround(t.p[0], t.p[1], 330); drawWires(); renderHud(); listDirty = true; dirty = true;
+    if (!silent) { $('#memoTree').hidden = false; toast(`지도 조각이 찍혔다 · 신호 ${visited.length} / ${TOTAL}`); if (visited.length === TOTAL) setTimeout(() => { closeMemo(); setOverview(true); toast('스물한 신호를 모두 찾았다. 당신의 지도가 완성됐다'); }, 1400); }
+  }
+  function renderHud() {
+    $('#foundCnt').textContent = visited.length; $('#steps').textContent = Math.round(trailLen / 8).toLocaleString();
+    const sc = shortcut(); $('#ratio').textContent = sc > 0 ? (trailLen / sc).toFixed(1) : '1.0';
+    houseG.classList.toggle('lit', visited.length >= TOTAL); houseHint.textContent = visited.length >= TOTAL ? '불이 켜졌다 ✶ 안내서가 열린다' : `신호 ${visited.length} / ${TOTAL}`;
+  }
+  function renderList() {
+    listDirty = false; const ul = $('#trail');
+    ul.innerHTML = TOWERS.map(t => `<li class="${t.seen ? '' : 'unseen'}"><span class="chk ${planted(t.id) ? 'on' : ''}"></span><button data-go="${t.id}">${t.n} · ${t.seen ? esc(t.name) : '아직 찾지 못한 신호'}</button><span style="color:var(--ink-2)">${COHORTS[t.cohort].name}</span></li>`).join('');
+  }
+  function save(force) { if (!dirty && !force) return; dirty = false; try { localStorage.setItem(STORE, JSON.stringify({ pts, visited, x:Math.round(me.x), y:Math.round(me.y) })); } catch (e) {} }
+  function restore() {
+    let d = null; try { d = JSON.parse(localStorage.getItem(STORE) || 'null'); } catch (e) {}
+    if (!d || !Array.isArray(d.pts) || d.pts.length < 4) return false;
+    const p = d.pts; pts = [p[0], p[1]]; for (let i = 2; i < p.length; i += 2) trailTo(p[i], p[i + 1]);
+    for (let i = 0; i < p.length; i += 8) revealAround(p[i], p[i + 1], 190);
+    (d.visited || []).forEach(id => { if (TOWERS.some(t => t.id === id)) plant(id, true); });
+    me.x = d.x || pts[pts.length - 2]; me.y = d.y || pts[pts.length - 1]; cam.x = me.x; cam.y = me.y; dirty = false; return true;
   }
 
-  // ── 완성된 지도 보기 ─────────────────────────────────
-  function setOverview(on) {
-    overview = on; document.body.classList.toggle('overview', on); closeMemo(); showJunction(false);
-    if (on) { REV.forEach(n => n.classList.add('on')); roadGrey.setAttribute('stroke-dasharray', '1000 1000'); reach = RL; loopBg.setAttribute('stroke-dasharray', '1000 1000'); loopFlow.setAttribute('stroke-dasharray', '1000 1000'); loopReach = LL; $('#loopHint').classList.remove('on'); tip.style.opacity = 0;
-      ovY = 70; ovSc = Math.min(.5, (innerWidth - 40) / (view.offsetWidth || 1)); view.style.transformOrigin = '50% 0'; view.style.transform = `translateX(-50%) translateY(${ovY}px) scale(${ovSc})`; $('#doneView').textContent = '가까이 보기 ⤡'; toast('휠로 완성된 지도를 훑어보세요'); }
-    else { view.style.transform = `translateX(-50%) translateY(${camY}px)`; $('#doneView').textContent = '완성된 지도 보기 ⤢'; }
+  // ── 매 프레임 ─────────────────────────────────────────
+  const viewW = () => innerWidth < 760 ? 620 : Math.min(1400, Math.max(900, innerWidth * .82));
+  function tick(dt) {
+    let moved = false;
+    if (!overview && !coverOn()) {
+      const sp = 3.8 * dt, dx = keys.r - keys.l, dy = keys.d - keys.u;
+      if (dx || dy) { const m = Math.hypot(dx, dy); me.x += dx / m * sp; me.y += dy / m * sp; target = null; moved = true; }
+      else if (target) { const ddx = target[0] - me.x, ddy = target[1] - me.y, m = Math.hypot(ddx, ddy); if (m <= sp) { me.x = target[0]; me.y = target[1]; target = null; } else { me.x += ddx / m * sp; me.y += ddy / m * sp; } moved = true; }
+      me.x = Math.max(24, Math.min(WW - 24, me.x)); me.y = Math.max(40, Math.min(WH - 24, me.y));
+    }
+    goal.classList.toggle('on', !!target); if (target) goal.setAttribute('transform', `translate(${target[0]} ${target[1]})`);
+    if (moved) { if (Math.hypot(me.x - pts[pts.length - 2], me.y - pts[pts.length - 1]) > 7) { trailTo(me.x, me.y); renderHud(); } revealAround(me.x, me.y, 190); closeMemo(); }
+    WK.setAttribute('transform', `translate(${me.x.toFixed(1)} ${me.y.toFixed(1)})`);
+    // 신호
+    let near = null, nd = 1e9, sig = null, sd = 1e9;
+    for (const t of TOWERS) { const d = Math.hypot(t.p[0] - me.x, t.p[1] - me.y); if (d < nd && t.seen) { nd = d; near = t; } if (!sig && !planted(t.id)) { sd = d; sig = t; } }
+    if (beacon && !planted(beacon.id)) { sig = beacon; sd = Math.hypot(sig.p[0] - me.x, sig.p[1] - me.y); } else beacon = null;
+    const nl = nd < 120 ? near : null;
+    if (nl !== live) { live = nl; Object.values(towerEls).forEach(g => g.classList.toggle('live', !!live && g.dataset.id === live.id)); }
+    nearHouse = Math.hypot(HOUSE[0] - me.x, HOUSE[1] - me.y) < 110;
+    const tgt = sig ? sig.p : HOUSE, ang = Math.atan2(tgt[1] - me.y, tgt[0] - me.x) * 180 / Math.PI + 90;
+    $('#needle').setAttribute('transform', `rotate(${ang.toFixed(0)})`);
+    const dist = sig ? sd : Math.hypot(HOUSE[0] - me.x, HOUSE[1] - me.y), bars = Math.max(0, Math.min(5, 5 - Math.floor(dist / 190)));
+    document.querySelectorAll('.signal .bars i').forEach((b, i) => b.classList.toggle('on', i < bars));
+    $('#sigText').innerHTML = live ? `<b>${esc(live.name)}</b><br>주파수 ${live.freq} · ${planted(live.id) ? '찾은 신호' : '새 신호'}` : nearHouse ? '<b>파프리 스튜디오</b><br>도구와 이끔이 게임' : sig ? `${beacon ? '목표' : '소용돌이의 다음 신호'} ${sig.n}번<br>약 <b>${Math.round(dist / 8)}</b>걸음 · ${COHORTS[sig.cohort].name}` : '<b>모든 신호를 찾았다</b><br>집으로 돌아가 보세요';
+    $('#signal').classList.toggle('can', !!live || nearHouse); $('#tuneBtn').textContent = live ? (planted(live.id) ? '다시 열기 ↵' : '주파수 맞추기 ↵') : '집 열기 ↵';
+    // 멈추면 자동으로 열린다
+    const key = live ? live.id : nearHouse ? 'house' : null; if (!key) autoKey = null;
+    if (!moved && key && key !== autoKey && !memoOpen() && !overview && !coverOn()) { autoKey = key; if (live) openMemo(live); else openHouse(); }
+    // 카메라
+    const asp = innerWidth / Math.max(1, innerHeight), tw = overview ? Math.max(WW * 1.06, WH * 1.1 * asp) : viewW(), tx = overview ? WW / 2 : me.x, ty = overview ? WH / 2 : me.y, k = reduced ? 1 : Math.min(1, .12 * dt);
+    cam.x += (tx - cam.x) * k; cam.y += (ty - cam.y) * k; cam.w += (tw - cam.w) * k;
+    const vh = cam.w / asp; map.setAttribute('viewBox', `${(cam.x - cam.w / 2).toFixed(1)} ${(cam.y - vh / 2).toFixed(1)} ${cam.w.toFixed(1)} ${vh.toFixed(1)}`);
+    if (listDirty && document.body.classList.contains('sidebar-open')) renderList();
+    if (++saveT > 150) { saveT = 0; save(); }
   }
-  $('#doneView').addEventListener('click', () => setOverview(!overview));
-  $('#doneWalk').addEventListener('click', () => { setOverview(false); onLoop = false; p = 0; target = null; camY = 0; toast('다시 위에서부터'); });
-  // ── 갈림길 ───────────────────────────────────────────
-  function showJunction(on) { $('#junction').classList.toggle('on', on); }
-  function enterLoop() { onLoop = true; p = 0; target = null; showJunction(false); toast('우회로로 들어섰다'); }
-  $('#jLoop').addEventListener('click', enterLoop); $('#jStay').addEventListener('click', () => { showJunction(false); target = jLen + 40; });
+  function loop(now) { const dt = Math.min(3, lastT ? (now - lastT) / 16.7 : 1); lastT = now; tick(dt); requestAnimationFrame(loop); }
+  const toWorld = e => { const asp = innerWidth / Math.max(1, innerHeight), vh = cam.w / asp; return [cam.x - cam.w / 2 + e.clientX / innerWidth * cam.w, cam.y - vh / 2 + e.clientY / innerHeight * vh]; };
 
   // ── 메모(게임 창) ───────────────────────────────────
-  const memo = $('#memo'), tabs = $('#tabs'), body = $('#memoBody'), foot = $('#memoFoot');
-  let cur = null, curTab = 0, typeT = null;
-  function openMemo(t, tab = 0) {
-    cur = t; curTab = tab;
-    tabs.innerHTML = t.games.map((g, i) => `<button class="tab ${i === tab ? 'on' : ''}" data-i="${i}">${i === 0 ? '첫번째 산책' : i === 1 ? '두번째 산책' : (i + 1) + '번째 산책'}</button>`).join('');
-    const g = t.games[tab];
-    body.innerHTML = `<span class="lab">거점 ${t.n} · ${COHORTS[t.cohort].name} · ${esc(t.name)} · 주파수 ${(88.1 + t.n * 0.6).toFixed(1)}</span>
+  const memo = $('#memo'), body = $('#memoBody'), foot = $('#memoFoot'); let cur = null, typeT = null;
+  function memoOpen() { return memo.classList.contains('open'); }
+  function openMemo(t) {
+    cur = t; const g = t.game;
+    body.innerHTML = `<span class="lab">거점 ${t.n} · ${COHORTS[t.cohort].name} · ${esc(t.name)} · 주파수 ${t.freq}</span>
       <h2>〈${esc(g.title)}〉</h2>
-      <div class="meta">산책자 · ${esc(g.author)} · ${esc(g.cohort)}</div>
+      <div class="meta">산책자 · ${esc(g.author)} · ${esc(COHORTS[t.cohort].who)} · ${esc(COHORTS[t.cohort].when)}</div>
       <p><b>게임 소개.</b> ${esc(g.desc)}</p>
       <p style="font-family:var(--f-serif);font-size:15px">“${esc(g.rule)}”</p>
-      <div class="gamebox" id="gamebox">${g.url ? `<div class="cta"><button class="lnk play" id="playBtn">게임 플레이 하기 ➹</button><span>이 자리에서 바로 열립니다. 나무가 한 그루 자랍니다.</span></div>` : `<div class="cta"><span class="lab b">링크 수합 중</span><span>참여자 게임 결과물을 받으면 여기서 바로 플레이할 수 있습니다.</span><button class="lnk" id="playBtn">그래도 나무 심기</button></div>`}</div>
-      <div class="memo-actions">${g.url ? `<a class="lnk" href="${g.url}" target="_blank" rel="noopener">새 창에서 열기 ↗</a>` : ''}<button class="lnk" id="nextTower">다음 거점으로 걷기 ↓</button></div>`;
-    $('#memoTree').hidden = !stamps.has(t.id);
-    memo.classList.add('open'); typewrite(`거점 ${t.n}에서는 무슨 일이 있었을까? ${t.foot}`);
+      <div class="gamebox" id="gamebox">${g.url ? `<div class="cta"><button class="lnk play" id="playBtn">게임 플레이 하기 ➹</button><span>이 자리에서 바로 열립니다. 주변 지도가 찍히고 나무가 자랍니다.</span></div>` : `<div class="cta"><span class="lab b">링크 수합 중</span><span>참여자 게임 결과물을 받으면 여기서 바로 플레이할 수 있습니다.</span><button class="lnk on" id="playBtn">${planted(t.id) ? '이미 찾은 신호' : '신호 기록하기'}</button></div>`}</div>
+      <div class="memo-actions">${g.url ? `<a class="lnk" href="${g.url}" target="_blank" rel="noopener">새 창에서 열기 ↗</a>` : ''}<button class="lnk" id="memoGo">닫고 계속 걷기</button></div>`;
+    $('#memoTree').hidden = !planted(t.id); memo.classList.add('open'); typewrite(`거점 ${t.n}에서는 무슨 일이 있었을까? ${t.foot}`);
   }
   function openHouse() {
-    cur = null; tabs.innerHTML = '';
-    body.innerHTML = `<span class="lab o">파프리 스튜디오 · 회나무로 13나길 40</span><h2>${stamps.size >= TOTAL ? '불이 켜졌다. 에움길 안내서' : '우회로 위의 집'}</h2>
-      <p>모든 산책이 시작되고 끝나는 곳. 강사진이 만든 도구 여덟 개가 여기 있습니다.</p>
-      <ul style="columns:2;padding-left:18px;margin:6px 0 12px">${TOOLS.map(([n, u]) => `<li><a class="lnk" href="${u}" target="_blank" rel="noopener">${esc(n)} ↗</a></li>`).join('')}</ul>
-      <p><b>이끔이가 만든 게임.</b></p>
-      <ul style="columns:2;padding-left:18px;margin:6px 0 12px">${INSTR.map(g => `<li><a class="lnk" href="${g.url}" target="_blank" rel="noopener">${esc(g.title)} ↗</a></li>`).join('')}</ul>
-      ${stamps.size >= TOTAL ? `<p><a class="lnk play" href="../zine/" style="font-family:var(--f-serif);font-size:20px;padding:8px 14px;border-radius:8px">스물한 편 책장 넘기기 ➹</a> <a class="lnk play" href="${BASE}" target="_blank" rel="noopener" style="margin-left:8px">플레이하기 ↗</a></p>` : `<p style="color:var(--ink-2)">나무 ${stamps.size} / ${TOTAL}. 스물한 거점의 게임을 모두 열면 안내서가 열립니다.</p>`}
-      <p style="margin-top:8px"><a class="lnk" href="../walk/">아홉 층 지도로</a> · <a class="lnk" href="../archipelago/">군도로</a></p>`;
-    $('#memoTree').hidden = true; memo.classList.add('open'); typewrite(stamps.size >= TOTAL ? '스물한 그루가 자랐다. 창문에 불이 켜지고, 안내서가 열린다.' : '집 앞을 지나는 우회로. 돌아서 가는 길이 더 많은 것을 보여 준다.');
+    cur = null; const all = visited.length >= TOTAL;
+    body.innerHTML = `<span class="lab o">파프리 스튜디오 · 회나무로 13나길 40</span><h2>${all ? '불이 켜졌다. 에움길 안내서' : '모든 산책이 시작되는 집'}</h2>
+      <p>여기서 출발해 여기로 돌아옵니다. 강사진이 만든 도구 여덟 개와 게임 다섯 편이 있습니다.</p>
+      <p><b>도구</b></p><ul style="columns:2;padding-left:18px;margin:4px 0 10px">${TOOLS.map(([n, u]) => `<li><a class="lnk" href="${u}" target="_blank" rel="noopener">${esc(n)} ↗</a></li>`).join('')}</ul>
+      <p><b>이끔이가 만든 게임</b></p><ul style="columns:2;padding-left:18px;margin:4px 0 12px">${INSTR.map(([n, u]) => `<li><a class="lnk" href="${u}" target="_blank" rel="noopener">${esc(n)} ↗</a></li>`).join('')}</ul>
+      ${all ? `<p><a class="lnk play" href="../zine/" style="font-family:var(--f-serif);font-size:20px;padding:8px 14px;border-radius:8px">스물한 편 책장 넘기기 ➹</a> <a class="lnk play" href="${BASE}" target="_blank" rel="noopener" style="margin-left:8px">플레이하기 ↗</a></p>` : `<p style="color:var(--ink-2)">신호 ${visited.length} / ${TOTAL}. 스물하나를 모두 찾으면 창에 불이 켜지고 안내서가 열립니다.</p>`}
+      <div class="memo-actions"><button class="lnk" id="memoGo">닫고 계속 걷기</button><a class="lnk" href="../walk/">아홉 층 지도로</a><a class="lnk" href="../zine/">진으로</a></div>`;
+    $('#memoTree').hidden = true; memo.classList.add('open'); typewrite(all ? '스물한 그루가 자랐다. 창문에 불이 켜지고, 걸어온 길이 한 장의 지도가 됐다.' : '지름길은 없다. 돌아서 가는 길이 지도를 만든다.');
   }
-  function typewrite(text) { clearInterval(typeT); let i = 0; foot.textContent = ''; typeT = setInterval(() => { i++; foot.textContent = text.slice(0, i); if (i >= text.length) clearInterval(typeT); }, reduced ? 0 : 26); }
-  function closeMemo() { if (!memo.classList.contains('open')) return; memo.classList.remove('open'); clearInterval(typeT); }
-  tabs.addEventListener('click', e => { const t = e.target.closest('.tab'); if (t && cur) openMemo(cur, +t.dataset.i); });
+  function typewrite(text) { clearInterval(typeT); let i = 0; foot.textContent = ''; typeT = setInterval(() => { i++; foot.textContent = text.slice(0, i); if (i >= text.length) clearInterval(typeT); }, reduced ? 0 : 24); }
+  function closeMemo() { if (!memoOpen()) return; memo.classList.remove('open'); clearInterval(typeT); }
   body.addEventListener('click', e => {
-    if (e.target.closest('#playBtn') && cur) { const g = cur.games[curTab]; if (g.url) $('#gamebox').innerHTML = `<iframe src="${g.url}" allow="camera; microphone; accelerometer; gyroscope; autoplay" title="${esc(g.title)}"></iframe>`; else $('#gamebox .cta').innerHTML = '<span class="lab g">나무를 심었다</span>'; plant(cur.id); }
-    if (e.target.closest('#nextTower') && cur) { const i = TOWERS.findIndex(x => x.id === cur.id); closeMemo(); walkTo(TOWERS[(i + 1) % TOWERS.length]); }
+    if (e.target.closest('#playBtn') && cur) { const g = cur.game; if (g.url) $('#gamebox').innerHTML = `<iframe src="${g.url}" allow="camera; microphone; accelerometer; gyroscope; autoplay" title="${esc(g.title)}"></iframe>`; else $('#gamebox .cta').innerHTML = '<span class="lab g">신호를 기록했다</span><span>주변 지도가 찍혔습니다.</span>'; plant(cur.id); }
+    if (e.target.closest('#memoGo')) closeMemo();
   });
   $('#memoClose').addEventListener('click', closeMemo);
-  function plant(id) { if (stamps.has(id)) return; stamps.add(id); try { localStorage.setItem('eumgil-riso-trees', JSON.stringify([...stamps])); } catch (e) {} render(); $('#memoTree').hidden = false; toast(`나무 ${stamps.size} / ${TOTAL}`); if (stamps.size === TOTAL) setTimeout(() => toast('스물한 그루가 자랐다. 우회로의 집에 불이 켜졌다'), 900); }
-  function render() { TOWERS.forEach(t => towerEls[t.id].classList.toggle('done', stamps.has(t.id))); $('#stampCnt').textContent = stamps.size; document.querySelectorAll('#trail .chk').forEach(c => c.classList.toggle('on', stamps.has(c.dataset.id))); houseG.classList.toggle('lit', stamps.size >= TOTAL); $('#houseHint').textContent = stamps.size >= TOTAL ? '불이 켜졌다 ✶ 클릭' : `나무 ${stamps.size} / ${TOTAL} · 심으면 불이 켜진다`; }
-  // 탑까지 걷기: 길 위에서 탑에 가장 가까운 지점으로
-  function walkTo(t) { let best = 0, bd = 1e9; for (let l = 0; l < RL; l += 3) { const q = road.getPointAtLength(l), d = Math.hypot(q.x - t.p[0], q.y - t.p[1]); if (d < bd) { bd = d; best = l; } } if (onLoop) { onLoop = false; p = jLen; } target = best; }
-  function tune() { if (live) openMemo(live); else if (nearHouse) openHouse(); else toast('수신이 약하다. 탑에 더 가까이'); }
+  function tune() { if (live) openMemo(live); else if (nearHouse) openHouse(); else toast('수신이 약하다. 나침반을 따라 더 가까이'); }
+
+  // ── 내 지도 보기 · 저장 ───────────────────────────────
+  function setOverview(on) {
+    overview = on; document.body.classList.toggle('overview', on); closeMemo(); target = null; $('#mapBtn').textContent = on ? '가까이 보기 ⤡' : '내 지도 보기 ⤢'; $('#mapBtn').classList.toggle('on', on);
+    if (!on) return; const sc = shortcut(), st = Math.round(trailLen / 8), d = new Date(), ds = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+    cartL1.textContent = `${ds} · 찾은 신호 ${visited.length} / ${TOTAL} · ${st.toLocaleString()} 걸음`;
+    cartL2.textContent = sc > 0 ? `지름길 ${Math.round(sc / 8).toLocaleString()} 걸음 → 내 에움길 ${st.toLocaleString()} 걸음 (×${(trailLen / sc).toFixed(1)})` : '아직 찾은 신호가 없다. 걸은 길만 그려져 있다';
+    $('#doneTitle').textContent = visited.length >= TOTAL ? '지도 완성' : '지금까지의 지도'; $('#doneStat').textContent = `신호 ${visited.length} / ${TOTAL} · ${st.toLocaleString()} 걸음${sc > 0 ? ' · 에움 ×' + (trailLen / sc).toFixed(1) : ''}`; $('#zineLink').hidden = visited.length < TOTAL; save(true);
+  }
+  function saveImage() {
+    const c = map.cloneNode(true); c.removeAttribute('id'); c.setAttribute('xmlns', NS); c.setAttribute('viewBox', `-20 -20 ${WW + 40} ${WH + 40}`); c.setAttribute('width', WW + 40); c.setAttribute('height', WH + 40);
+    c.querySelectorAll('.rev:not(.on), .ring, .smoke, .goal, animateTransform').forEach(n => n.remove());
+    const st = document.createElementNS(NS, 'style'); st.textContent = "text{font-family:'IBM Plex Mono',monospace;fill:#151515}.serif{font-family:'Times New Roman','Nanum Myeongjo',serif}.tree{opacity:0}.tower.done .tree{opacity:1}.win{fill:#3a3a3a}.house.lit .win{fill:#F2C94C}"; c.insertBefore(st, c.firstChild);
+    const bg = document.createElementNS(NS, 'rect'); bg.setAttribute('x', -20); bg.setAttribute('y', -20); bg.setAttribute('width', WW + 40); bg.setAttribute('height', WH + 40); bg.setAttribute('fill', C.paper); c.insertBefore(bg, st.nextSibling);
+    const svgText = new XMLSerializer().serializeToString(c), url = URL.createObjectURL(new Blob([svgText], { type:'image/svg+xml;charset=utf-8' }));
+    const dl = (href, name) => { const a = document.createElement('a'); a.href = href; a.download = name; document.body.appendChild(a); a.click(); a.remove(); };
+    const img = new Image(); img.onload = () => { try { const cv = document.createElement('canvas'); cv.width = WW + 40; cv.height = WH + 40; cv.getContext('2d').drawImage(img, 0, 0); cv.toBlob(b => { if (b) { dl(URL.createObjectURL(b), 'my-eumgil-map.png'); toast('지도를 PNG로 저장했다'); } else { dl(url, 'my-eumgil-map.svg'); toast('지도를 SVG로 저장했다'); } }, 'image/png'); } catch (err) { dl(url, 'my-eumgil-map.svg'); toast('지도를 SVG로 저장했다'); } };
+    img.onerror = () => { dl(url, 'my-eumgil-map.svg'); toast('지도를 SVG로 저장했다'); }; img.src = url;
+  }
 
   // ── 입력 ─────────────────────────────────────────────
-  map.addEventListener('click', e => { const t = e.target.closest('.tower'); if (t) { const tw = TOWERS.find(x => x.id === t.dataset.id); if (live && live.id === tw.id) openMemo(tw); else walkTo(tw); return; } if (e.target.closest('.house')) { if (nearHouse) openHouse(); else { onLoop = true; p = 0; target = LL * .12; showJunction(false); } } });
-  map.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { const t = e.target.closest('.tower,.house'); if (t) { e.preventDefault(); t.dispatchEvent(new MouseEvent('click', { bubbles:true })); } } });
-  const coverOn = () => !$('#cover').classList.contains('gone');
-  addEventListener('keydown', e => {
-    if (e.target.matches('input,textarea,iframe')) return;
-    if (coverOn()) { if (e.key !== 'Tab') { e.preventDefault(); start(); } return; }
-    if (overview && ['ArrowDown', 'ArrowUp', 'Enter', 'Escape'].includes(e.key)) { setOverview(false); e.preventDefault(); return; }
-    if (e.key === 'ArrowDown') { keys.d = true; target = null; e.preventDefault(); }
-    else if (e.key === 'ArrowUp') { keys.u = true; target = null; e.preventDefault(); }
-    else if (e.key === 'ArrowRight' && $('#junction').classList.contains('on')) { enterLoop(); e.preventDefault(); }
-    else if (e.key === 'Enter') tune();
-    else if (e.key === 'Escape') { closeMemo(); showJunction(false); }
-    else if (e.key === 's' || e.key === 'S') document.body.classList.toggle('sidebar-open');
+  function coverOn() { return !$('#cover').classList.contains('gone'); }
+  map.addEventListener('click', e => {
+    if (overview) { setOverview(false); return; }
+    const tw = e.target.closest('.tower'), hs = e.target.closest('.house');
+    if (tw) { const t = TOWERS.find(x => x.id === tw.dataset.id); if (live && live.id === t.id) openMemo(t); else { autoKey = null; target = [t.p[0], t.p[1] + 54]; } return; }
+    if (hs) { if (nearHouse) openHouse(); else { autoKey = null; target = [START[0], START[1]]; } return; }
+    if (memoOpen()) { closeMemo(); return; }
+    const p = toWorld(e); target = [Math.max(24, Math.min(WW - 24, p[0])), Math.max(40, Math.min(WH - 24, p[1]))];
   });
-  addEventListener('keyup', e => { if (e.key === 'ArrowDown') keys.d = false; if (e.key === 'ArrowUp') keys.u = false; });
-  addEventListener('wheel', e => { if (coverOn() || (e.target.closest && e.target.closest('.memo, .side'))) return; e.preventDefault(); if (overview) { const vh = (view.offsetHeight || 1) * ovSc; ovY = Math.max(Math.min(70, innerHeight - vh - 20), Math.min(70, ovY - e.deltaY)); view.style.transform = `translateX(-50%) translateY(${ovY}px) scale(${ovSc})`; return; } target = null; p += e.deltaY * .35; if (!onLoop) p = Math.max(0, Math.min(RL, p)); }, { passive:false });
-  document.querySelectorAll('.pad [data-dir]').forEach(b => { const k = b.dataset.dir === '1' ? 'd' : 'u'; const on = ev => { ev.preventDefault(); keys[k] = true; target = null; }; const off = () => { keys[k] = false; }; b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off); b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off); });
-  $('#padEnter').addEventListener('click', tune); $('#tuneBtn').addEventListener('click', tune);
-  $('#rollBtn').addEventListener('click', () => document.body.classList.toggle('sidebar-open'));
-  $('#moreBtn').addEventListener('click', () => { const s = $('#side'); s.classList.toggle('expanded'); $('#moreBtn').textContent = s.classList.contains('expanded') ? '접기 ▴' : '더 자세히 보기 ▾'; });
-  $('#resetBtn').addEventListener('click', () => { stamps.clear(); try { localStorage.removeItem('eumgil-riso-trees'); } catch (e) {} render(); toast('나무를 지웠다'); });
-  { const ul = $('#trail'); TOWERS.forEach(t => { const li = document.createElement('li'); li.innerHTML = `<span class="chk" data-id="${t.id}"></span><button data-go="${t.id}">${t.n} · ${esc(t.name)}</button><span style="color:var(--ink-2)">${COHORTS[t.cohort].name}</span>`; ul.appendChild(li); }); ul.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) { closeMemo(); walkTo(TOWERS.find(x => x.id === b.dataset.go)); if (innerWidth < 760) document.body.classList.remove('sidebar-open'); } }); }
-  let toastT; function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2600); }
+  map.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { const t = e.target.closest('.tower,.house'); if (t) { e.preventDefault(); e.stopPropagation(); t.dispatchEvent(new MouseEvent('click', { bubbles:true })); } } });
+  const KEY = { ArrowLeft:'l', ArrowRight:'r', ArrowUp:'u', ArrowDown:'d', a:'l', d:'r', w:'u', s:'d', A:'l', D:'r', W:'u', S:'d' };
+  addEventListener('keydown', e => {
+    if (e.target.matches && e.target.matches('input,textarea')) return;
+    if (coverOn()) { if (e.key !== 'Tab') { e.preventDefault(); start(); } return; }
+    if (KEY[e.key]) { if (overview) setOverview(false); keys[KEY[e.key]] = 1; e.preventDefault(); return; }
+    if (e.key === 'Enter') { if (overview) setOverview(false); else if (!memoOpen()) tune(); }
+    else if (e.key === 'Escape') { if (memoOpen()) closeMemo(); else if (overview) setOverview(false); else document.body.classList.remove('sidebar-open'); }
+    else if (e.key === 'm' || e.key === 'M') setOverview(!overview);
+    else if (e.key === 'l' || e.key === 'L') toggleSide();
+  });
+  addEventListener('keyup', e => { if (KEY[e.key]) keys[KEY[e.key]] = 0; });
+  addEventListener('blur', () => { keys = { l:0, r:0, u:0, d:0 }; });
+  function toggleSide(force) { const on = force != null ? force : !document.body.classList.contains('sidebar-open'); document.body.classList.toggle('sidebar-open', on); if (on) renderList(); }
+  $('#tuneBtn').addEventListener('click', tune);
+  $('#mapBtn').addEventListener('click', () => setOverview(!overview));
+  $('#listBtn').addEventListener('click', () => toggleSide());
+  $('#sideClose').addEventListener('click', () => toggleSide(false));
+  $('#moreBtn').addEventListener('click', () => { const s = $('#side'); s.classList.toggle('expanded'); $('#moreBtn').textContent = s.classList.contains('expanded') ? '접기 ▴' : '프로그램 소개 ▾'; });
+  $('#trail').addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (!b) return; const t = TOWERS.find(x => x.id === b.dataset.go); if (planted(t.id)) { toast(`${t.n}번은 이미 찾은 신호`); return; } beacon = t; toast(`나침반이 ${t.n}번 신호를 가리킨다`); if (innerWidth < 900) toggleSide(false); });
+  $('#saveBtn').addEventListener('click', saveImage);
+  $('#backBtn').addEventListener('click', () => setOverview(false));
+  let resetArm = 0;
+  $('#resetBtn').addEventListener('click', () => { const b = $('#resetBtn'); if (Date.now() - resetArm > 4000) { resetArm = Date.now(); b.textContent = '한 번 더 누르면 지워집니다'; b.classList.add('on'); setTimeout(() => { b.textContent = '새 종이'; b.classList.remove('on'); }, 4000); return; } dirty = false; try { localStorage.removeItem(STORE); } catch (e) {} pts = []; location.reload(); });
+  let toastT; function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2800); }
+  addEventListener('pagehide', () => { if (pts.length) save(true); });
 
-  // ── 표지 미니 지도 · 시작 ─────────────────────────────
-  { const mini = map.cloneNode(true); mini.removeAttribute('id'); mini.querySelectorAll('[id]').forEach(n => n.setAttribute('id', 'm-' + n.getAttribute('id'))); mini.querySelectorAll('[fill^="url(#"]').forEach(n => n.setAttribute('fill', n.getAttribute('fill').replace('url(#', 'url(#m-'))); mini.querySelectorAll('[href^="#"]').forEach(n => n.setAttribute('href', '#m-' + n.getAttribute('href').slice(1))); mini.querySelectorAll('.ring,.smoke').forEach(n => n.remove()); mini.querySelectorAll('.rev').forEach(n => n.classList.add('on')); mini.querySelectorAll('[stroke-dasharray="0 1000"]').forEach(n => n.setAttribute('stroke-dasharray', '1000 1000')); mini.querySelectorAll('.tip').forEach(n => n.remove()); mini.setAttribute('viewBox', `0 0 ${MAPW} ${Math.min(MAPH, 1500)}`); $('#mini').appendChild(mini); }
-  function start() { const c = $('#cover'); if (c.classList.contains('gone')) return; c.classList.add('gone'); if (innerWidth >= 1100) setTimeout(() => document.body.classList.add('sidebar-open'), 1400); toast('↓ 키나 스크롤로 길을 따라 내려가세요'); }
-  $('#bStart').addEventListener('click', start); $('#cover').addEventListener('click', e => { if (!e.target.closest('button')) start(); });
-  render(); requestAnimationFrame(frame);
-  window.__riso = { walkTo:(id) => walkTo(TOWERS.find(x => x.id === id)), plant, start, tune, enterLoop, openHouse, setOverview, jump:(v) => { p = v; target = null; }, state:() => ({ p, onLoop, live: live && live.id, nearHouse, reach, done, overview, revealed: REV.filter(n => n.classList.contains('on')).length, total: REV.length }) };
-  if (reduced) start(); else setTimeout(start, 12000);
+  { const sw = $('#swirl'); let d = ''; for (let a = 0; a < Math.PI * 2 * 4.2; a += .08) { const r = 14 + a * 6.6; d += (a ? ' L' : 'M') + (Math.cos(a) * r).toFixed(1) + ' ' + (Math.sin(a) * r).toFixed(1); } el('path', { d, fill:'none', stroke:C.grey, 'stroke-width':9, 'stroke-linecap':'round' }, sw); el('path', { d, fill:'none', stroke:C.sheet, 'stroke-width':1, 'stroke-dasharray':'5 7' }, sw); for (let i = 0; i < 21; i++) { const a = 1.2 + i * 1.2, r = 14 + a * 6.6; el('circle', { cx:Math.cos(a) * r, cy:Math.sin(a) * r, r:4.2, fill:i % 3 ? C.blue : C.green2 }, sw); } }
+  // ── 시작 ─────────────────────────────────────────────
+  const resumed = restore();
+  revealAround(HOUSE[0], HOUSE[1], 150); renderHud();
+  if (resumed) { $('#bStart').textContent = `이어 걷기 (${visited.length} / ${TOTAL}) ↓`; $('#coverNote').textContent = `지난 산책이 남아 있다 · ${Math.round(trailLen / 8).toLocaleString()} 걸음`; }
+  function start() { const c = $('#cover'); if (c.classList.contains('gone')) return; c.classList.add('gone'); toast(resumed ? '걷던 자리에서 이어서' : '종이를 누르면 그곳까지 걷는다. 걸은 자리가 길이 된다'); }
+  $('#bStart').addEventListener('click', e => { e.stopPropagation(); start(); });
+  requestAnimationFrame(loop);
+  window.__riso = { tick, start, plant, tune, setOverview, saveImage, goTo:(x, y) => { target = [x, y]; }, towers:TOWERS, state:() => ({ x:Math.round(me.x), y:Math.round(me.y), target, live: live && live.id, nearHouse, visited:visited.length, pts:pts.length / 2, trailLen:Math.round(trailLen), revealed:REV.filter(i => i.on).length, total:REV.length, overview, memo:memoOpen() }) };
 })();
 </script>
 </html>
