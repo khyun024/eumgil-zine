@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NAMSAN CAFE 1993 - CLUE C</title>
+  <style>
+    :root {
+      --neon-green: #39ff14;
+      --neon-dark: #050c08;
+    }
+    body {
+      background-color: var(--neon-dark);
+      color: #fff;
+      font-family: 'Courier New', monospace;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 90vh;
+      text-align: center;
+    }
+    .container {
+      border: 2px solid var(--neon-green);
+      box-shadow: 0 0 20px rgba(57, 255, 20, 0.25);
+      border-radius: 12px;
+      padding: 30px;
+      max-width: 380px;
+      background-color: rgba(5, 12, 8, 0.85);
+    }
+    h2 {
+      color: var(--neon-green);
+      font-size: 1.4rem;
+      letter-spacing: 2px;
+      margin-top: 0;
+      text-shadow: 0 0 8px var(--neon-green);
+    }
+    p {
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: #bbbbbb;
+    }
+    .badge {
+      display: inline-block;
+      border: 1px solid var(--neon-green);
+      color: var(--neon-green);
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      margin-bottom: 20px;
+    }
+    .action-btn {
+      background-color: transparent;
+      border: 2px solid var(--neon-green);
+      color: var(--neon-green);
+      padding: 12px 25px;
+      font-family: inherit;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 100%;
+      margin: 10px 0;
+      transition: all 0.2s ease;
+      text-shadow: 0 0 5px var(--neon-green);
+      box-shadow: 0 0 10px rgba(57, 255, 20, 0.1);
+    }
+    .action-btn:hover {
+      background-color: var(--neon-green);
+      color: #000;
+      box-shadow: 0 0 15px var(--neon-green);
+    }
+    .footer {
+      font-size: 0.7rem;
+      color: #555;
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="badge">SECURE FREQUENCY: 1993.07.03</div>
+    <h2>🔍 Zone C: 낡은 카세트테이프</h2>
+    <p>
+      수사관 요원님 환영합니다.<br>
+      이 구역의 주파수를 가로채는 데 성공했습니다. 아래 버튼을 눌러 모바일로 단서 오디오 파일을 다운로드받거나 즉석에서 들어보십시오.
+    </p>
+
+    <button class="action-btn" onclick="playClueAudio()">▶ 오디오 재생</button>
+    <button class="action-btn" onclick="downloadClueWav('C')">💾 WAV 파일 다운로드</button>
+
+    <div class="footer">NAMSAN DETECTIVE DEPT // SYSTEM ACTIVE</div>
+  </div>
+
+  <script>
+    let audioCtx = null;
+    let playingSource = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playClueAudio() {
+      initAudio();
+      if (playingSource) {
+        playingSource.stop();
+        playingSource = null;
+      }
+
+      const duration = 5.0;
+      const sampleRate = audioCtx.sampleRate;
+      const buffer = audioCtx.createBuffer(1, sampleRate * duration, sampleRate);
+      const data = buffer.getChannelData(0);
+
+      // Synthesize Zone C: Cassette tape noise and sweep
+      for (let i = 0; i < data.length; i++) {
+        const t = i / sampleRate;
+        data[i] = ((Math.random() * 2 - 1) * 0.08 + Math.sin(2 * Math.PI * 55 * t + Math.sin(2 * Math.PI * 4 * t) * 5) * 0.12) * 0.35;
+      }
+
+      playingSource = audioCtx.createBufferSource();
+      playingSource.buffer = buffer;
+      playingSource.connect(audioCtx.destination);
+      playingSource.start();
+    }
+
+    function downloadClueWav(zoneId) {
+      const sampleRate = 22050;
+      const duration = 5.0;
+      const numSamples = sampleRate * duration;
+      const samples = new Float32Array(numSamples);
+
+      for (let i = 0; i < numSamples; i++) {
+        const t = i / sampleRate;
+        samples[i] = ((Math.random() * 2 - 1) * 0.08 + Math.sin(2 * Math.PI * 55 * t + Math.sin(2 * Math.PI * 4 * t) * 5) * 0.12) * 0.45;
+      }
+
+      const wavBytes = createWavBytes(samples, sampleRate);
+      const blob = new Blob([wavBytes], { type: 'audio/wav' });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Namsan_Clue_${zoneId}.wav`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function createWavBytes(samples, sampleRate) {
+      const buffer = new ArrayBuffer(44 + samples.length * 2);
+      const view = new DataView(buffer);
+
+      writeString(view, 0, 'RIFF');
+      view.setUint32(4, 36 + samples.length * 2, true);
+      writeString(view, 8, 'WAVE');
+      writeString(view, 12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, 1, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * 2, true);
+      view.setUint16(32, 2, true);
+      view.setUint16(34, 16, true);
+      writeString(view, 36, 'data');
+      view.setUint32(40, samples.length * 2, true);
+
+      let offset = 44;
+      for (let i = 0; i < samples.length; i++, offset += 2) {
+        const s = Math.max(-1, Math.min(1, samples[i]));
+        view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+      }
+
+      return buffer;
+    }
+
+    function writeString(view, offset, string) {
+      for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i));
+      }
+    }
+  </script>
+</body>
+</html>

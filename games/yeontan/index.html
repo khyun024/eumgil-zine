@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0b1026">
+<title>연탄불</title>
+<style>
+  :root {
+    --font: -apple-system, BlinkMacSystemFont, "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    --ink: #f4ead9;
+    --ink-dim: #cbb8a0;
+    --ember: #ff7a3c;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    width: 100%; height: 100%;
+    background: #070a18;
+    overflow: hidden;
+    font-family: var(--font);
+    color: var(--ink);
+    overscroll-behavior: none;
+    touch-action: none;
+    -webkit-user-select: none; user-select: none;
+  }
+  #stage {
+    position: fixed; inset: 0;
+    width: 100%; height: 100%;
+  }
+  canvas#scene {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    display: block;
+  }
+
+  /* ---- Overlay layers ---- */
+  .layer {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: max(28px, env(safe-area-inset-top)) 26px max(28px, env(safe-area-inset-bottom));
+    gap: 18px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .6s ease;
+    z-index: 5;
+  }
+  .layer.show { opacity: 1; pointer-events: auto; }
+  .layer.top { justify-content: flex-start; }
+  .layer.bottom { justify-content: flex-end; }
+
+  .kicker { font-size: 13px; letter-spacing: .35em; color: var(--ember); font-weight: 600; opacity: .9; }
+  h1.title {
+    font-size: clamp(40px, 15vw, 72px);
+    font-weight: 800; letter-spacing: .06em;
+    line-height: 1.05;
+    text-shadow: 0 0 32px rgba(255,120,60,.35);
+  }
+  p.body {
+    font-size: clamp(15px, 4.2vw, 18px);
+    line-height: 1.7; color: var(--ink-dim);
+    max-width: 30ch; font-weight: 400;
+    word-break: keep-all;
+  }
+  p.body.lead { color: var(--ink); font-size: clamp(16px, 4.6vw, 20px); }
+  .privacy {
+    font-size: 12px; color: #8a7f6f; line-height: 1.6;
+    max-width: 32ch; margin-top: 4px; word-break: keep-all;
+  }
+
+  button.btn {
+    pointer-events: auto;
+    font-family: var(--font);
+    font-size: 17px; font-weight: 700;
+    color: #241206;
+    background: linear-gradient(180deg, #ffcf7a, #ff9a4d);
+    border: none; border-radius: 999px;
+    padding: 16px 42px;
+    cursor: pointer;
+    box-shadow: 0 8px 30px rgba(255,140,60,.35), inset 0 1px 0 rgba(255,255,255,.4);
+    transition: transform .12s ease, box-shadow .2s ease;
+    margin-top: 8px;
+  }
+  button.btn:active { transform: scale(.96); }
+  button.btn.ghost {
+    background: transparent; color: var(--ink-dim);
+    box-shadow: inset 0 0 0 1.5px rgba(203,184,160,.35);
+    font-weight: 600;
+  }
+
+  /* ---- HUD (play) ---- */
+  #hud {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    z-index: 4;
+    opacity: 0; transition: opacity .5s ease;
+  }
+  #hud.show { opacity: 1; }
+  .hud-top {
+    position: absolute; top: 0; left: 0; right: 0;
+    padding: max(18px, env(safe-area-inset-top)) 22px 0;
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+  }
+  #timer {
+    font-size: 15px; font-weight: 700; letter-spacing: .12em;
+    color: var(--ink); font-variant-numeric: tabular-nums;
+    text-shadow: 0 1px 8px rgba(0,0,0,.6);
+  }
+  #timer small { color: var(--ink-dim); font-weight: 500; letter-spacing: .08em; }
+  /* heat bar */
+  .heatbar-wrap { width: min(78%, 340px); }
+  .heatbar-label {
+    font-size: 11px; letter-spacing: .3em; color: var(--ink-dim);
+    text-align: center; margin-bottom: 6px; text-shadow: 0 1px 6px rgba(0,0,0,.6);
+  }
+  .heatbar {
+    height: 10px; border-radius: 999px;
+    background: rgba(255,255,255,.08);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+    overflow: hidden;
+  }
+  #heatfill {
+    height: 100%; width: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #8a1f0c, #ff5a2c 55%, #ffc24d);
+    transform-origin: left center;
+    transition: transform .15s linear, filter .3s ease;
+    box-shadow: 0 0 16px rgba(255,110,60,.6);
+  }
+  /* noise meter (bottom hint) */
+  .hud-bottom {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 0 22px max(20px, env(safe-area-inset-bottom));
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+  }
+  #quietHint {
+    font-size: 13px; color: var(--ink-dim);
+    letter-spacing: .05em; text-shadow: 0 1px 8px rgba(0,0,0,.7);
+    transition: color .3s ease, opacity .3s ease;
+    min-height: 18px; word-break: keep-all;
+  }
+  #quietHint.loud { color: #ff8a5c; }
+  .noise-wrap {
+    width: min(60%, 240px); height: 5px; border-radius: 999px;
+    background: rgba(255,255,255,.07); overflow: hidden;
+  }
+  #noisefill {
+    height: 100%; width: 100%;
+    transform: scaleX(0); transform-origin: left center;
+    background: linear-gradient(90deg, #4a7dcf, #ffd15a 60%, #ff5a3c);
+    transition: transform .1s linear;
+  }
+
+  /* fallback hold prompt */
+  #holdPrompt {
+    position: absolute; left: 50%; bottom: 20%;
+    transform: translateX(-50%);
+    font-size: 13px; color: var(--ink-dim);
+    letter-spacing: .05em; text-align: center;
+    pointer-events: none; word-break: keep-all;
+    max-width: 26ch;
+    text-shadow: 0 1px 8px rgba(0,0,0,.7);
+    opacity: 0; transition: opacity .4s ease;
+  }
+  #holdPrompt.show { opacity: 1; }
+
+  /* debug */
+  #debug {
+    position: absolute; top: 0; left: 0;
+    padding: 8px 10px;
+    font: 11px/1.5 ui-monospace, Menlo, monospace;
+    color: #9ff59f; background: rgba(0,0,0,.55);
+    white-space: pre; z-index: 20; display: none;
+    pointer-events: none; border-bottom-right-radius: 8px;
+  }
+  #debug.show { display: block; }
+
+  /* rotate / status hint */
+  #statusNote {
+    position: absolute; left: 50%; top: max(14px, env(safe-area-inset-top));
+    transform: translateX(-50%);
+    font-size: 12px; color: #b9a98f; background: rgba(0,0,0,.4);
+    padding: 6px 14px; border-radius: 999px;
+    z-index: 8; opacity: 0; transition: opacity .4s ease;
+    pointer-events: none; text-align: center; word-break: keep-all;
+    max-width: 90%;
+  }
+  #statusNote.show { opacity: 1; }
+
+  /* big centered calibration/pause countdown */
+  #bigCount {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 14px;
+    z-index: 6; pointer-events: none; opacity: 0;
+    transition: opacity .4s ease;
+  }
+  #bigCount.show { opacity: 1; }
+  #bigCount .num {
+    font-size: clamp(64px, 26vw, 140px); font-weight: 800;
+    color: var(--ember); text-shadow: 0 0 40px rgba(255,120,60,.5);
+    font-variant-numeric: tabular-nums; line-height: 1;
+  }
+  #bigCount .cap { font-size: 15px; color: var(--ink-dim); letter-spacing: .1em; word-break: keep-all; }
+
+  .fade-in-up { animation: fadeUp .7s ease both; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(14px);} to {opacity:1; transform:none;} }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="scene"></canvas>
+
+  <!-- INTRO -->
+  <div class="layer show" id="introLayer">
+    <div class="kicker fade-in-up">BRIQUETTE</div>
+    <h1 class="title fade-in-up">연탄불</h1>
+    <p class="body lead fade-in-up">겨울밤, 언덕 골목의 연탄 화덕.<br>이 불이 새벽까지 살아 있어야<br>윗집 할머니 방이 식지 않아요.</p>
+    <p class="body fade-in-up">골목이 조용할수록 불씨는 오래 갑니다.<br>잠시, 소리를 낮춰 주세요.</p>
+    <button class="btn fade-in-up" id="startBtn">불씨 지키기</button>
+    <p class="privacy fade-in-up">마이크의 소리 크기(수치)만 사용하며,<br>어떤 소리도 저장하거나 전송하지 않습니다.</p>
+  </div>
+
+  <!-- INFO (mic denied / fallback intro) -->
+  <div class="layer" id="fallbackLayer">
+    <div class="kicker">바람막이 모드</div>
+    <p class="body lead" id="fallbackMsg">마이크 없이도 불씨를 지킬 수 있어요.<br>소음이 밀려올 때 화면을 눌러<br>화덕을 감싸 주세요.</p>
+    <button class="btn" id="fallbackStartBtn">불씨 지키기</button>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="layer" id="successLayer">
+    <div class="kicker">새벽</div>
+    <p class="body lead" id="successMsg">새벽이 왔습니다.<br>굴뚝에서 연기가 오르고,<br>창문에 불이 켜집니다.</p>
+    <p class="body" id="successTime">당신이 지킨 고요: 30초</p>
+    <button class="btn" id="successRetry">다시 하기</button>
+  </div>
+
+  <!-- FAIL -->
+  <div class="layer" id="failLayer">
+    <div class="kicker" style="color:#8a7f6f">밤</div>
+    <p class="body lead">불씨가 잠들었습니다.<br>괜찮아요, 밤은 다시 옵니다.</p>
+    <p class="body" id="failTime">버틴 시간: 0초</p>
+    <button class="btn ghost" id="failRetry">다시 살피기</button>
+  </div>
+
+  <!-- HUD -->
+  <div id="hud">
+    <div class="hud-top">
+      <div id="timer"><span id="timerNum">30</span><small> 초의 밤</small></div>
+      <div class="heatbar-wrap">
+        <div class="heatbar-label">불 씨</div>
+        <div class="heatbar"><div id="heatfill"></div></div>
+      </div>
+    </div>
+    <div class="hud-bottom">
+      <div id="quietHint">조용합니다. 불씨가 살아납니다.</div>
+      <div class="noise-wrap"><div id="noisefill"></div></div>
+    </div>
+    <div id="holdPrompt">소음이 밀려와요 — 화면을 눌러 화덕을 감싸세요</div>
+  </div>
+
+  <div id="bigCount"><div class="num" id="bigCountNum">3</div><div class="cap" id="bigCountCap">숨을 고르고, 골목의 소리를 들어볼게요</div></div>
+
+  <div id="statusNote"></div>
+  <div id="debug"></div>
+</div>
+
+<script>
+"use strict";
+(function(){
+  // ============================================================
+  //  연탄불 — single-file mic-input calm game
+  // ============================================================
+
+  // ---------- Tunable parameters ----------
+  const P = {
+    CALIB_SEC: 3,
+    PLAY_SEC: 30,
+    ENDING_SEC: 5,
+    SMOOTH_TAU_MS: 250,     // input EMA time constant
+    BASELINE_TAU_S: 10,     // slow baseline tracking during play
+    PEAK_WINDOW_S: 10,      // recent peak decay window for auto-sensitivity
+    QUIET_THRESHOLD: 0.04,  // input <= this => "quiet" (lower = more sensitive)
+    DRAIN_RATE: 22,         // max heat loss / sec at full input
+    REGEN_RATE: 4,          // heat gain / sec while quiet
+    MIN_SENSITIVITY: 0.0022,// noise-floor-relative min (RMS units) — smaller = catches quieter sounds
+    INPUT_GAMMA: 0.6,       // <1 lifts small sounds (perceptual boost)
+    FFT: 1024,
+    HEAT_MAX: 100,
+    // fallback
+    FB_EVENT_MIN: 2, FB_EVENT_MAX: 6, // sec between noise events
+    FB_EVENT_DUR: [1.6, 3.0],         // event duration range
+    FB_DRAIN: 20,                     // heat loss/sec during unshielded event
+    FB_HOLD_PENALTY: 1,               // heat loss/sec while holding (air block)
+    FB_REGEN: 5,                      // heat gain/sec when calm & not holding
+  };
+
+  const DEBUG = /[?&]debug=1/.test(location.search);
+
+  // ---------- DOM ----------
+  const $ = s => document.querySelector(s);
+  const canvas = $('#scene'), ctx = canvas.getContext('2d');
+  const el = {
+    intro: $('#introLayer'), fallback: $('#fallbackLayer'),
+    success: $('#successLayer'), fail: $('#failLayer'),
+    hud: $('#hud'), timerNum: $('#timerNum'), heatfill: $('#heatfill'),
+    quietHint: $('#quietHint'), noisefill: $('#noisefill'),
+    holdPrompt: $('#holdPrompt'),
+    bigCount: $('#bigCount'), bigCountNum: $('#bigCountNum'), bigCountCap: $('#bigCountCap'),
+    statusNote: $('#statusNote'), debug: $('#debug'),
+    successTime: $('#successTime'), successMsg: $('#successMsg'),
+    failTime: $('#failTime'), fallbackMsg: $('#fallbackMsg'),
+  };
+  if (DEBUG) el.debug.classList.add('show');
+
+  // ---------- Canvas sizing (devicePixelRatio aware) ----------
+  let W = 0, H = 0, DPR = 1;
+  function resize(){
+    DPR = Math.min(window.devicePixelRatio || 1, 2.5);
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = Math.round(W * DPR);
+    canvas.height = Math.round(H * DPR);
+    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    buildScenery();
+  }
+  window.addEventListener('resize', resize);
+  window.addEventListener('orientationchange', () => setTimeout(resize, 200));
+
+  // ---------- Game state ----------
+  const S = { INTRO:'intro', CALIB:'calib', PLAY:'play', PAUSE:'pause', SUCCESS:'success', FAIL:'fail' };
+  let state = S.INTRO;
+  let mode = 'mic';            // 'mic' | 'fallback'
+  let heat = P.HEAT_MAX;
+  let playElapsed = 0;         // seconds elapsed in PLAY
+  let calibElapsed = 0;
+  let survivedSec = 0;
+  let endingT = 0;             // ending animation progress 0..1
+  let lastTs = 0;
+
+  // audio-derived
+  let input = 0;               // smoothed 0..1 noise level
+  let rawRms = 0, baseline = 0.01, sensitivity = P.MIN_SENSITIVITY, recentPeak = 0;
+  let inputRawLevel = 0;
+
+  // pause / visibility
+  let pausePending = false, pauseCountT = 0;
+
+  // ---------- Audio ----------
+  let audioCtx = null, analyser = null, micStream = null, timeBuf = null, audioReady = false;
+  const calibSamples = [];
+
+  let kickEl = null; // muted <audio> that "wakes" the mic stream on iOS
+  async function initAudio(){
+    // in-app browsers (KakaoTalk, Instagram, Naver, Facebook…) usually strip
+    // navigator.mediaDevices — detect early so we can tell the user why.
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      const e = new Error('no mediaDevices'); e.name = 'NoMediaDevices'; throw e;
+    }
+    // create + resume context inside the user gesture (iOS requirement)
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state !== 'running') { try { await audioCtx.resume(); } catch(e){} }
+
+    micStream = await navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation:false, noiseSuppression:false, autoGainControl:false }
+    });
+
+    // iOS Safari bug: createMediaStreamSource often yields SILENCE unless the
+    // MediaStream is also attached to a playing (muted) media element. This
+    // "kick" makes WebKit actually deliver samples to the WebAudio graph.
+    try {
+      kickEl = document.createElement('audio');
+      kickEl.srcObject = micStream;
+      kickEl.muted = true;
+      kickEl.volume = 0;
+      kickEl.setAttribute('playsinline', '');
+      kickEl.setAttribute('webkit-playsinline', '');
+      await kickEl.play().catch(()=>{});
+    } catch(e){}
+
+    const src = audioCtx.createMediaStreamSource(micStream);
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = P.FFT;
+    analyser.smoothingTimeConstant = 0;
+    src.connect(analyser);
+    // also route through a silent (gain 0) node to the destination so the graph
+    // keeps being "pulled" (belt-and-suspenders for iOS). No audible output.
+    const mute = audioCtx.createGain();
+    mute.gain.value = 0;
+    analyser.connect(mute);
+    mute.connect(audioCtx.destination);
+
+    timeBuf = new Float32Array(analyser.fftSize);
+    audioReady = true;
+  }
+
+  // keep the context awake (iOS suspends/interrupts aggressively)
+  function ensureAudioRunning(){
+    if (audioCtx && audioCtx.state !== 'running'){
+      audioCtx.resume().catch(()=>{});
+    }
+  }
+
+  function readRms(){
+    if (!audioReady) return 0;
+    analyser.getFloatTimeDomainData(timeBuf);
+    let sum = 0;
+    for (let i=0;i<timeBuf.length;i++){ const v=timeBuf[i]; sum += v*v; }
+    return Math.sqrt(sum / timeBuf.length);
+  }
+
+  function median(arr){
+    if (!arr.length) return 0.01;
+    const a = arr.slice().sort((x,y)=>x-y);
+    const m = a.length>>1;
+    return a.length%2 ? a[m] : (a[m-1]+a[m])/2;
+  }
+
+  // ---------- Audio -> input pipeline (per frame) ----------
+  function updateAudioInput(dt){
+    ensureAudioRunning();
+    rawRms = readRms();
+
+    // slow baseline tracking toward very-quiet moments during play
+    if (state === S.PLAY && mode === 'mic'){
+      // track downward quickly (quiet), upward slowly
+      if (rawRms < baseline){
+        const k = 1 - Math.exp(-dt / 2.0);      // adapt down over ~2s
+        baseline += (rawRms - baseline) * k;
+      } else {
+        const k = 1 - Math.exp(-dt / P.BASELINE_TAU_S);
+        baseline += (rawRms - baseline) * k;
+      }
+    }
+
+    const delta = Math.max(0, rawRms - baseline);
+
+    // auto sensitivity: decaying recent peak w/ floor
+    const decay = Math.exp(-dt / P.PEAK_WINDOW_S);
+    recentPeak = Math.max(delta, recentPeak * decay);
+    sensitivity = Math.max(recentPeak * 0.8, P.MIN_SENSITIVITY);
+
+    inputRawLevel = Math.min(1, delta / sensitivity);
+    // perceptual boost: lift small sounds so whispers register strongly
+    inputRawLevel = Math.pow(inputRawLevel, P.INPUT_GAMMA);
+
+    // EMA smoothing
+    const a = 1 - Math.exp(-dt / (P.SMOOTH_TAU_MS/1000));
+    input += (inputRawLevel - input) * a;
+    if (input < 0.0005) input = 0;
+  }
+
+  // ============================================================
+  //  Scenery generation (deterministic per resize)
+  // ============================================================
+  let stars = [], snow = [], roofs = [], windows = [], embers = [], ash = [], smoke = [];
+  let seed = 1;
+  function rnd(){ seed = (seed*1103515245 + 12345) & 0x7fffffff; return seed/0x7fffffff; }
+
+  function buildScenery(){
+    seed = 7;
+    // regions
+    const skyH = H * 0.40, townH = H * 0.25, groundY = skyH + townH;
+    // stars
+    stars = [];
+    const nStars = 26;
+    for (let i=0;i<nStars;i++){
+      stars.push({ x: rnd()*W, y: rnd()*skyH*0.92, r: rnd()*1.2+0.4, tw: rnd()*Math.PI*2, sp: rnd()*1.5+0.5 });
+    }
+    // snow
+    snow = [];
+    const nSnow = 26;
+    for (let i=0;i<nSnow;i++){
+      snow.push({ x: rnd()*W, y: rnd()*H, r: rnd()*2+0.8, sp: rnd()*14+7, drift: rnd()*10-5, ph: rnd()*Math.PI*2 });
+    }
+    // roof silhouette polygons (staircase of low houses)
+    roofs = []; windows = [];
+    let x = -20;
+    const baseY = groundY;
+    while (x < W + 40){
+      const w = W*(0.10 + rnd()*0.10);
+      const h = townH*(0.35 + rnd()*0.6);
+      const topY = baseY - h;
+      roofs.push({ x, w, topY, baseY });
+      // window on some houses
+      if (rnd() < 0.55){
+        const ww = Math.min(w*0.26, 22), wh = ww*1.25;
+        windows.push({
+          x: x + w*(0.3+rnd()*0.4) - ww/2,
+          y: topY + h*(0.28+rnd()*0.3),
+          w: ww, h: wh
+        });
+      }
+      x += w * (0.82 + rnd()*0.15);
+    }
+  }
+
+  // hearth geometry
+  function hearth(){
+    const cx = W*0.5;
+    const gy = H*0.65;                 // top of ground band
+    const baseY = H*0.90;              // stove sits here
+    const rw = Math.min(W*0.16, 86);   // stove half-width
+    const topY = baseY - Math.min(H*0.12, 96);
+    return { cx, baseY, topY, rw, holeY: topY, gy };
+  }
+
+  // ============================================================
+  //  Particle spawning
+  // ============================================================
+  function spawnEmbers(dt){
+    const h = hearth();
+    const heatN = heat / P.HEAT_MAX;
+    const target = Math.round(6 + heatN * 30);
+    // spawn rate proportional to heat
+    const rate = (10 + heatN*40) * dt;
+    let toSpawn = Math.floor(rate) + (Math.random() < (rate%1) ? 1 : 0);
+    if (embers.length > target*1.6) toSpawn = 0;
+    for (let i=0;i<toSpawn;i++){
+      const spread = h.rw*0.5*Math.sqrt(Math.random());
+      const ang = Math.random()*Math.PI*2;
+      embers.push({
+        x: h.cx + Math.cos(ang)*spread*0.6,
+        y: h.holeY + 4 + Math.random()*6,
+        vx: (Math.random()-0.5)*10,
+        vy: -(18 + Math.random()*30) * (0.5+heatN*0.7),
+        life: 0, max: 0.8 + Math.random()*1.2,
+        size: 1.2 + Math.random()*2.2*heatN,
+        hue: 20 + Math.random()*30
+      });
+    }
+  }
+  function spawnAsh(n, fromSide){
+    const h = hearth();
+    for (let i=0;i<n;i++){
+      let sx, svx;
+      if (fromSide === 'L'){ sx = -10; svx = 30+Math.random()*40; }
+      else if (fromSide === 'R'){ sx = W+10; svx = -(30+Math.random()*40); }
+      else { sx = h.cx + (Math.random()-0.5)*h.rw*1.4; svx = (Math.random()-0.5)*50; }
+      ash.push({
+        x: sx, y: (fromSide? H*0.55 + Math.random()*H*0.2 : h.holeY),
+        vx: svx, vy: -(10+Math.random()*20),
+        life: 0, max: 1.2+Math.random()*1.2,
+        size: 1.5+Math.random()*2.5, rot: Math.random()*Math.PI
+      });
+    }
+  }
+  function spawnSmoke(){
+    // from a chimney (success)
+    const r = roofs[Math.floor(roofs.length*0.3)] || {x:W*0.3, topY:H*0.5};
+    smoke.push({
+      x: r.x + 10, y: r.topY - 6,
+      vx: 6+Math.random()*6, vy: -(8+Math.random()*8),
+      life:0, max: 3+Math.random()*2, size: 6+Math.random()*8
+    });
+  }
+
+  function updateParticles(dt){
+    // embers
+    for (let i=embers.length-1;i>=0;i--){
+      const p = embers[i]; p.life += dt;
+      p.x += p.vx*dt; p.y += p.vy*dt; p.vy -= 6*dt; p.vx *= 0.99;
+      if (p.life > p.max) embers.splice(i,1);
+    }
+    // ash
+    for (let i=ash.length-1;i>=0;i--){
+      const p = ash[i]; p.life += dt;
+      p.x += p.vx*dt; p.y += p.vy*dt; p.vy += 8*dt; p.vx *= 0.98; p.rot += dt*2;
+      if (p.life > p.max) ash.splice(i,1);
+    }
+    // smoke
+    for (let i=smoke.length-1;i>=0;i--){
+      const p = smoke[i]; p.life += dt;
+      p.x += p.vx*dt; p.y += p.vy*dt; p.size += dt*4;
+      if (p.life > p.max) smoke.splice(i,1);
+    }
+    // snow (always)
+    for (const s of snow){
+      s.ph += dt;
+      s.y += s.sp*dt;
+      s.x += Math.sin(s.ph*0.6)*s.drift*dt*0.5 + s.drift*dt*0.15;
+      if (s.y > H+4){ s.y = -4; s.x = rnd()*W; }
+      if (s.x < -6) s.x = W+4; if (s.x > W+6) s.x = -4;
+    }
+  }
+
+  // ============================================================
+  //  Rendering
+  // ============================================================
+  function lerp(a,b,t){ return a+(b-a)*t; }
+  function mix(c1,c2,t){
+    return [Math.round(lerp(c1[0],c2[0],t)), Math.round(lerp(c1[1],c2[1],t)), Math.round(lerp(c1[2],c2[2],t))];
+  }
+  function rgb(c,a){ return a==null? `rgb(${c[0]},${c[1]},${c[2]})` : `rgba(${c[0]},${c[1]},${c[2]},${a})`; }
+
+  // sky color keyframes by "dawn" progress 0..1
+  const SKY_TOP    = [ [8,12,32], [20,26,54], [58,52,86], [255,168,96] ];
+  const SKY_BOT    = [ [24,26,54], [46,44,78], [120,86,110], [255,214,150] ];
+  function sampleGrad(keys, t){
+    const n = keys.length-1; const f = Math.min(0.999, Math.max(0,t))*n;
+    const i = Math.floor(f); return mix(keys[i], keys[i+1], f-i);
+  }
+
+  function render(){
+    const skyH = H*0.40;
+    // dawn progress: only advances near end + ending anim
+    let dawn = 0;
+    if (state === S.PLAY) dawn = Math.min(0.5, playElapsed/P.PLAY_SEC*0.5);
+    else if (state === S.SUCCESS) dawn = 0.5 + 0.5*endingT;
+    else if (state === S.CALIB || state === S.INTRO) dawn = 0;
+    else if (state === S.FAIL) dawn = Math.max(0, 0.15 - 0.15*endingT);
+
+    // ---- sky ----
+    const top = sampleGrad(SKY_TOP, dawn), bot = sampleGrad(SKY_BOT, dawn);
+    const g = ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0, rgb(top));
+    g.addColorStop(0.42, rgb(bot));
+    g.addColorStop(0.66, rgb(mix(bot,[10,10,20],0.55)));
+    g.addColorStop(1, rgb([6,7,16]));
+    ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+
+    // ---- moon ----
+    const moonA = Math.max(0, 1 - dawn*1.8);
+    if (moonA > 0.02){
+      const mx = W*0.78, my = skyH*0.34, mr = Math.min(W,H)*0.05;
+      const mg = ctx.createRadialGradient(mx,my,0,mx,my,mr*2.6);
+      mg.addColorStop(0, `rgba(255,248,225,${0.9*moonA})`);
+      mg.addColorStop(0.4, `rgba(255,245,220,${0.5*moonA})`);
+      mg.addColorStop(1, 'rgba(255,245,220,0)');
+      ctx.fillStyle = mg; ctx.beginPath(); ctx.arc(mx,my,mr*2.6,0,7); ctx.fill();
+      ctx.fillStyle = `rgba(255,250,235,${moonA})`;
+      ctx.beginPath(); ctx.arc(mx,my,mr,0,7); ctx.fill();
+    }
+
+    // ---- stars ----
+    const starA = Math.max(0, 1 - dawn*2.2);
+    if (starA > 0.02){
+      for (const s of stars){
+        s.tw += 0.016*s.sp;
+        const a = starA * (0.5 + 0.5*Math.sin(s.tw));
+        ctx.fillStyle = `rgba(255,255,240,${a})`;
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 7); ctx.fill();
+      }
+    }
+
+    // ---- snow ----
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    for (const s of snow){
+      ctx.globalAlpha = 0.35 + 0.4*(s.r/2.8);
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 7); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // ---- town silhouette ----
+    const townCol = mix([6,7,16], [40,30,44], dawn*0.8);
+    ctx.fillStyle = rgb(townCol);
+    for (const r of roofs){
+      ctx.fillRect(r.x, r.topY, r.w, r.baseY - r.topY + H); // extend down
+      // simple roof triangle
+      ctx.beginPath();
+      ctx.moveTo(r.x-3, r.topY);
+      ctx.lineTo(r.x + r.w/2, r.topY - r.w*0.16);
+      ctx.lineTo(r.x + r.w+3, r.topY);
+      ctx.closePath(); ctx.fill();
+    }
+    // windows (lit on success)
+    const winLit = state===S.SUCCESS ? Math.min(1, endingT*1.6) : (state===S.PLAY? 0.05 : 0);
+    for (let i=0;i<windows.length;i++){
+      const w = windows[i];
+      const lit = winLit * (0.6 + 0.4*Math.sin(i*1.7));
+      if (lit > 0.03){
+        const wg = ctx.createRadialGradient(w.x+w.w/2, w.y+w.h/2, 0, w.x+w.w/2, w.y+w.h/2, w.w*1.8);
+        wg.addColorStop(0, `rgba(255,196,110,${0.9*lit})`);
+        wg.addColorStop(1, 'rgba(255,196,110,0)');
+        ctx.fillStyle = wg;
+        ctx.fillRect(w.x-w.w, w.y-w.h, w.w*3, w.h*3);
+      }
+      ctx.fillStyle = lit>0.03 ? `rgba(255,206,130,${0.85*lit+0.1})` : 'rgba(20,18,30,0.9)';
+      ctx.fillRect(w.x, w.y, w.w, w.h);
+    }
+
+    // ---- ground band ----
+    const gg = ctx.createLinearGradient(0,H*0.62,0,H);
+    gg.addColorStop(0, rgb(mix([14,14,26],[60,44,50],dawn*0.7)));
+    gg.addColorStop(1, rgb(mix([4,5,12],[30,22,28],dawn*0.6)));
+    ctx.fillStyle = gg; ctx.fillRect(0,H*0.62,W,H*0.38);
+
+    // ---- smoke (behind stove, from chimney) ----
+    for (const p of smoke){
+      const t = p.life/p.max, a = (1-t)*0.4;
+      ctx.fillStyle = `rgba(200,200,210,${a})`;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, 7); ctx.fill();
+    }
+
+    drawHearth();
+
+    // ---- ash particles (grey, drifting) ----
+    for (const p of ash){
+      const t = p.life/p.max, a = (1-t)*0.7;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = `rgba(150,150,158,${a})`;
+      ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size);
+      ctx.restore();
+    }
+
+    // debug overlay
+    if (DEBUG){
+      el.debug.textContent =
+        `state    ${state} (${mode})\n`+
+        `rms      ${rawRms.toFixed(4)}\n`+
+        `baseline ${baseline.toFixed(4)}\n`+
+        `sens     ${sensitivity.toFixed(4)}\n`+
+        `rawLevel ${inputRawLevel.toFixed(3)}\n`+
+        `input    ${input.toFixed(3)}\n`+
+        `heat     ${heat.toFixed(1)}\n`+
+        `t        ${playElapsed.toFixed(1)}/${P.PLAY_SEC}`;
+    }
+  }
+
+  // draw a single flame tongue (teardrop): bright at base, fading toward the swaying tip
+  function flameTongue(cx, baseY, w, h, sway, colBase, colTip){
+    const tipX = cx + sway, tipY = baseY - h;
+    ctx.beginPath();
+    ctx.moveTo(cx - w/2, baseY);
+    ctx.bezierCurveTo(cx - w/2, baseY - h*0.45, tipX - w*0.30, tipY + h*0.34, tipX, tipY);
+    ctx.bezierCurveTo(tipX + w*0.30, tipY + h*0.34, cx + w/2, baseY - h*0.45, cx + w/2, baseY);
+    ctx.closePath();
+    const g = ctx.createLinearGradient(0, baseY, 0, tipY);
+    g.addColorStop(0, colBase);
+    g.addColorStop(1, colTip);
+    ctx.fillStyle = g;
+    ctx.fill();
+  }
+
+  function drawHearth(){
+    const h = hearth();
+    const heatN = heat / P.HEAT_MAX;
+
+    // stove body (cylinder silhouette)
+    const bodyCol = '#171015';
+    ctx.fillStyle = bodyCol;
+    // rounded-ish rectangle
+    const x0 = h.cx - h.rw, x1 = h.cx + h.rw;
+    ctx.beginPath();
+    ctx.moveTo(x0, h.topY+6);
+    ctx.quadraticCurveTo(h.cx, h.topY-8, x1, h.topY+6);
+    ctx.lineTo(x1, h.baseY);
+    ctx.quadraticCurveTo(h.cx, h.baseY+16, x0, h.baseY);
+    ctx.closePath(); ctx.fill();
+
+    // rim highlight from ember light
+    ctx.strokeStyle = `rgba(255,120,60,${0.25+0.5*heatN})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x0, h.topY+6);
+    ctx.quadraticCurveTo(h.cx, h.topY-8, x1, h.topY+6);
+    ctx.stroke();
+
+    // ---- ember glow (radial) ----
+    const gx = h.cx, gy = h.holeY;
+    const glowR = (h.rw*0.7) * (0.45 + heatN*0.9);
+    const emberCol = mix(mix([90,10,4],[255,120,40],Math.min(1,heatN*1.3)), [255,220,120], Math.max(0,heatN-0.6)/0.4);
+    const flicker = 0.85 + 0.15*Math.sin(performance.now()/90) + (input>0.2? -input*0.2:0);
+    const gGlow = ctx.createRadialGradient(gx, gy, 0, gx, gy, glowR*2.4);
+    gGlow.addColorStop(0, rgb(emberCol, (0.85*heatN+0.1)*flicker));
+    gGlow.addColorStop(0.35, rgb(emberCol, (0.5*heatN)*flicker));
+    gGlow.addColorStop(1, rgb(emberCol, 0));
+    ctx.fillStyle = gGlow;
+    ctx.beginPath(); ctx.ellipse(gx, gy, glowR*2.4, glowR*1.7, 0, 0, 7); ctx.fill();
+
+    // ambient wash on ground
+    const wash = ctx.createRadialGradient(gx, gy, 0, gx, gy, Math.min(W,H)*0.5);
+    wash.addColorStop(0, rgb(emberCol, 0.16*heatN));
+    wash.addColorStop(1, rgb(emberCol,0));
+    ctx.fillStyle = wash;
+    ctx.fillRect(0, H*0.55, W, H*0.45);
+
+    // ember bed (bright core dots)
+    const coreN = Math.round(4 + heatN*8);
+    for (let i=0;i<coreN;i++){
+      const ang = (i/coreN)*Math.PI*2 + performance.now()/2000;
+      const rr = h.rw*0.4*Math.sqrt((i%3)/3+0.1);
+      const ex = gx + Math.cos(ang)*rr*0.7, ey = gy + Math.sin(ang)*rr*0.35;
+      const b = 0.4 + 0.6*Math.abs(Math.sin(performance.now()/400 + i));
+      ctx.fillStyle = rgb(mix(emberCol,[255,240,180],0.4), b*heatN);
+      ctx.beginPath(); ctx.arc(ex, ey, 2+heatN*2, 0, 7); ctx.fill();
+    }
+
+    // ---- visible flame (layered tongues) ----
+    const ft = performance.now()/1000;
+    const flick = 1 + 0.12*Math.sin(ft*11) + 0.08*Math.sin(ft*17.3);
+    let flameH = Math.min(H*0.17, 160) * (0.22 + heatN*0.95) * flicker;
+    flameH *= (1 - Math.min(0.5, input*0.5));      // noise shrinks the flame
+    const flameW = h.rw * (0.7 + heatN*0.35);
+    const baseY = h.holeY + 6;
+
+    if (heatN > 0.02){
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      // outer soft body (deep orange, translucent)
+      flameTongue(gx, baseY, flameW*1.18, flameH*0.9 * flick,
+        Math.sin(ft*3.1)*flameW*0.12,
+        rgb(mix([140,26,0],[255,96,24], heatN), 0.5*heatN+0.05),
+        rgb([255,60,10], 0));
+      // side tongues for a fuller fire
+      flameTongue(gx - flameW*0.30, baseY, flameW*0.42, flameH*0.60*flick,
+        Math.sin(ft*6.2+2)*flameW*0.10 - flameW*0.05,
+        rgb([255,150,44], 0.55*heatN), rgb([255,80,0], 0));
+      flameTongue(gx + flameW*0.30, baseY, flameW*0.42, flameH*0.62*flick,
+        Math.sin(ft*5.5+4)*flameW*0.10 + flameW*0.05,
+        rgb([255,150,44], 0.55*heatN), rgb([255,80,0], 0));
+      // main flame (orange -> transparent)
+      flameTongue(gx, baseY, flameW*0.82, flameH,
+        Math.sin(ft*4.7+1)*flameW*0.14,
+        rgb(mix([255,120,20],[255,196,70], heatN), 0.75),
+        rgb([255,70,0], 0.04));
+      // inner flame (yellow)
+      flameTongue(gx, baseY, flameW*0.44, flameH*0.66,
+        Math.sin(ft*7.9+3)*flameW*0.10,
+        rgb([255,236,150], 0.85), rgb([255,150,30], 0.08));
+      // hot core (near white)
+      flameTongue(gx, baseY, flameW*0.20, flameH*0.40,
+        Math.sin(ft*9+2)*flameW*0.05,
+        rgb([255,250,232], 0.9*heatN+0.1), rgb([255,214,120], 0.08));
+      ctx.restore();
+    }
+
+    // ---- rising sparks ----
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    for (const p of embers){
+      const t = p.life/p.max, a = (1-t);
+      const c = mix([255,200,90],[255,90,30], t);
+      ctx.fillStyle = rgb(c, a*(0.5+0.5*heatN));
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size*(1-t*0.5), 0, 7); ctx.fill();
+    }
+    ctx.restore();
+
+    // fallback shield ring when holding
+    if (mode==='fallback' && holding && (state===S.PLAY)){
+      ctx.strokeStyle = `rgba(120,180,255,${0.35+0.25*Math.sin(performance.now()/120)})`;
+      ctx.lineWidth = 6;
+      ctx.beginPath(); ctx.ellipse(gx, gy, h.rw*1.5, h.rw*1.2, 0, 0, 7); ctx.stroke();
+    }
+  }
+
+  // ============================================================
+  //  HUD update
+  // ============================================================
+  function updateHUD(){
+    const remain = Math.max(0, Math.ceil(P.PLAY_SEC - playElapsed));
+    el.timerNum.textContent = remain;
+    const heatN = heat/P.HEAT_MAX;
+    el.heatfill.style.transform = `scaleX(${heatN})`;
+    el.heatfill.style.filter = heatN < 0.25 ? 'saturate(.6) brightness(.85)' : 'none';
+
+    if (mode==='mic'){
+      el.noisefill.style.transform = `scaleX(${input})`;
+      const loud = input > P.QUIET_THRESHOLD;
+      el.quietHint.classList.toggle('loud', loud);
+      el.quietHint.textContent = loud
+        ? '소리가 나요 — 재가 날립니다'
+        : '조용합니다. 불씨가 살아납니다.';
+    }
+  }
+
+  // ============================================================
+  //  Fallback mode logic
+  // ============================================================
+  let holding = false;
+  let fbEventActive = false, fbEventT = 0, fbEventDur = 0, fbNextEvent = 0, fbSide='L';
+
+  function fallbackTick(dt){
+    fbNextEvent -= dt;
+    if (!fbEventActive && fbNextEvent <= 0){
+      fbEventActive = true;
+      fbEventDur = P.FB_EVENT_DUR[0] + Math.random()*(P.FB_EVENT_DUR[1]-P.FB_EVENT_DUR[0]);
+      fbEventT = 0;
+      fbSide = Math.random()<0.5?'L':'R';
+      el.holdPrompt.classList.add('show');
+      el.quietHint.textContent = '소음이 밀려와요';
+      el.quietHint.classList.add('loud');
+    }
+    if (fbEventActive){
+      fbEventT += dt;
+      // ash pushing in from the side
+      if (Math.random() < 12*dt) spawnAsh(1, fbSide);
+      el.noisefill.style.transform = `scaleX(${Math.min(1, fbEventT/fbEventDur*0.9+0.3)})`;
+
+      if (holding){
+        // shielded: block main drain, small air-block penalty
+        heat -= P.FB_HOLD_PENALTY*dt;
+      } else {
+        heat -= P.FB_DRAIN*dt;
+      }
+      if (fbEventT >= fbEventDur){
+        fbEventActive = false;
+        fbNextEvent = P.FB_EVENT_MIN + Math.random()*(P.FB_EVENT_MAX-P.FB_EVENT_MIN);
+        el.holdPrompt.classList.remove('show');
+        el.quietHint.classList.remove('loud');
+        el.noisefill.style.transform = 'scaleX(0)';
+      }
+    } else {
+      // calm
+      if (holding){
+        heat -= P.FB_HOLD_PENALTY*dt;         // holding with no threat = mild penalty
+        el.quietHint.textContent = '지금은 괜찮아요 — 손을 떼어도 돼요';
+      } else {
+        heat += P.FB_REGEN*dt;
+        el.quietHint.textContent = '조용합니다. 불씨가 살아납니다.';
+        el.quietHint.classList.remove('loud');
+      }
+    }
+    const heatN = Math.max(0,heat)/P.HEAT_MAX;
+    el.heatfill.style.transform = `scaleX(${heatN})`;
+    el.timerNum.textContent = Math.max(0, Math.ceil(P.PLAY_SEC - playElapsed));
+  }
+
+  // hold handlers (fallback)
+  function onHoldStart(e){ if (state===S.PLAY && mode==='fallback'){ holding = true; e.preventDefault(); } }
+  function onHoldEnd(){ holding = false; }
+  canvas.addEventListener('pointerdown', onHoldStart);
+  window.addEventListener('pointerup', onHoldEnd);
+  window.addEventListener('pointercancel', onHoldEnd);
+  // any touch re-wakes an interrupted iOS AudioContext
+  window.addEventListener('pointerdown', ensureAudioRunning);
+
+  // ============================================================
+  //  Core play tick (mic mode)
+  // ============================================================
+  function playTick(dt){
+    if (mode==='mic'){
+      updateAudioInput(dt);
+      // heat dynamics
+      if (input > P.QUIET_THRESHOLD){
+        const over = (input - P.QUIET_THRESHOLD) / (1 - P.QUIET_THRESHOLD);
+        heat -= P.DRAIN_RATE * over * dt;
+        if (Math.random() < input*20*dt) spawnAsh(1, null);
+      } else {
+        heat += P.REGEN_RATE * dt;
+      }
+    } else {
+      fallbackTick(dt);
+    }
+    heat = Math.max(0, Math.min(P.HEAT_MAX, heat));
+    playElapsed += dt;
+    survivedSec = playElapsed;
+
+    if (heat <= 0){ toFail(); return; }
+    if (playElapsed >= P.PLAY_SEC){ toSuccess(); return; }
+  }
+
+  // ============================================================
+  //  State transitions
+  // ============================================================
+  function showLayer(node, on){ node.classList.toggle('show', on); }
+  function hideAllLayers(){ [el.intro, el.fallback, el.success, el.fail].forEach(n=>n.classList.remove('show')); }
+
+  function startCalibration(){
+    state = S.CALIB;
+    calibElapsed = 0; calibSamples.length = 0;
+    hideAllLayers();
+    el.bigCount.classList.add('show');
+    el.bigCountCap.textContent = '숨을 고르고, 골목의 소리를 들어볼게요';
+  }
+
+  function finishCalibration(){
+    // Detect a dead stream (iOS silence bug): a real mic — even in a quiet
+    // room — has a noise floor > ~1e-5. Exactly-zero over 3s means no signal.
+    const calibMax = calibSamples.reduce((m,v)=> v>m? v:m, 0);
+    if (mode === 'mic' && audioReady && calibMax < 1e-5){
+      mode = 'fallback';
+      el.bigCount.classList.remove('show');
+      el.fallbackMsg.innerHTML = '마이크가 켜졌지만 <b>소리 신호가 들어오지 않아요</b> (iOS 마이크 버그).<br>페이지를 완전히 새로고침하면 대개 해결돼요.<br><br>지금은 화면을 눌러 불씨를 지킬 수 있어요.';
+      hideAllLayers();
+      showLayer(el.fallback, true);
+      return;
+    }
+    baseline = median(calibSamples) || 0.01;
+    recentPeak = 0;
+    sensitivity = P.MIN_SENSITIVITY;
+    input = 0;
+    heat = P.HEAT_MAX;
+    playElapsed = 0;
+    el.bigCount.classList.remove('show');
+    el.hud.classList.add('show');
+    state = S.PLAY;
+  }
+
+  function startFallback(){
+    mode = 'fallback';
+    state = S.PLAY;
+    heat = P.HEAT_MAX; playElapsed = 0;
+    fbEventActive=false; fbNextEvent = P.FB_EVENT_MIN + Math.random()*2; holding=false;
+    hideAllLayers();
+    el.hud.classList.add('show');
+    el.noisefill.style.transform='scaleX(0)';
+  }
+
+  function toSuccess(){
+    state = S.SUCCESS; endingT = 0;
+    survivedSec = P.PLAY_SEC;
+    el.hud.classList.remove('show');
+    el.holdPrompt.classList.remove('show');
+    el.successTime.textContent = `당신이 지킨 고요: ${Math.round(survivedSec)}초`;
+    setTimeout(()=> showLayer(el.success, true), P.ENDING_SEC*1000*0.55);
+  }
+  function toFail(){
+    state = S.FAIL; endingT = 0;
+    el.hud.classList.remove('show');
+    el.holdPrompt.classList.remove('show');
+    el.failTime.textContent = `버틴 시간: ${Math.round(survivedSec)}초`;
+    setTimeout(()=> showLayer(el.fail, true), 1400);
+  }
+
+  function resetToPlay(){
+    hideAllLayers();
+    heat = P.HEAT_MAX; playElapsed = 0; endingT = 0;
+    embers.length=0; ash.length=0; smoke.length=0;
+    if (mode==='mic'){ startCalibration(); }
+    else { startFallback(); }
+  }
+
+  // ============================================================
+  //  Buttons
+  // ============================================================
+  $('#startBtn').addEventListener('click', async () => {
+    // must init audio inside gesture
+    try {
+      await initAudio();
+      mode = 'mic';
+      startCalibration();
+    } catch(err){
+      // denied or unsupported -> explain why, then offer fallback
+      mode = 'fallback';
+      let why;
+      const inApp = /KAKAOTALK|Instagram|NAVER|FBAN|FBAV|Line|DaumApps|everytimeApp/i.test(navigator.userAgent);
+      if (err.name === 'NoMediaDevices' || inApp){
+        why = '지금 <b>앱 안의 브라우저</b>로 열려 있어 마이크를 쓸 수 없어요.<br>우측 상단 메뉴에서 <b>Safari(또는 Chrome)로 열기</b>를 눌러 주세요.';
+      } else if (err.name === 'NotAllowedError' || err.name === 'SecurityError'){
+        why = '마이크 <b>권한이 거부</b>되었어요.<br>주소창의 자물쇠(ⓘ) → 마이크 <b>허용</b> 후 새로고침해 주세요.';
+      } else if (err.name === 'NotFoundError'){
+        why = '마이크를 찾지 못했어요.';
+      } else if (location.protocol === 'file:'){
+        why = 'file://로 열면 마이크를 쓸 수 없어요.';
+      } else {
+        why = '마이크를 시작하지 못했어요 (' + (err.name||'오류') + ').';
+      }
+      el.fallbackMsg.innerHTML = why + '<br><br>대신 화면을 눌러 불씨를 지킬 수 있어요.<br>소음이 밀려올 때 화면을 눌러 화덕을 감싸 주세요.';
+      hideAllLayers();
+      showLayer(el.fallback, true);
+    }
+  });
+  $('#fallbackStartBtn').addEventListener('click', startFallback);
+  $('#successRetry').addEventListener('click', resetToPlay);
+  $('#failRetry').addEventListener('click', resetToPlay);
+
+  // ============================================================
+  //  Visibility / pause
+  // ============================================================
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden){
+      if (state === S.PLAY){ state = S.PAUSE; }
+      if (audioCtx && audioCtx.state==='running'){ audioCtx.suspend().catch(()=>{}); }
+    } else {
+      if (state === S.PAUSE){
+        // resume after 3s countdown
+        pausePending = true; pauseCountT = 3;
+        el.bigCount.classList.add('show');
+        el.bigCountCap.textContent = '다시 불씨 곁으로';
+      }
+      if (audioCtx && audioCtx.state==='suspended' && (state===S.PLAY||state===S.PAUSE||pausePending)){
+        audioCtx.resume().catch(()=>{});
+      }
+    }
+  });
+
+  // ============================================================
+  //  Main loop
+  // ============================================================
+  function frame(ts){
+    requestAnimationFrame(frame);
+    if (!lastTs) lastTs = ts;
+    let dt = (ts - lastTs)/1000; lastTs = ts;
+    if (dt > 0.1) dt = 0.1;   // clamp big gaps (tab switch)
+
+    // sample audio during calibration/menus too (keeps analyser warm)
+    if (state === S.CALIB){
+      calibElapsed += dt;
+      if (audioReady){ ensureAudioRunning(); const r = readRms(); calibSamples.push(r); }
+      const n = Math.max(1, Math.ceil(P.CALIB_SEC - calibElapsed));
+      el.bigCountNum.textContent = n;
+      if (calibElapsed >= P.CALIB_SEC) finishCalibration();
+    }
+    else if (state === S.PLAY){
+      playTick(dt);
+      spawnEmbers(dt);
+      updateHUD();
+    }
+    else if (state === S.PAUSE){
+      if (pausePending){
+        pauseCountT -= dt;
+        el.bigCountNum.textContent = Math.max(1, Math.ceil(pauseCountT));
+        if (pauseCountT <= 0){
+          pausePending = false;
+          el.bigCount.classList.remove('show');
+          state = S.PLAY;
+        }
+      }
+    }
+    else if (state === S.SUCCESS){
+      endingT = Math.min(1, endingT + dt/P.ENDING_SEC);
+      if (Math.random() < 8*dt) spawnSmoke();
+      spawnEmbers(dt);
+    }
+    else if (state === S.FAIL){
+      endingT = Math.min(1, endingT + dt/2);
+      // dying embers -> ash
+      if (Math.random() < 6*dt*(1-endingT)) spawnAsh(1,null);
+    }
+
+    updateParticles(dt);
+    render();
+  }
+
+  // ---------- landscape hint ----------
+  function checkOrient(){
+    const landscape = window.innerWidth > window.innerHeight * 1.15;
+    if (landscape && (state===S.INTRO||state===S.PLAY)){
+      el.statusNote.textContent = '세로로 들면 골목이 더 아늑해요';
+      el.statusNote.classList.add('show');
+      setTimeout(()=>el.statusNote.classList.remove('show'), 3200);
+    }
+  }
+  window.addEventListener('resize', ()=>{ clearTimeout(window.__ot); window.__ot=setTimeout(checkOrient,300); });
+
+  // ---------- boot ----------
+  resize();
+  if (location.protocol === 'file:'){
+    el.statusNote.textContent = 'file://에서는 마이크를 쓸 수 없어요 — 바람막이 모드로 안내됩니다';
+    el.statusNote.classList.add('show');
+    setTimeout(()=>el.statusNote.classList.remove('show'), 4500);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

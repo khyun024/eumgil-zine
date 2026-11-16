@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>우연의 픽셀 : 산책 직조기</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  
+  <!-- 2D Art Canvas -->
+  <canvas id="art-canvas"></canvas>
+
+  <!-- Intro Screen Overlay -->
+  <div id="intro-overlay" class="overlay poster-layout">
+    <div class="poster-top-bar">
+      <div class="top-left">우연의 픽셀</div>
+      <div class="top-right">기하학적 투영</div>
+    </div>
+    
+    <div class="poster-hero">
+      <h1 class="intro-title">우연의<br>픽셀<br>산책 (*) 직조기<br>프로젝트</h1>
+    </div>
+
+    <div class="poster-details">
+      <div class="detail-col">
+        앞선 산책자가 남긴<br>가장 짙은 색을 찾아주세요.<br>
+        나만의 시선으로 기록해 주세요.
+      </div>
+      <div class="detail-col">
+        그 색이 지금 걷는 길 위에서<br>어떤 모습으로 존재하는지.<br>
+        수많은 변수를 만나 숲을 이룹니다.
+      </div>
+    </div>
+    
+    <div class="poster-footer">
+      <div class="footer-bg-text">SAN x 22</div>
+      <button id="start-btn" class="btn pill-btn">여정 시작하기 ➔</button>
+    </div>
+  </div>
+
+  <!-- Camera / Capture UI Overlay (Hidden by default) -->
+  <div id="camera-overlay" class="overlay hidden flex-center">
+    <div class="camera-container">
+      <div class="camera-header">
+        <h2 id="quest-text">이전 산책자의 색상을 찾아보세요</h2>
+        <div id="target-color-indicator" class="color-indicator"></div>
+      </div>
+      
+      <div class="video-wrapper">
+        <video id="camera-stream" autoplay playsinline></video>
+        <canvas id="snapshot-canvas" style="display:none;"></canvas>
+      </div>
+
+      <div class="camera-controls">
+        <button id="capture-btn" class="btn btn-primary">색상 채집하기</button>
+        <button id="close-camera-btn" class="btn btn-secondary">취소</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Navigation Controls (Hidden by default) -->
+  <div id="nav-controls" class="nav-controls hidden">
+    <button id="btn-play-all" class="btn btn-small btn-nav">🎵 전체 음악 듣기</button>
+    <button id="btn-fit-bounds" class="btn btn-small btn-nav">전체 한눈에 보기</button>
+    <button id="btn-focus-latest" class="btn btn-small btn-nav">가장 최근 지점 보기</button>
+  </div>
+
+  <!-- Transition Overlay (Poetic Cinema Mode) -->
+  <div id="transition-overlay" class="overlay hidden flex-center cinematic">
+    <div class="transition-content">
+      <h2 id="transition-title">새로운 산책의 조각이 이어졌습니다</h2>
+      
+      <div class="color-compare">
+        <div class="color-box-container">
+          <div class="color-box" id="old-color-box"></div>
+          <span class="color-label" id="old-location-label">이전의 장소</span>
+        </div>
+        <div class="color-arrow">≈</div>
+        <div class="color-box-container">
+          <div class="color-box" id="new-color-box"></div>
+          <span class="color-label" id="new-location-label">당신의 장소</span>
+        </div>
+      </div>
+      
+      <!-- Gemini API (Mock) Poetic Text -->
+      <div class="poetic-text-container">
+        <p id="poetic-text">"두 사진 사이의 시각적 연결고리를 찾고 있습니다..."</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info Panel (Node Click) -->
+  <div id="node-info-panel" class="info-panel hidden">
+    <h3 id="node-location">위치</h3>
+    <div class="color-preview-container">
+      <div id="node-color" class="color-indicator small"></div>
+      <span id="node-color-hex">#FFFFFF</span>
+    </div>
+    <button id="accept-quest-btn" class="btn btn-small mt-10">이 색상 이어받기</button>
+    <button id="close-info-btn" class="btn-close">&times;</button>
+  </div>
+
+  <!-- Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+  <!-- Main Application Logic -->
+  <script src="./script.js"></script>
+</body>
+</html>

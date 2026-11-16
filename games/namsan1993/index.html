@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>남산 버려진 카페 (1993) - 레트로 VHS 사운드 공포 게임</title>
+  <meta name="description" content="1993년 남산의 버려진 카페에서 벌어지는 절차적 사운드 공포 추리 게임. 소리 묘사만으로 살인마를 찾아내세요.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Orbit&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  
+  <!-- MediaPipe Hands, Face Mesh & Camera Utilities for Motion & Stress Tracking -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+  <script type="module" crossorigin src="./assets/index-WRQA8Gor.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-CBUeBvTL.css">
+</head>
+<body>
+  <!-- VHS Glitch Overlay (Retro Atmosphere) -->
+  <div class="vhs-overlay"></div>
+  <div class="vhs-scanlines"></div>
+  <div id="camera-flash" class="camera-flash hidden"></div>
+
+  <!-- AR Real-Time Camera Background Video (Behind the 3D Canvas) -->
+  <video id="ar-background-video" autoplay playsinline muted></video>
+
+  <!-- Main Container -->
+  <div id="app">
+    <!-- Intro / Lobby Screen -->
+    <div id="lobby-screen" class="screen-overlay active">
+      <div class="crt-flicker"></div>
+      <div class="lobby-content">
+        <h1 class="glitch-title" data-text="남산 버려진 카페 1993">남산 버려진 카페 1993</h1>
+        <p class="subtitle">RETRO VHS PSYCHODRAMA SOCIAL DEDUCTION GAME</p>
+        
+        <div class="game-description">
+          <p class="desc-line">1993년 비 내리는 남산의 한 모퉁이, 버려진 지하 카페.</p>
+          <p class="desc-line">이곳에서 참혹한 살인 사건이 발생했습니다.</p>
+          <p class="desc-line">4명의 생존자, 4개의 소리 조각. 범인은 단 한 명입니다.</p>
+          <p class="desc-line-highlight">주의: 대화 중 특정 핵심 단어는 소음 필터에 의해 완벽히 검열됩니다.</p>
+          <p class="desc-line-highlight">오직 의성어와 소리 묘사만으로 살인의 타임라인을 맞추고 범인을 처단하십시오.</p>
+        </div>
+
+        <div class="setup-options">
+          <label class="custom-checkbox">
+            <input type="checkbox" id="accomplice-option">
+            <span class="checkmark"></span>
+            공범 모드 활성화 (5인 변형 룰 적용 - 수사관 중 1명이 공범이 됩니다)
+          </label>
+        </div>
+        
+        <div class="lobby-action-row" style="display: flex; gap: 15px; width: 100%;">
+          <button id="start-game-btn" class="retro-btn" style="flex: 3;">
+            <span class="btn-text">주파수 동기화 및 게임 시작</span>
+            <span class="btn-glitch"></span>
+          </button>
+
+          <button id="lobby-download-btn" class="retro-btn" style="flex: 1.5; border-color: var(--neon-cyan); color: var(--neon-cyan);">
+            <span class="btn-text">💾 단서 음향 받기</span>
+          </button>
+
+          <button id="lobby-vr-btn" class="retro-btn vr-btn" style="flex: 1; border-color: var(--neon-amber); color: var(--neon-amber);">
+            <span class="btn-text">🕶️ VR 모드</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3D Canvas -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- 1993 Camcorder Clue Signal Decoder Viewfinder UI Overlay -->
+    <div id="camera-scanner-view" class="scanner-overlay hidden">
+      <div class="viewfinder-frame">
+        <div class="viewfinder-corners">
+          <div class="corner top-left"></div>
+          <div class="corner top-right"></div>
+          <div class="corner bottom-left"></div>
+          <div class="corner bottom-right"></div>
+        </div>
+        <div class="scanner-indicators">
+          <div class="rec-dot-wrapper">
+            <span class="rec-dot"></span>
+            <span class="rec-text">REC</span>
+          </div>
+          <div class="tape-counter">TCR 00:03:20:15</div>
+        </div>
+        
+        <div class="signal-container">
+          <div class="crt-grid"></div>
+          <div class="oscilloscope-wave"></div>
+          <div class="scanner-aim"></div>
+        </div>
+
+        <div class="scanner-status">
+          <span class="blink-text" id="scanner-instruction">[ 주파수 신호 탐지됨 - 동기화 대기 ]</span>
+          <div class="scan-progress-bar">
+            <div class="scan-progress-fill" id="scan-progress"></div>
+          </div>
+        </div>
+        <p class="camera-fallback-info">
+          스페이스바[Space]를 꾹 누르거나 화면을 길게 터치하여 단서 주파수를 동기화하십시오.
+        </p>
+      </div>
+    </div>
+
+    <!-- Game HUD -->
+    <div id="game-hud" class="hud-overlay">
+      <!-- Top Status (Phase Info & Timer & AR Toggle) -->
+      <div class="top-status">
+        <div class="phase-badge" id="hud-phase-name">PHASE 1: 밤 - 침묵의 탐색</div>
+        <div class="timer-display" id="hud-timer">05:00</div>
+        <div class="hud-buttons-row" style="display: flex; gap: 8px;">
+          <button id="ar-toggle-btn" class="ar-btn">AR 모드 전환 [OFF]</button>
+          <button id="hud-vr-btn" class="ar-btn vr-btn" style="border-color: var(--neon-amber); color: var(--neon-amber);">VR 모드 [OFF]</button>
+        </div>
+      </div>
+
+      <!-- Flashlight Warning Crosshair (Visible in Phase 1 & 3) -->
+      <div class="reticle" id="hud-reticle">
+        <div class="reticle-dot"></div>
+      </div>
+
+      <!-- Interaction Toast Prompt (Simplified for easy rooting) -->
+      <div id="interaction-prompt" class="toast-prompt">
+        [화면 탭 또는 E 키] 단서 수색 개시
+      </div>
+
+      <!-- Don't Scream Style Minimal Mic Level Bar (Visible in Phase 1 Search) -->
+      <div id="mic-level-container" class="mic-hud-container">
+        <span class="mic-label">AUDIO SENSITIVITY</span>
+        <div class="mic-bar-track">
+          <div id="mic-level-bar"></div>
+        </div>
+        <div class="mic-warning-threshold">SCREAM THRESHOLD (68dB)</div>
+      </div>
+
+      <!-- Left Side Panels: Sonar Radar & Players list (Hidden in Phase 1) -->
+      <div class="hud-left-wrapper hidden-phase1">
+        <!-- Sonar Radar HUD (Pulsing Sonar Compass) -->
+        <div class="radar-panel">
+          <h3>방위 탐지 소나</h3>
+          <div class="radar-canvas-container">
+            <canvas id="radar-canvas" width="180" height="180"></canvas>
+          </div>
+          <div class="radar-legend">붉은 점: 오컬트 비콘 신호</div>
+        </div>
+
+        <div class="players-panel">
+          <h3>현장 인원 리스트</h3>
+          <div class="player-list-item" id="player-item-0">
+            <span class="p-status dot-online"></span>
+            <span class="p-name">나 (플레이어)</span>
+            <span class="p-shoes" id="my-shoes-mesh">-</span>
+          </div>
+          <div class="player-list-item" id="player-item-1">
+            <span class="p-status dot-online"></span>
+            <span class="p-name">임형사 (AI)</span>
+            <span class="p-shoes" id="ai1-shoes-mesh">-</span>
+          </div>
+          <div class="player-list-item" id="player-item-2">
+            <span class="p-status dot-online"></span>
+            <span class="p-name">박기자 (AI)</span>
+            <span class="p-shoes" id="ai2-shoes-mesh">-</span>
+          </div>
+          <div class="player-list-item" id="player-item-3">
+            <span class="p-status dot-online"></span>
+            <span class="p-name">최학자 (AI)</span>
+            <span class="p-shoes" id="ai3-shoes-mesh">-</span>
+          </div>
+          <div class="player-list-item" id="player-item-4">
+            <span class="p-status dot-online"></span>
+            <span class="p-name">김요원 (AI)</span>
+            <span class="p-shoes" id="ai4-shoes-mesh">-</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive Virtual Touch Joystick for touchpads & mobile -->
+      <div id="joystick-container" class="joystick-wrapper">
+        <div id="joystick-base" class="joystick-base">
+          <div id="joystick-knob" class="joystick-knob"></div>
+        </div>
+        <div class="joystick-legend">터치 조이스틱 이동 지원</div>
+      </div>
+
+      <!-- 5-PLAYER MULTI-CAM VIDEO GRID PANEL -->
+      <div id="multi-cam-grid-panel" class="multi-cam-panel">
+        <div class="panel-header">📹 MULTIPLAYER VIDEO CAM GRID</div>
+        
+        <div class="cam-grid">
+          <!-- Slot 0: Player 0 (Me) -->
+          <div class="cam-slot" id="cam-slot-0">
+            <div class="cam-label">나 (Player)</div>
+            <div class="cam-feed">
+              <video id="player-pip-video" autoplay playsinline muted></video>
+              <canvas id="player-pip-canvas" width="100" height="75"></canvas>
+            </div>
+            <div class="cam-status">
+              <span id="player-stress-status">STRESS: 0%</span>
+            </div>
+          </div>
+
+          <!-- Slot 1: Remote Player 1 (Im) -->
+          <div class="cam-slot" id="cam-slot-1">
+            <div class="cam-label">임형사 (AI)</div>
+            <div class="cam-feed">
+              <canvas id="bot-cam-1" width="100" height="75"></canvas>
+            </div>
+            <div class="cam-status">
+              <span id="bot1-stress-status">STRESS: 0%</span>
+            </div>
+          </div>
+
+          <!-- Slot 2: Remote Player 2 (Park) -->
+          <div class="cam-slot" id="cam-slot-2">
+            <div class="cam-label">박기자 (AI)</div>
+            <div class="cam-feed">
+              <canvas id="bot-cam-2" width="100" height="75"></canvas>
+            </div>
+            <div class="cam-status">
+              <span id="bot2-stress-status">STRESS: 0%</span>
+            </div>
+          </div>
+
+          <!-- Slot 3: Remote Player 3 (Choi) -->
+          <div class="cam-slot" id="cam-slot-3">
+            <div class="cam-label">최학자 (AI)</div>
+            <div class="cam-feed">
+              <canvas id="bot-cam-3" width="100" height="75"></canvas>
+            </div>
+            <div class="cam-status">
+              <span id="bot3-stress-status">STRESS: 0%</span>
+            </div>
+          </div>
+
+          <!-- Slot 4: Remote Player 4 (Kim) -->
+          <div class="cam-slot" id="cam-slot-4">
+            <div class="cam-label">김요원 (AI)</div>
+            <div class="cam-feed">
+              <canvas id="bot-cam-4" width="100" height="75"></canvas>
+            </div>
+            <div class="cam-status">
+              <span id="bot4-stress-status">STRESS: 0%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scribe ECG heartbeat line at bottom of MultiCam panel -->
+        <div class="ecg-graph-wrapper" style="margin-top: 5px;">
+          <canvas id="ecg-canvas" width="220" height="30"></canvas>
+          <div class="ecg-details">
+            <span class="ecg-rate" id="ecg-rate-text">HR: 72 BPM</span>
+            <span class="ecg-mental" id="ecg-mental-text">MY STRESS: 0%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Private Inventory (Right Side Sliding Panel - Hidden in Phase 1) -->
+      <div class="inventory-panel hidden-phase1" id="hud-inventory">
+        <div class="panel-tab">🔒 개인 수첩 & 단서 카드</div>
+        <div class="panel-content">
+          <div class="inventory-status" id="inv-card-status">
+            획득한 카드가 없습니다. 어두운 맵을 수색하십시오.
+          </div>
+          <div class="inventory-card-details hidden" id="inv-card-details">
+            <div class="card-role-title" id="inv-role-title">역할: -</div>
+            <div class="card-mesh-desc" id="inv-mesh-desc">식별 메쉬: -</div>
+            <div class="audio-fragment-section">
+              <div class="section-title">🔊 할당된 루프 음파 단서</div>
+              <div class="audio-player-mock">
+                <button id="play-private-audio-btn" class="audio-play-btn">▶ 단서 소리 듣기</button>
+                <div class="waveform-animation" id="audio-wave">
+                  <span></span><span></span><span></span><span></span><span></span>
+                </div>
+              </div>
+              <p class="audio-desc-text" id="inv-audio-desc">
+                카드를 루팅하면 이 영역에 소리 설명과 주파수 파형이 로드됩니다.
+              </p>
+              <button id="download-inventory-audio-btn" class="retro-btn" style="width: 100%; font-size: 0.8rem; margin-top: 10px; padding: 6px 12px; border-color: var(--neon-cyan); color: var(--neon-cyan);">
+                💾 WAV 다운로드
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Chat & Discussion Logs (Visible in Phase 2) -->
+      <div class="chat-container hidden" id="hud-chat-container">
+        <div class="chat-header">
+          <span class="header-dot"></span>
+          <span class="header-title">PROXIMITY VOCAL-TEXT TERMINAL (1993)</span>
+          <span class="filter-status" id="chat-filter-status">FILTER: ACTIVE</span>
+        </div>
+        <div class="chat-log" id="chat-log">
+          <!-- Chat messages go here -->
+        </div>
+        <div class="chat-input-wrapper">
+          <input type="text" id="chat-input" placeholder="소리를 묘사하여 범인을 지목하십시오..." disabled>
+          <button id="chat-send-btn" disabled>전송</button>
+        </div>
+      </div>
+
+      <!-- Instruction / Toast Guidance overlay -->
+      <div id="general-guidance" class="guidance-overlay">
+        PHASE 1: 맵을 돌아다니며 단서(QR 카드)를 루팅하십시오.
+      </div>
+
+      <!-- Floating Camcorder Shutter Capture Button (Right-Center for easy thumb access) -->
+      <button id="hud-capture-btn" class="hud-capture-btn" title="사진 촬영">📸</button>
+    </div>
+
+    <!-- Cinematic End Screen -->
+    <div id="end-screen" class="screen-overlay hidden">
+      <div class="end-content">
+        <h2 id="end-title" class="end-title-text">INVESTIGATORS WIN</h2>
+        <p id="end-subtitle" class="end-subtitle-text">처형자가 체포되었습니다.</p>
+        <div class="end-details" id="end-details-log">
+          <!-- Details of the murder timeline -->
+        </div>
+        <button id="restart-btn" class="retro-btn">다시 시작</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sound Download Popup Modal -->
+  <div id="download-modal" class="qr-modal-overlay hidden">
+    <div class="qr-modal-content" style="background-color: rgba(5, 12, 8, 0.95); border: 2px solid var(--neon-cyan); box-shadow: 0 0 25px rgba(0, 243, 255, 0.35); border-radius: 12px; padding: 30px; width: 340px; text-align: center; position: relative;">
+      <span id="close-download-modal" class="close-btn" style="position: absolute; top: 10px; right: 15px; font-size: 28px; color: var(--neon-cyan); cursor: pointer; transition: color 0.2s ease;">&times;</span>
+      <h3 style="color: var(--neon-cyan); margin-bottom: 15px; font-family: 'Courier New', monospace; font-size: 1.2rem; letter-spacing: 2px; text-shadow: 0 0 5px var(--neon-cyan);">💾 DOWNLOAD CLUE SOUNDS</h3>
+      <p style="font-size: 0.80rem; color: #888; margin-bottom: 20px; font-family: sans-serif;">절차적으로 합성되는 각 구역의 단서 오디오(WAV)를 다운로드합니다.</p>
+      
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <button class="retro-btn download-clue-btn" data-card="A" style="font-size: 0.85rem; padding: 8px; border-color: var(--neon-green); color: var(--neon-green); background-color: transparent;">🔑 단서 A: 녹슨 옛날 열쇠</button>
+        <button class="retro-btn download-clue-btn" data-card="B" style="font-size: 0.85rem; padding: 8px; border-color: var(--neon-green); color: var(--neon-green); background-color: transparent;">✂️ 단서 B: 피 묻은 가위</button>
+        <button class="retro-btn download-clue-btn" data-card="C" style="font-size: 0.85rem; padding: 8px; border-color: var(--neon-green); color: var(--neon-green); background-color: transparent;">📼 단서 C: 카세트테이프 (살인 timeline)</button>
+        <button class="retro-btn download-clue-btn" data-card="D" style="font-size: 0.85rem; padding: 8px; border-color: var(--neon-green); color: var(--neon-green); background-color: transparent;">🍵 단서 D: 깨진 회색 찻잔</button>
+        <button class="retro-btn download-clue-btn" data-card="E" style="font-size: 0.85rem; padding: 8px; border-color: var(--neon-green); color: var(--neon-green); background-color: transparent;">📔 단서 E: 가죽 다이어리</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CSS & JS entries loaded via Vite -->
+</body>
+</html>
