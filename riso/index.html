@@ -105,7 +105,43 @@
   .signal .t b{color:var(--ink);font-weight:500}
   .signal .tune{display:none !important}
   .signal.can .tune{display:inline-block}
-  .keys{position:fixed;right:18px;bottom:18px;z-index:5;color:var(--ink-2);font-size:11px;background:var(--paper);padding:2px 6px}
+  .keys{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:5;color:var(--pb);font-size:11.5px;background:var(--sheet);padding:3px 10px;border:2px solid var(--pb);box-shadow:3px 3px 0 rgba(64,89,196,.22);transition:opacity 1.2s;white-space:nowrap}
+  body.walked .keys{opacity:0;pointer-events:none}
+  /* ── 화면 가장자리: 지도와 같은 결의 픽셀 아이콘 ───────── */
+  :root{--pb:#4059C4;--pr:#D2644E}
+  .signal{display:none !important}
+  .pi{display:inline-grid;place-items:center;font-style:normal}
+  .pi svg,.ib svg,.flyout svg{display:block}
+  svg .b{fill:var(--pb)} svg .r{fill:var(--pr)} svg .w{fill:var(--sheet)}
+  .plate{left:16px;top:14px;gap:8px}
+  .ptitle{display:flex;align-items:center;gap:9px;background:var(--sheet);border:2px solid var(--pb);box-shadow:3px 3px 0 rgba(64,89,196,.22);padding:5px 10px 5px 7px}
+  .ptitle b{display:block;font-family:var(--f-serif);font-weight:400;font-size:17px;line-height:1.05;color:var(--ink)}
+  .ptitle em{display:block;font-style:normal;font-size:10.5px;color:var(--pb);letter-spacing:.02em}
+  .pstat{list-style:none;margin:0;padding:0;display:flex;gap:5px;flex-wrap:wrap;max-width:min(430px,calc(100vw - 80px))}
+  .pstat li{display:flex;align-items:center;gap:5px;background:var(--sheet);border:2px solid var(--pb);padding:2px 7px 2px 5px;font-size:11.5px;color:var(--ink);line-height:1.5}
+  .pstat li b{font-weight:500;color:var(--pb)}
+  .dock{position:fixed;right:14px;top:14px;z-index:6;display:flex;flex-direction:column;gap:7px;align-items:center}
+  .dock .sep{width:14px;height:2px;background:var(--pb);opacity:.45;margin:1px 0}
+  .ib{position:relative;appearance:none;-webkit-appearance:none;width:38px;height:38px;padding:0;display:grid;place-items:center;background:var(--sheet);border:2px solid var(--pb);box-shadow:3px 3px 0 rgba(64,89,196,.22);cursor:pointer;color:var(--ink);font-family:var(--f-mono)}
+  .ib:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 rgba(64,89,196,.3)}
+  .ib:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(64,89,196,.3)}
+  .ib.on{background:var(--pb)} .ib.on svg .b{fill:var(--sheet)}
+  .ib.off svg{opacity:.35}
+  .ib.off::before{content:'';position:absolute;left:4px;right:4px;top:calc(50% - 1.5px);height:3px;background:var(--pr);transform:rotate(-45deg)}
+  .ib::after{content:attr(data-tip);position:absolute;right:calc(100% + 9px);top:50%;transform:translateY(-50%);background:var(--pb);color:var(--sheet);font-size:11.5px;padding:3px 8px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s}
+  .ib:hover::after,.ib:focus-visible::after,.ib.tipon::after{opacity:1}
+  .fly{position:relative}
+  .flyout{position:absolute;right:calc(100% + 10px);top:-2px;background:var(--sheet);border:2px solid var(--pb);box-shadow:4px 4px 0 rgba(64,89,196,.22);padding:5px;display:flex;flex-direction:column;gap:2px;min-width:148px;z-index:9}
+  .flyout[hidden]{display:none}
+  .flyout .fh{font-size:10.5px;color:var(--pb);padding:1px 6px 4px;border-bottom:2px dotted var(--pb);margin-bottom:3px}
+  .flyout .lnk{display:flex;align-items:center;gap:9px;padding:4px 7px;font-size:12px;border:0;border-radius:0;background:none;text-align:left;cursor:pointer;color:var(--ink);line-height:1.3}
+  .flyout .lnk:hover{background:rgba(64,89,196,.12)}
+  .flyout .lnk.on{background:var(--pb);color:var(--sheet);padding:4px 7px;border-radius:0}
+  .flyout .lnk.on svg .b{fill:var(--sheet)}
+  .dock .pal{position:relative;right:auto;top:auto;padding:0;background:none;display:block}
+  .dock .cbtn{width:38px;height:38px;border-radius:0;border:2px solid var(--pb);box-shadow:3px 3px 0 rgba(64,89,196,.22)}
+  .dock .cpop{right:calc(100% + 10px);top:-2px;border:2px solid var(--pb);box-shadow:4px 4px 0 rgba(64,89,196,.22)}
+  @media (max-width:760px){ .dock{right:8px;top:8px;gap:5px} .ib,.dock .cbtn{width:32px;height:32px} .plate{left:8px;top:8px} .ptitle b{font-size:14px} .keys{display:block;bottom:10px} }
   .keys .k{border:1px solid var(--ink-2);padding:0 5px;font-size:10.5px;border-radius:3px}
   body.overview .signal,body.overview .keys{visibility:hidden}
   .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:20;background:var(--ink);color:var(--sheet);padding:6px 12px;border-radius:6px;opacity:0;transition:opacity .3s;pointer-events:none;font-size:12px;max-width:calc(100vw - 40px);text-align:center}
@@ -276,25 +312,42 @@
     .signal{width:calc(100vw - 36px);bottom:12px;left:18px}
     .toast{bottom:150px}
   }
+  /* ── 딱지 · 버튼 · 알림도 같은 결로 ───────── */
+  .lab{background:var(--pb);border-radius:0}
+  .lab.b{background:var(--pb)} .lab.g{background:#4E9C48} .lab.o{background:var(--pr)}
+  .lnk.on,.lnk.play{background:var(--pb);color:var(--sheet);border-radius:0}
+  .card{border:2px solid var(--pb);box-shadow:4px 4px 0 rgba(64,89,196,.22)}
+  .toast{background:var(--sheet);color:var(--ink);border:2px solid var(--pb);border-radius:0;box-shadow:3px 3px 0 rgba(64,89,196,.22);bottom:56px}
+  .cbar{background:var(--pb)}
+  .cut .lnk.play{background:var(--sheet);color:var(--pb)}
+  .flyout .lnk.on{background:var(--pb);color:var(--sheet)}
 </style>
 
 <svg id="map" aria-label="수상한 산책클럽: 에-움-길 우회로 404 지도"></svg>
 <div class="grain" aria-hidden="true"></div>
 
 <header class="plate">
-  <span class="lab">수상한 산책클럽 <span style="opacity:.85">✶ 에-움-길 우회로 404</span></span>
-  <p><b id="lvText" style="color:var(--ink);font-weight:500">레벨 1 / 4</b> · <span id="steps">0</span> 걸음 · 거점 <span id="foundCnt">0</span> / 21 · 조우 <span id="metCnt">0</span> / <span id="metTot">0</span> · 에움 ×<span id="ratio">1.0</span></p>
+  <div class="ptitle"><i class="pi" data-i="house" data-u="2"></i><span><b>수상한 산책클럽</b><em>에-움-길 우회로 404</em></span></div>
+  <ul class="pstat">
+    <li title="레벨"><b id="lvText">레벨 1 / 4</b></li>
+    <li title="걸음"><i class="pi" data-i="foot"></i><span id="steps">0</span></li>
+    <li title="찾은 거점"><i class="pi" data-i="tower"></i><span><span id="foundCnt">0</span>/21</span></li>
+    <li title="조우"><i class="pi" data-i="cat"></i><span><span id="metCnt">0</span>/<span id="metTot">0</span></span></li>
+    <li title="에움: 지름길보다 몇 배 돌았나"><i class="pi" data-i="loop"></i><span>×<span id="ratio">1.0</span></span></li>
+  </ul>
 </header>
-<nav class="tools" aria-label="도구">
-  <button class="lnk" id="mapBtn" title="M">내 지도 보기 ⤢</button>
-  <button class="lnk" id="listBtn" title="L">거점 목록</button>
-  <button class="lnk" id="musBtn" aria-pressed="true">음악 ♪</button>
-  <button class="lnk" id="sndBtn" aria-pressed="true">효과음 ♪</button>
-  <button class="lnk" id="resetBtn">새 종이</button>
+<nav class="dock" aria-label="도구">
+  <button class="ib" id="mapBtn" data-tip="내 지도 보기 (M)" aria-label="내 지도 보기"></button>
+  <button class="ib" id="listBtn" data-tip="거점 목록 (L)" aria-label="거점 목록"></button>
+  <span class="sep"></span>
+  <div class="pal" id="pal" role="group" aria-label="길 색 고르기"></div>
+  <div class="fly"><button class="ib" id="styBtn" data-tip="길 모양" aria-label="길 모양 고르기"></button><div class="flyout" id="sty" role="group" aria-label="길 모양 고르기" hidden><span class="fh">길 모양</span></div></div>
+  <div class="fly"><button class="ib" id="gaitBtn" data-tip="걸음걸이" aria-label="걸음걸이 고르기"></button><div class="flyout" id="gait" role="group" aria-label="걸음걸이 고르기" hidden><span class="fh">걸음걸이</span></div></div>
+  <span class="sep"></span>
+  <button class="ib" id="musBtn" data-tip="음악" aria-label="음악" aria-pressed="true"></button>
+  <button class="ib" id="sndBtn" data-tip="효과음" aria-label="효과음" aria-pressed="true"></button>
+  <button class="ib" id="resetBtn" data-tip="새 종이" aria-label="새 종이"></button>
 </nav>
-<div class="pal" id="pal" role="group" aria-label="길 색 고르기"><span>길 색</span></div>
-<div class="gait sty" id="sty" role="group" aria-label="길 모양 고르기"><span>길 모양</span></div>
-<div class="gait" id="gait" role="group" aria-label="걸음걸이 고르기"><span>걸음</span></div>
 
 <div class="signal card" id="signal">
   <svg class="compass" viewBox="-30 -30 60 60" aria-hidden="true">
@@ -306,7 +359,7 @@
   <div class="t" id="sigText">거점을 찾는 중</div>
   <button class="lnk on tune" id="tuneBtn">열기 ↵</button>
 </div>
-<div class="keys"><span class="k">클릭</span> 그곳까지 걷기 · <span class="k">방향키</span> 직접 걷기 · <span class="k">M</span> 내 지도</div>
+<div class="keys">종이를 누르면 그곳까지 걷는다 · 방향키로도 걷는다</div>
 
 <aside class="side" id="side">
   <div class="inner">
@@ -575,7 +628,7 @@
     // 철길
     { const rr = rng('rail-px'); for (let x = 0; x < WW; x += 150) { if (!clear(x + 75, 1150, 100)) continue; const g = el('g', {}, TG); wall(g, rr, x, 1140, 150); reg(g, x + 75, 1150, 60); } }
     // 기수 라벨(각 기수의 첫 표식 위)
-    ORDER.forEach(c => { const t = TOWERS.find(x => x.cohort === c), txt = `레벨 ${ORDER.indexOf(c) + 1} · ${COHORTS[c].name} · ${COHORTS[c].who} · ${COHORTS[c].when}`, w = txt.length * 8.6 + 24, x = t.p[0], y = t.p[1] - 140, g = el('g', { transform:`translate(${x} ${y}) rotate(${c % 2 ? -2 : 2})` }, map); el('rect', { x:-w / 2, y:-13, width:w, height:26, rx:6, fill:C.ink }, g); const tx = el('text', { 'text-anchor':'middle', 'dominant-baseline':'central', 'font-size':12.5, style:'fill:#F7F6F2' }, g); tx.textContent = txt; reg(g, x, y, 120); });
+    ORDER.forEach(c => { const t = TOWERS.find(x => x.cohort === c), txt = `레벨 ${ORDER.indexOf(c) + 1} · ${COHORTS[c].name} · ${COHORTS[c].who} · ${COHORTS[c].when}`, w = txt.length * 8.6 + 24, x = t.p[0], y = t.p[1] - 140, g = el('g', { transform:`translate(${x} ${y}) rotate(${c % 2 ? -2 : 2})` }, map); el('rect', { x:-w / 2 + 3, y:-10, width:w, height:26, fill:PB, opacity:.22 }, g); el('rect', { x:-w / 2, y:-13, width:w, height:26, fill:PW, stroke:PB, 'stroke-width':2 }, g); const tx = el('text', { 'text-anchor':'middle', 'dominant-baseline':'central', 'font-size':12.5 }, g); tx.textContent = txt; reg(g, x, y, 120); });
   }
 
   // ── 내가 걸은 길 · 전선 ──────────────────────────────────
@@ -737,7 +790,7 @@
   // ── 상태 ─────────────────────────────────────────────
   const me = { x:START[0], y:START[1] };
   let target = null, keys = { l:0, r:0, u:0, d:0 }, pts = [START[0], START[1]], trailLen = 0, visited = [], beacon = null, live = null, nearHouse = false, autoKey = 'house', overview = false, lastT = 0, dirty = false, saveT = 0, chunk = null, listDirty = true, liveEnc = null, met = [], lvWalk = [null, null, null, null], lvStart = 0, pendingLv = null, curEnc = null, encStep = 0, log = [], replay = null, stageG = null, boilT = null, capT = null;
-  const cam = { x:me.x, y:me.y, w:1000 }; let zoomT = 0;
+  const cam = { x:me.x, y:me.y, w:1000 }; let zoomT = 0, walked = false;
   const planted = id => visited.includes(id), isMet = id => met.includes(id);
   const curLv = () => { for (const L of LV) if (!L.towers.every(t => planted(t.id))) return L.n; return 5; };
   // 길 색: 고른 뒤부터 걷는 길이 그 색으로 그려진다(한 지도에 여러 색이 남는다)
@@ -822,7 +875,7 @@
     }
     pose(dt, moved, me.x - mvx0);
     goal.classList.toggle('on', !!target); if (target) goal.setAttribute('transform', `translate(${target[0]} ${target[1]})`);
-    if (moved) { if (Math.hypot(me.x - pts[pts.length - 2], me.y - pts[pts.length - 1]) > 7) { trailTo(me.x, me.y); renderHud(); } revealAround(me.x, me.y, 190); closeMemo(); walking = performance.now(); }
+    if (moved) { if (Math.hypot(me.x - pts[pts.length - 2], me.y - pts[pts.length - 1]) > 7) { trailTo(me.x, me.y); renderHud(); } revealAround(me.x, me.y, 190); closeMemo(); walking = performance.now(); if (!walked) { walked = true; document.body.classList.add('walked'); } }
     WK.setAttribute('transform', `translate(${me.x.toFixed(1)} ${me.y.toFixed(1)})`);
     if (replay) { replay.acc += replay.per * dt; while (replay.acc >= 1 && replay.i < replay.n) { replay.acc -= 1; const i = replay.i++, x = pts[i * 2], y = pts[i * 2 + 1]; inkTo(x, y, pts[i * 2 - 2], pts[i * 2 - 1], colAt(i), styAt(i)); revealDom(x, y, 190); while (replay.k < replay.ev.length && replay.ev[replay.k].i <= i) replayEv(replay.ev[replay.k++]); }
       const j = Math.min(replay.n - 1, replay.i - 1); WK.setAttribute('transform', `translate(${pts[j * 2]} ${pts[j * 2 + 1]})`); $('#doneStat').textContent = `다시 보는 중 · ${Math.round(replay.i / replay.n * 100)}%`; if (replay.i >= replay.n) endReplay(true); }
@@ -933,8 +986,8 @@
       else if (!a.paused) { a.volume = Math.max(0, a.volume - .006); if (a.volume < .004) a.pause(); } });
     if (!pen.bad) { try { pen.playbackRate = GT.rate; } catch (e) {} const tv = on && performance.now() - walking < 220 && !cutOpen() ? PEN_VOL : 0; pen.volume = Math.max(0, Math.min(1, pen.volume + (tv - pen.volume) * .3)); if (tv && pen.paused) { const pr = pen.play(); if (pr && pr.catch) pr.catch(() => {}); } else if (!tv && pen.volume < .01 && !pen.paused) pen.pause(); }
   }, 80);
-  function setSound(on, quiet) { soundOn = on; try { localStorage.setItem('eumgil-sound', on ? '1' : '0'); } catch (e) {} const b = $('#sndBtn'); b.textContent = on ? '효과음 ♪' : '효과음 끔'; b.setAttribute('aria-pressed', on); b.classList.toggle('off', !on); if (!on) Object.keys(SND).forEach(n => { if (BGN.indexOf(n) < 0) { clearInterval(SND[n].fadeT); SND[n].pause(); } }); else if (!quiet) { kick(); play('pop'); } }
-  function setMusic(on, quiet) { musicOn = on; try { localStorage.setItem('eumgil-music', on ? '1' : '0'); } catch (e) {} const b = $('#musBtn'); b.textContent = on ? '음악 ♪' : '음악 끔'; b.setAttribute('aria-pressed', on); b.classList.toggle('off', !on); if (!on) BGN.forEach(n => { if (SND[n]) SND[n].pause(); }); else if (!quiet) { audioKick = false; kick(); } }
+  function setSound(on, quiet) { soundOn = on; try { localStorage.setItem('eumgil-sound', on ? '1' : '0'); } catch (e) {} const b = $('#sndBtn'); b.dataset.tip = on ? '효과음 켜짐' : '효과음 꺼짐'; b.setAttribute('aria-pressed', on); b.classList.toggle('off', !on); if (!on) Object.keys(SND).forEach(n => { if (BGN.indexOf(n) < 0) { clearInterval(SND[n].fadeT); SND[n].pause(); } }); else if (!quiet) { kick(); play('pop'); } }
+  function setMusic(on, quiet) { musicOn = on; try { localStorage.setItem('eumgil-music', on ? '1' : '0'); } catch (e) {} const b = $('#musBtn'); b.dataset.tip = on ? '음악 켜짐' : '음악 꺼짐'; b.setAttribute('aria-pressed', on); b.classList.toggle('off', !on); if (!on) BGN.forEach(n => { if (SND[n]) SND[n].pause(); }); else if (!quiet) { audioKick = false; kick(); } }
   $('#sndBtn').addEventListener('click', () => setSound(!soundOn)); $('#musBtn').addEventListener('click', () => setMusic(!musicOn)); setSound(soundOn, true); setMusic(musicOn, true);
   ['pointerdown', 'keydown'].forEach(k => addEventListener(k, kick, { passive:true }));
   // 조우 컷씬(마주치면 바로 시작)
@@ -1007,7 +1060,7 @@
     const f = $('#finale'); f.classList.remove('on'); void f.offsetWidth; f.classList.add('on'); play('paper'); setTimeout(() => play('level'), 2400); setTimeout(() => { f.classList.remove('on'); renderLegend(); }, 6600); }
   function setOverview(on) {
     if (!on && replay) endReplay(false);
-    overview = on; document.body.classList.toggle('overview', on); closeMemo(); target = null; $('#mapBtn').textContent = on ? '가까이 보기 ⤡' : '내 지도 보기 ⤢'; $('#mapBtn').classList.toggle('on', on);
+    overview = on; document.body.classList.toggle('overview', on); closeMemo(); target = null; $('#mapBtn').dataset.tip = on ? '가까이 보기 (M)' : '내 지도 보기 (M)'; $('#mapBtn').classList.toggle('on', on);
     if (!on) return; renderLegend(); const sc = shortcut(), st = Math.round(trailLen / 8), d = new Date(), ds = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
     cartL1.textContent = `${ds} · 거점 ${visited.length} / ${TOTAL} · 조우 ${met.length} / ${ENC.length} · ${st.toLocaleString()} 걸음`;
     cartL2.textContent = sc > 0 ? `지름길 ${Math.round(sc / 8).toLocaleString()} 걸음 → 내 에움길 ${st.toLocaleString()} 걸음 (×${(trailLen / sc).toFixed(1)})` : '아직 찾은 거점이 없다. 걸은 길만 그려져 있다';
@@ -1078,7 +1131,7 @@
   $('#saveBtn').addEventListener('click', saveImage);
   $('#backBtn').addEventListener('click', () => setOverview(false));
   let resetArm = 0;
-  $('#resetBtn').addEventListener('click', () => { const b = $('#resetBtn'); if (Date.now() - resetArm > 4000) { resetArm = Date.now(); b.textContent = '한 번 더 누르면 지워집니다'; b.classList.add('on'); setTimeout(() => { b.textContent = '새 종이'; b.classList.remove('on'); }, 4000); return; } dirty = false; try { localStorage.removeItem(STORE); } catch (e) {} pts = []; location.reload(); });
+  $('#resetBtn').addEventListener('click', () => { const b = $('#resetBtn'); if (Date.now() - resetArm > 4000) { resetArm = Date.now(); b.dataset.tip = '한 번 더 누르면 지워집니다'; b.classList.add('on', 'tipon'); setTimeout(() => { b.dataset.tip = '새 종이'; b.classList.remove('on', 'tipon'); }, 4000); return; } dirty = false; try { localStorage.removeItem(STORE); } catch (e) {} pts = []; location.reload(); });
   let toastT; function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2800); }
   addEventListener('pagehide', () => { if (pts.length) save(true); });
 
@@ -1113,6 +1166,38 @@
     STYLES.forEach(([id, name]) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'lnk'; b.dataset.s = id; b.textContent = name; b.addEventListener('click', () => { roadSty = id; const i = pts.length / 2, last = styLog[styLog.length - 1]; if (last[0] === i) last[1] = id; else styLog.push([i, id]); try { localStorage.setItem('eumgil-trail', id); } catch (e) {} mark(); toast(`지금부터 걷는 길이 ${name}(으)로 남는다`); }); box.appendChild(b); }); mark(); }
   { const box = $('#gait'), mark = () => box.querySelectorAll('button').forEach(b => { const on = b.dataset.g === GT.id; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
     GAITS.forEach(g => { const b = document.createElement('button'); b.type = 'button'; b.className = 'lnk'; b.dataset.g = g.id; b.textContent = g.name; b.addEventListener('click', () => { GT = g; try { localStorage.setItem('eumgil-gait', g.id); } catch (e) {} mark(); toast(`걸음걸이 · ${g.name}`); }); box.appendChild(b); }); mark(); }
+  // 도구 막대와 표지: 지도와 같은 결의 픽셀 아이콘
+  const ICO = {
+    house:['....B....B.', '...BBB...B.', '..RRRRR..B.', '.RRRRRRR.B.', 'RRRRRRRRRR.', '.B.....B...', '.B.BB..B...', '.B.BB..B...', '.BBBBBBB...'],
+    foot:['.BB....', '.BB....', '.BB.BB.', '....BB.', '.B..BB.', '.......', '....B..'],
+    tower:['..B..', 'BBBBB', '..R..', '.RRR.', '.RRR.', 'RRRRR', 'BBBBB'],
+    cat:['B...B', 'BB.BB', 'BBBBB', 'BWBWB', 'BBRBB', '.BBB.'],
+    loop:['.BBBBB.', 'B.....B', 'B.BBB.B', 'B.B.B.B', 'B.B...B', 'B.BBBBB', 'B......'],
+    map:['BBB.BBB.BBB', 'B.BBB.BBB.B', 'B.B.B.B.B.B', 'B.B.R.B.B.B', 'B.B.B.R.B.B', 'B.B.B.B.R.B', 'B.B.B.B.B.B', 'B.BBB.BBB.B', 'BBB.BBB.BBB'],
+    list:['R.BBBBBBB', '.........', 'R.BBBBBBB', '.........', 'R.BBBBBBB', '.........', 'R.BBBBBBB'],
+    note:['...BBBBBB', '...B....B', '...B....B', '...B....B', '...B....B', '.BBB..BBB', 'BBBB.BBBB', '.BB...BB.'],
+    spk:['....B....', '...BB..R.', 'BBBBB...R', 'BBBBB.R.R', 'BBBBB...R', '...BB..R.', '....B....'],
+    paper:['BBBBBB...', 'B....BB..', 'B.....BB.', 'B......B.', 'B..R...B.', 'B.RRR..B.', 'B..R...B.', 'B......B.', 'BBBBBBBB.'],
+    sty_foot:['.BB......', '.BB...BB.', '.BB...BB.', '......BB.', '.B.......', '......B..'],
+    sty_tape:['B.B.B.B.B', 'RBRBRBRBR', 'BRBRBRBRB', 'RBRBRBRBR', '.B.B.B.B.'],
+    sty_dash:['.........', 'BBB.BBB.B', 'BBB.BBB.B', '.........'],
+    sty_stamp:['.B..R.R..B.', 'BBB..R..B.B', '.B..R.R.BBB'],
+    sty_road:['BBBBBBBBB', 'BBBBBBBBB', 'BW.WW.WWB', 'BBBBBBBBB', 'BBBBBBBBB'],
+    gait_stroll:['...BB....', '...BB....', '..RRRR...', '..RRRR...', '...RR....', '..B..B...', '.B....B..'],
+    gait_quick:['R....BB..', '.....BB..', 'RR..RRRR.', '....RRRR.', 'R....RR..', '....B..B.', '...B....B'],
+    gait_stride:['....BB...', '....BB...', '.B.RRRR.B', '..BRRRRB.', '....RR...', '...B..B..', '.BB....BB'],
+    gait_saunter:['...BB..R.', '...BB.R..', '..RRRR...', '..RRRR...', '...RR....', '...BB....', '...BB....'],
+    gait_hop:['...BB....', '...BB....', '.BRRRRB..', '..RRRR...', '...RR....', '..B..B...', '.........', '..R..R...'],
+  };
+  function ico(name, u = 3) { const rows = ICO[name], w = rows[0].length, h = rows.length, sv = el('svg', { viewBox:`0 0 ${w} ${h}`, width:w * u, height:h * u, 'shape-rendering':'crispEdges', 'aria-hidden':'true' });
+    rows.forEach((row, j) => { let i = 0; while (i < w) { const c = row[i]; if (c === '.') { i++; continue; } let k = i; while (k < w && row[k] === c) k++; el('rect', { x:i, y:j, width:k - i, height:1.02, class:c === 'R' ? 'r' : c === 'W' ? 'w' : 'b' }, sv); i = k; } }); return sv; }
+  { const setI = (b, name, u) => { const old = b.querySelector('svg'); if (old) old.remove(); b.prepend(ico(name, u)); };
+    document.querySelectorAll('.pi').forEach(n => n.appendChild(ico(n.dataset.i, +n.dataset.u || 2)));
+    [['mapBtn', 'map'], ['listBtn', 'list'], ['musBtn', 'note'], ['sndBtn', 'spk'], ['resetBtn', 'paper']].forEach(([id, nm]) => setI($('#' + id), nm, 2.6));
+    document.querySelectorAll('#sty button').forEach(b => setI(b, 'sty_' + b.dataset.s, 2)); document.querySelectorAll('#gait button').forEach(b => setI(b, 'gait_' + b.dataset.g, 2));
+    const fly = (btnId, boxId, cur) => { const btn = $('#' + btnId), box = $('#' + boxId), sync = () => setI(btn, cur(), 2.6); sync(); btn.addEventListener('click', e => { e.stopPropagation(); const open = box.hidden; document.querySelectorAll('.flyout').forEach(f => { f.hidden = true; }); box.hidden = !open; }); box.addEventListener('click', () => { sync(); box.hidden = true; }); box.addEventListener('pointerdown', e => e.stopPropagation()); };
+    fly('styBtn', 'sty', () => 'sty_' + roadSty); fly('gaitBtn', 'gait', () => 'gait_' + GT.id);
+    addEventListener('pointerdown', e => { if (!e.target.closest('.fly')) document.querySelectorAll('.flyout').forEach(f => { f.hidden = true; }); }); }
   let introT = 0, going = false, introTap = () => {};
   function start() { const c = $('#cover'); if (c.classList.contains('gone')) return; clearTimeout(introT); c.classList.remove('wait'); c.classList.add('out', 'gone'); cam.w = Math.max(cam.w, 2700); zoomT = 220; kick(); toast(resumed ? '걷던 자리에서 이어서' : '종이를 누르면 그곳까지 걷는다. 걸은 자리가 길이 된다'); }
   // 인트로: 포스터 빛깔의 지도를 여섯 칸으로 접어 두고, 보물지도처럼 한 칸씩 천천히 편다
