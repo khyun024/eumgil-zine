@@ -45,7 +45,7 @@
   @keyframes ring{0%{transform:scale(.2);opacity:.8}100%{transform:scale(1);opacity:0}}
   .tower .tree{opacity:0;transition:opacity .6s}
   .tower.done .tree{opacity:1}
-  .house .win{fill:#fff}
+  .house .win{fill:#F7F6F2}
   .house.lit .win{fill:#F2C94C}
   .smoke{animation:smoke 3.4s ease-out infinite;transform-box:fill-box;transform-origin:center bottom;opacity:0}
   .smoke:nth-child(2){animation-delay:1.2s}.smoke:nth-child(3){animation-delay:2.3s}
@@ -419,12 +419,12 @@
   const fig = el('g', { id:'walkfig' }, defs); el('circle', { cy:-9, r:4, fill:C.ink }, fig); el('path', { d:'M0 -5 V6 M0 6 L-5 15 M0 6 L5 15 M-6 0 L0 -2 L6 2', fill:'none', stroke:C.ink, 'stroke-width':2.4, 'stroke-linecap':'round' }, fig);
 
   // ── 픽셀 그림: 파랑과 빨강 두 가지 잉크. 면은 격자·빗금·망점으로 채운다 ──
-  const PB = '#1437FF', PR = '#FF2A1F';
-  const PGRID = pat('pgrid', 8, 8, p => { el('rect', { width:8, height:8, fill:'#fff' }, p); el('path', { d:'M0 1.2 H8 M1.2 0 V8', stroke:PR, 'stroke-width':2.2 }, p); el('rect', { x:4, y:4, width:1.7, height:1.7, fill:PB }, p); });
+  const PB = '#4059C4', PR = '#D2644E', PW = '#F7F6F2';
+  const PGRID = pat('pgrid', 8, 8, p => { el('rect', { width:8, height:8, fill:PW }, p); el('path', { d:'M0 1.2 H8 M1.2 0 V8', stroke:PR, 'stroke-width':2.2 }, p); el('rect', { x:4, y:4, width:1.7, height:1.7, fill:PB }, p); });
   const PHAT = pat('phat', 6, 6, p => el('path', { d:'M-1 1 L1 -1 M0 6 L6 0 M5 7 L7 5', stroke:PB, 'stroke-width':1.4 }, p));
   const PHATR = pat('phatr', 6, 6, p => el('path', { d:'M-1 1 L1 -1 M0 6 L6 0 M5 7 L7 5', stroke:PR, 'stroke-width':1.4 }, p));
   const PDIT = pat('pdit', 4, 4, p => { el('rect', { width:2, height:2, fill:PB }, p); el('rect', { x:2, y:2, width:2, height:2, fill:PB }, p); });
-  const PFILL = { B:PB, R:PR, W:'#fff', g:PGRID, h:PHAT, r:PHATR, d:PDIT };
+  const PFILL = { B:PB, R:PR, W:PW, g:PGRID, h:PHAT, r:PHATR, d:PDIT };
   const blk = (par, x, y, w, h, f, a) => el('rect', Object.assign({ x, y, width:w, height:h, fill:PFILL[f] || f, 'shape-rendering':'crispEdges' }, a || {}), par);
   // 글자로 적은 그림을 픽셀로 찍는다. 아래 가운데가 원점이고, map으로 글자를 다른 채움으로 바꿔 쓴다
   function pix(par, rows, u = 4, map = {}, a = {}) { const g = el('g', Object.assign({ 'shape-rendering':'crispEdges' }, a), par), w = rows[0].length, x0 = -w * u / 2, y0 = -rows.length * u;
@@ -438,6 +438,9 @@
     pWave:['...BBB..B', '...BBB..B', '...BBB.B.', '....B..B.', '..ccccc..', '.B.ccc...', '.B.ccc...', '.B.ccc...', '...ccc...', '..ccccc..', '..ccccc..', '...B.B...', '...B.B...', '...B.B...', '...B.B...', '..BB.BB..'],
     pFwd:['...BBB...', '...BBB...', '...BBB...', '....B....', '..ccccc..', '...cccBBB', '...ccc...', '...cccBBB', '...ccc...', '..ccccc..', '..ccccc..', '...B.B...', '...B.B...', '...B.B...', '...B.B...', '..BB.BB..'],
     cat:['c......c.c.', 'c......ccc.', 'c.....ccWcc', '.c...cccccc', '.cccccccc..', '..ccccccc..', '..ccccccc..', '..c.c.c.c..'],
+    cat2:['........c.c', '........ccc', '.cccccccWcc', 'ccccccccccc', 'ccccccccccc', '.c.......c.'],
+    cat3:['c.......c.c', 'c.......ccc', 'c......ccWc', '.ccccccccc.', '.cccccccc..', '.c.c..c.c..', '.c.c..c.c..'],
+    dog2:['.........cc.', 'c........ccc', 'c.......ccWc', '.ccccccccccc', '.cccccccccc.', '.c.c....c.c.'],
     dog:['.......c.c', 'c......ccc', 'c.....ccWc', '.ccccccccc', '.cccccccc.', '.c.c..c.c.', '.c.c..c.c.'],
     radio:['......B.', '.....B..', 'BBBBBBBB', 'BWWBRRRB', 'BWWBRRRB', 'BBBBBBBB'],
     note:['..cc', '..c.', '..c.', '..c.', 'ccc.', 'ccc.'],
@@ -458,6 +461,56 @@
     letterA:['.BB.', 'B..B', 'BBBB', 'B..B', 'B..B'],
   };
 
+  // 픽셀 묶음: 칸을 모아 두었다가 가로로 이어진 칸끼리 한 사각형으로 찍는다(y는 바닥이 0, 위로 음수)
+  function Grid() { const m = new Map(), key = (x, y) => x + ',' + y, G = {
+    set(x, y, f = 'B') { m.set(key(x, y), [x, y, f]); return G; }, del(x, y) { m.delete(key(x, y)); return G; }, has(x, y) { return m.has(key(x, y)); },
+    rect(x, y, w, h, f = 'B') { for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) G.set(x + i, y + j, f); return G; },
+    rows(rows, map = {}) { const w = rows[0].length, h = rows.length; rows.forEach((row, j) => { for (let i = 0; i < w; i++) { const c = row[i]; if (c !== '.') G.set(i - Math.floor(w / 2), j - h, map[c] || c); } }); return G; },
+    erode(r, pr) { [...m.values()].forEach(([x, y, f]) => { if ((!G.has(x - 1, y) || !G.has(x + 1, y)) && G.has(x, y + 1) && r() < pr) G.del(x, y); }); return G; },
+    draw(par, u, a = {}) { const g = el('g', Object.assign({ 'shape-rendering':'crispEdges' }, a), par), by = {}; m.forEach(([x, y, f]) => { (by[y] = by[y] || []).push([x, f]); });
+      for (const y in by) { const row = by[y].sort((p, q) => p[0] - q[0]); let i = 0; while (i < row.length) { let j = i; while (j + 1 < row.length && row[j + 1][0] === row[j][0] + 1 && row[j + 1][1] === row[i][1]) j++; el('rect', { x:+(row[i][0] * u).toFixed(2), y:+(y * u).toFixed(2), width:+((j - i + 1) * u + .12).toFixed(2), height:+(u + .12).toFixed(2), fill:PFILL[row[i][1]] || row[i][1] }, g); i = j + 1; } } return g; } };
+    return G; }
+  const ri = (r, a, b) => a + Math.floor(r() * (b - a + 1));
+  // 풀: 길이도 굵기도 제각각인 세로 획, 뭉친 밑동, 옆으로 흩어지는 점
+  function genGrass(r, big) { const G = Grid(), n = ri(r, 7, big ? 18 : 12); let x = 0;
+    for (let i = 0; i < n; i++) { x += ri(r, 1, 3); const tall = r() < .28, h = tall ? ri(r, 8, big ? 17 : 12) : ri(r, 2, 6), w = r() < .22 ? 2 : 1, b = ri(r, 0, 2), lean = r() < .22 ? (r() < .5 ? 1 : -1) : 0; for (let q = 0; q < h; q++) { if (q > 1 && r() < .08) continue; for (let e = 0; e < w; e++) G.set(x + e + (lean && q > h * .6 ? lean : 0), 1 - q - b); } }
+    G.rect(Math.floor(x * (.3 + r() * .35)), -2, ri(r, 2, 4), 3);
+    let dx = -1, dy = -ri(r, 3, 6); for (let i = 0, k = ri(r, 3, 6); i < k; i++) { G.set(dx, dy); dx -= ri(r, 1, 2); dy += r() < .6 ? -1 : 1; }
+    for (let i = 0, k = ri(r, 1, 4); i < k; i++) G.set(ri(r, 0, x), ri(r, -4, 2));
+    if (r() < .35) for (let i = 0, k = ri(r, 1, 3); i < k; i++) G.set(ri(r, 0, x), -ri(r, 6, 13), 'R');
+    return G; }
+  // 나무: 끊어지고 꺾인 줄기, 떨어져 있는 가지, 작은 네모와 갈고리 모양 잎이 줄지어 흩어진다
+  function genTree(r) { const G = Grid(), H1 = ri(r, 9, 15), dir = r() < .5 ? 1 : -1; let y = 0;
+    while (y < H1) { const seg = ri(r, 2, 4); for (let q = 0; q < seg && y < H1; q++, y++) G.rect(0, -1 - y, 2, 1); y += ri(r, 1, 2); }
+    let x = 0, ty = -1 - y; const L = ri(r, 7, 12); for (let q = 0; q < L; q++) { if (r() < .12) { ty--; continue; } G.rect(x, ty, 2, 1); ty--; if (r() < .6) x += dir; }
+    for (let b = 0, nb = ri(r, 1, 3); b < nb; b++) { const bd = r() < .6 ? -dir : dir, bx0 = Math.round(x * r()) + bd * ri(r, 2, 4), by0 = -1 - H1 - ri(r, 0, L - 2), bl = ri(r, 3, 6), bw = r() < .5 ? 2 : 1; for (let q = 0; q < bl; q++) G.rect(bx0 + bd * Math.round(q * .6), by0 - q, bw, 1); }
+    const cx = Math.round(x * .5), cy = Math.round((ty - 1 - H1) / 2) - 2, hw = ri(r, 12, 20), hh = ri(r, 5, 9), sk = (r() - .5) * .5;
+    const mark = (mx, my) => { const t = r(); if (t < .45) G.rect(mx, my, 2, 2, 'R'); else if (t < .85) { G.rect(mx, my, 2, 1, 'R'); G.rect(mx + 2, my + 1, 2, 2, 'R'); } else G.set(mx, my, 'R'); };
+    for (let ry = -hh; ry <= hh; ry += 3) { const ext = hw * Math.sqrt(Math.max(0, 1 - (ry / (hh + 1)) ** 2)) * (.75 + r() * .4), off = Math.round(ry * sk * 3 + (r() - .5) * 4); for (let mx = -ext; mx <= ext; mx += ri(r, 4, 6)) { if (r() < .22) continue; mark(Math.round(cx + off + mx + (r() - .5) * 2), cy + ry + ri(r, -1, 1)); } }
+    for (let i = 0, k = ri(r, 1, 3); i < k; i++) mark(cx + (r() < .5 ? -1 : 1) * ri(r, hw - 2, hw + 8), cy + ri(r, 0, hh + 6));
+    for (let i = 0, k = ri(r, 0, 2); i < k; i++) mark(ri(r, -5, 5), ri(r, -4, -1));
+    return G; }
+  // 큰 덩어리 숲: 높이가 다른 뾰족한 봉우리들이 한 덩어리로 붙고, 밑은 들쭉날쭉, 가는 줄기가 기울어 받친다
+  function genPeaks(r, W, H) { const G = Grid(), n = ri(r, 3, 5), pk = [], leg = ri(r, 6, 11), half = Math.floor(W / 2);
+    for (let i = 0; i < n; i++) pk.push({ x:Math.round(W * (i + .5 + (r() - .5) * .5) / n), h:H * (.5 + r() * .5), sl:2 + r() * 3.5, sr:2 + r() * 3.5, f:ri(r, 1, 3) });
+    const body = H * (.28 + r() * .16), rise = Math.round(W * (.4 + r() * .35)); let bot = 0, noise = 0;
+    for (let x = 0; x < W; x++) { let top = body * Math.min(1, Math.min(x + 2, W - x + 1) / 4); pk.forEach(q => { const d = x < q.x ? (q.x - x) * q.sl : x > q.x + q.f ? (x - q.x - q.f) * q.sr : 0; top = Math.max(top, q.h - d); });
+      if (r() < .3) noise = ri(r, -1, 1); top = Math.round(top + noise); if (x > rise && r() < .35) bot += ri(r, 1, 3); if (x > rise && r() < .1) bot -= ri(r, 1, 2); bot = Math.max(0, Math.min(bot, top - 4));
+      for (let yy = bot; yy < top; yy++) G.set(x - half, -1 - leg - yy); }
+    for (let i = 0, k = ri(r, 2, 3); i < k; i++) { const x0 = ri(r, 3, Math.max(4, rise - 2)) - half, lean = ri(r, -2, 3), w = r() < .5 ? 2 : 1; for (let q = 0; q <= leg + 1; q++) G.rect(x0 + Math.round(lean * q / leg), -leg - 2 + q, w, 1); }
+    return G; }
+  // 담: 크기가 다른 격자 칸이 삐뚤게 이어지고, 군데군데 빠지고, 부스러기가 떨어져 있다
+  function wall(par, r, x, y, w, vert) { let q = 0; const g = el('g', {}, par); x = Math.round(x); y = Math.round(y);
+    while (q < w) { const tw = Math.min(ri(r, 16, 36), w - q), th = ri(r, 15, 26), gap = r() < .28 ? ri(r, 2, 5) : 0, d = ri(r, -3, 3); if (r() < .1 && q > 0) { q += tw; continue; }
+      if (vert) blk(g, x + d, y + q, th, tw, 'g'); else blk(g, x + q, y + d, tw, th, 'g');
+      if (r() < .35) { const cx = vert ? x + th + ri(r, 2, 7) : x + q + ri(r, 0, tw), cy = vert ? y + q + ri(r, 0, tw) : y + d - ri(r, 4, 10); blk(g, cx, cy, 3, 3, r() < .6 ? 'R' : 'B'); if (r() < .5) blk(g, cx + ri(r, 4, 7), cy + ri(r, -2, 3), 3, 3, 'R'); }
+      q += tw + gap; } return g; }
+  // 망점 덩이: 크기가 다른 네모가 꺾이며 이어진다
+  function ditherChain(par, r, x, y, n) { x = Math.round(x); y = Math.round(y); for (let i = 0; i < n; i++) { const w = ri(r, 20, 44), h = ri(r, 16, 34); blk(par, x, y, w, h, 'd'); if (r() < .25) blk(par, x, y, w, 3, 'B'); if (r() < .15) blk(par, x + ri(r, 4, w - 8), y + ri(r, 4, h - 8), 4, 4, 'R'); if (r() < .6) x += w + ri(r, 2, 4); else { y += (r() < .5 ? -1 : 1) * Math.round((h + ri(r, 2, 4)) * (r() < .5 ? 1 : .6)); x += ri(r, -10, 12); } y += ri(r, -4, 4); } }
+  // 표식마다 키와 좌우, 닳은 자리를 다르게 한다
+  const vary = (rows, r, body) => { let R = rows.slice(); for (let i = 0, k = ri(r, 0, 3); i < k; i++) { const j = body[ri(r, 0, body.length - 1)]; R.splice(j, 0, R[j]); } if (r() < .5) R = R.map(q => q.split('').reverse().join('')); return R; };
+  let plantN = 0;
+
   const base = el('g', {}, map);
   el('rect', { x:8, y:10, width:WW, height:WH, fill:C.ink, opacity:.1 }, base);
   el('rect', { x:0, y:0, width:WW, height:WH, fill:C.sheet }, base);
@@ -471,8 +524,8 @@
   const reg = (n, x, y, r = 60, extra = {}) => { n.classList.add('rev'); const it = Object.assign({ n, x, y, r, on:false }, extra); REV.push(it); return it; };
   const blob = (cx, cy, rx, ry, seed, n = 14) => { const r = rng(seed), pts = []; for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2, k = .78 + r() * .44; pts.push([cx + Math.cos(a) * rx * k, cy + Math.sin(a) * ry * k]); } let d = ''; for (let i = 0; i < n; i++) { const p0 = pts[(i - 1 + n) % n], p1 = pts[i], p2 = pts[(i + 1) % n], p3 = pts[(i + 2) % n]; const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6], c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6]; d += (i ? '' : `M${p1[0].toFixed(1)} ${p1[1].toFixed(1)} `) + `C${c1[0].toFixed(1)} ${c1[1].toFixed(1)} ${c2[0].toFixed(1)} ${c2[1].toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)} `; } return d + 'Z'; };
   const hill = (cx, cy, w, h, seed) => { const r = rng(seed); let d = `M${cx - w / 2} ${cy}`; const n = 7; for (let i = 1; i <= n; i++) { const x = cx - w / 2 + w * i / n, y = cy - h * (0.35 + 0.65 * Math.sin(Math.PI * i / n) * (0.7 + r() * .5)); d += ` Q${cx - w / 2 + w * (i - .5) / n} ${y - h * .25 * r()} ${x} ${i === n ? cy : y}`; } return d + ' Z'; };
-  const tree = (x, y, s, col, p) => pix(el('g', { transform:`translate(${(+x).toFixed(1)} ${(y + 14 * s).toFixed(1)}) scale(${(+s).toFixed(2)})` }, p), SPR.tree, 4.6);
-  const pine = (x, y, s, col, p) => pix(el('g', { transform:`translate(${(+x).toFixed(1)} ${(y + 20 * s).toFixed(1)}) scale(${(+s).toFixed(2)})` }, p), SPR.pine, 4.6);
+  const tree = (x, y, s, col, p) => genTree(rng('tree' + (plantN++))).draw(el('g', { transform:`translate(${(+x).toFixed(1)} ${(y + 14 * s).toFixed(1)}) scale(${(+s).toFixed(2)})` }, p), 2.5);
+  const pine = (x, y, s, col, p, big) => { const r = rng('peak' + (plantN++)); return genPeaks(r, big ? ri(r, 34, 46) : ri(r, 14, 24), big ? ri(r, 34, 50) : ri(r, 14, 26)).draw(el('g', { transform:`translate(${(+x).toFixed(1)} ${(y + 20 * s).toFixed(1)}) scale(${(+s).toFixed(2)})` }, p), 2.7); };
   const clear = (x, y, r = 135) => TOWERS.every(t => Math.hypot(t.p[0] - x, t.p[1] - y) > r) && ENC.every(e => Math.hypot(e.x - x, e.y - y) > 115) && Math.hypot(HOUSE[0] - x, HOUSE[1] - y) > 170;
   const cohortAt = (x, y) => { const r = Math.hypot((x - HOUSE[0]) / SX, y - HOUSE[1]); return r < 300 ? 1 : r < 450 ? 3 : r < 590 ? 2 : 4; };
   { const r = rng('terrain-v6');
@@ -484,18 +537,22 @@
       if (k < .2) { const w = 200 + r() * 170; el('path', { d:hill(cx, cy + 40, w, 90 + r() * 90, seed), fill:r() < .6 ? VSTR : HSTR2 }, g); reg(g, cx, cy, w / 2.4); }
       else if (k < .38) { const rx = 100 + r() * 70; el('path', { d:blob(cx, cy, rx, 38 + r() * 30, seed), fill:r() < .7 ? HSTR : HSTR2 }, g); reg(g, cx, cy, rx * .8); }
       else if (k < .52) { el('path', { d:blob(cx, cy, 46 + r() * 36, 78 + r() * 56, seed, 10), fill:CPAT[cohortAt(cx, cy)], class:'twinkle' }, g); reg(g, cx, cy, 70); }
-      else if (k < .6) { const n = 2 + Math.floor(r() * 3); for (let i = 0; i < n; i++) blk(g, Math.round(cx - 44 + i * 30 + (r() - .5) * 8), Math.round(cy - 14 + (r() - .5) * 26), 28 + Math.round(r() * 14), 20 + Math.round(r() * 10), 'd'); reg(g, cx, cy, 44); }
-      else if (k < .78) { const n = 2 + Math.floor(r() * 4); for (let i = 0; i < n; i++) (r() < .5 ? tree : pine)(cx + (i - n / 2) * 32 + r() * 10, cy + (r() - .5) * 22, .7 + r() * .5, 0, g); reg(g, cx, cy, 60); }
-      else if (k < .82) { const X = Math.round(cx), Y = Math.round(cy); if (r() < .5) { blk(g, X - 24, Y - 62, 22, 62, 'B'); blk(g, X - 24, Y - 18, 64, 18, 'B'); } else { blk(g, X - 4, Y - 20, 36, 36, 'R'); pix(el('g', { transform:`translate(${X - 22} ${Y + 14})` }, g), SPR.letterA, 4.5); } reg(g, cx, cy, 50); }
-      else if (k < .86) { for (let i = 0; i < 4; i++) blk(g, Math.round(cx + (r() - .5) * 90), Math.round(cy + (r() - .5) * 50), 24, 24, 'g'); reg(g, cx, cy, 50); }
-      else if (k < .93) { const w = 96 + Math.round(r() * 64); blk(g, Math.round(cx - w / 2), Math.round(cy - 12), w, 24, 'g'); reg(g, cx, cy, w / 2); }
-      else { for (let i = 0; i < 3; i++) pix(el('g', { transform:`translate(${(cx + (r() - .5) * 90).toFixed(0)} ${(cy + (r() - .5) * 40).toFixed(0)})` }, g), SPR.grass, 3); reg(g, cx, cy, 50); }
+      else if (k < .6) { ditherChain(g, r, cx - 50, cy - 14, ri(r, 2, 5)); reg(g, cx, cy, 50); }
+      else if (k < .78) { if (r() < .16) { pine(cx, cy + 30, 1, 0, g, true); reg(g, cx, cy, 80); } else { const n = ri(r, 1, 3); for (let i = 0; i < n; i++) (r() < .55 ? tree : pine)(cx + (i - (n - 1) / 2) * 62 + (r() - .5) * 16, cy + (r() - .5) * 26, .62 + r() * .5, 0, g); if (r() < .6) genGrass(r).draw(el('g', { transform:`translate(${Math.round(cx + (r() - .5) * 120)} ${Math.round(cy + 24)})` }, g), 2.2); reg(g, cx, cy, 70); } }
+      else if (k < .82) { const X = Math.round(cx), Y = Math.round(cy), v = r(), a = ri(r, 16, 26);
+        if (v < .34) { const hh = ri(r, 44, 78), ww = ri(r, 40, 76), fl = r() < .5 ? 1 : -1; blk(g, fl > 0 ? X - 24 : X + 24 - a, Y - hh, a, hh, 'B'); blk(g, fl > 0 ? X - 24 : X + 24 - ww, Y - ri(r, 14, 22), ww, ri(r, 14, 22), 'B'); blk(g, X - 24 + ri(r, 4, 40), Y - hh - ri(r, 5, 10), 3, 3, 'B'); }
+        else if (v < .67) { const q = ri(r, 28, 44), L = [['.BB.', 'B..B', 'BBBB', 'B..B', 'B..B'], ['B...', 'B...', 'B...', 'B...', 'BBBB'], ['BBB.', '..B.', '.BB.', '....', '.B..'], ['B..B', 'B..B', 'BBBB', '...B', '...B'], ['BBBB', 'B..B', 'B..B', 'B..B', 'BBBB']][ri(r, 0, 4)]; blk(g, X - 4, Y - q + 14, q, q, 'R'); pix(el('g', { transform:`translate(${X - 22} ${Y + 14})` }, g), L, ri(r, 4, 5)); }
+        else { const ww = ri(r, 22, 34), hh = ri(r, 48, 80); blk(g, X - ww / 2, Y - hh + 20, ww, hh, 'r'); blk(g, X - ww / 2, Y + 24, ri(r, 14, 22), ri(r, 14, 20), 'g'); if (r() < .6) blk(g, X - ww / 2, Y + 46, ri(r, 14, 22), ri(r, 12, 18), 'g'); }
+        reg(g, cx, cy, 55); }
+      else if (k < .86) { for (let i = 0, n = ri(r, 3, 5); i < n; i++) { const q = ri(r, 14, 30); blk(g, Math.round(cx + (r() - .5) * 100), Math.round(cy + (r() - .5) * 56), q, ri(r, 14, 26), 'g'); } for (let i = 0, n = ri(r, 2, 5); i < n; i++) blk(g, Math.round(cx + (r() - .5) * 120), Math.round(cy + (r() - .5) * 70), 3, 3, r() < .6 ? 'R' : 'B'); reg(g, cx, cy, 55); }
+      else if (k < .93) { const w = ri(r, 96, 190), vert = r() < .3; wall(g, r, vert ? cx : cx - w / 2, vert ? cy - w / 2 : cy - 12, w, vert); reg(g, cx, cy, w / 2); }
+      else { for (let i = 0, n = ri(r, 2, 4); i < n; i++) genGrass(r, r() < .4).draw(el('g', { transform:`translate(${Math.round(cx + (r() - .5) * 110)} ${Math.round(cy + (r() - .5) * 44)})` }, g), 2 + r() * .8); reg(g, cx, cy, 55); }
     }
     // 강(조각조각 드러난다)
     const ry = x => 690 + 60 * Math.sin(x / 260) + 34 * Math.sin(x / 97 + 1);
-    for (let x = 0; x < WW; x += 150) { const g = el('g', {}, TG); for (let k = 0; k < 150; k += 30) { const y = Math.round(ry(x + k + 15) / 6) * 6; blk(g, x + k, y - 9, 30.3, 18, 'd'); blk(g, x + k, y - 9, 30.3, 3, 'B'); } reg(g, x + 75, ry(x + 75), 60); }
+    { const rr = rng('river-px'); for (let x = 0; x < WW; x += 150) { const g = el('g', {}, TG); let k = 0; while (k < 150) { const w = Math.min(ri(rr, 22, 46), 150 - k), h = ri(rr, 12, 24), y = Math.round(ry(x + k + w / 2) / 4) * 4 + ri(rr, -1, 1) * 4; if (rr() > .08) { blk(g, x + k, y - h / 2, w, h, 'd'); if (rr() < .3) blk(g, x + k, y - h / 2, w, 3, 'B'); if (rr() < .14) blk(g, x + k + ri(rr, 0, w), y + h / 2 + ri(rr, 5, 12), ri(rr, 8, 16), ri(rr, 6, 12), 'd'); } k += w + (rr() < .3 ? ri(rr, 2, 4) : 0); } reg(g, x + 75, ry(x + 75), 60); } }
     // 철길
-    for (let x = 0; x < WW; x += 150) { if (!clear(x + 75, 1150, 100)) continue; const g = el('g', {}, TG); blk(g, x, 1141, 150.3, 18, 'g'); reg(g, x + 75, 1150, 60); }
+    { const rr = rng('rail-px'); for (let x = 0; x < WW; x += 150) { if (!clear(x + 75, 1150, 100)) continue; const g = el('g', {}, TG); wall(g, rr, x, 1140, 150); reg(g, x + 75, 1150, 60); } }
     // 기수 라벨(각 기수의 첫 표식 위)
     ORDER.forEach(c => { const t = TOWERS.find(x => x.cohort === c), txt = `레벨 ${ORDER.indexOf(c) + 1} · ${COHORTS[c].name} · ${COHORTS[c].who} · ${COHORTS[c].when}`, w = txt.length * 8.6 + 24, x = t.p[0], y = t.p[1] - 140, g = el('g', { transform:`translate(${x} ${y}) rotate(${c % 2 ? -2 : 2})` }, map); el('rect', { x:-w / 2, y:-13, width:w, height:26, rx:6, fill:C.ink }, g); const tx = el('text', { 'text-anchor':'middle', 'dominant-baseline':'central', 'font-size':12.5, style:'fill:#F7F6F2' }, g); tx.textContent = txt; reg(g, x, y, 120); });
   }
@@ -513,6 +570,11 @@
   blk(houseG, -32, -18, 12, 12, 'W', { class:'win', stroke:PB, 'stroke-width':2 }); blk(houseG, 20, -18, 12, 12, 'W', { class:'win', stroke:PB, 'stroke-width':2 });
   blk(houseG, 20, -76, 10, 14, 'B');
   for (let i = 0; i < 3; i++) blk(houseG, 21 + i * 2, -86, 6, 6, 'R', { class:'smoke' });
+  blk(houseG, -42, -62, 7, 5, PW); blk(houseG, -50, -57, 5, 4, 'R'); blk(houseG, -56, -52, 3, 3, 'R'); blk(houseG, 42, -48, 5, 12, 'g'); blk(houseG, 38, -66, 4, 4, 'R');
+  blk(houseG, -14, 10, 28, 3, 'B'); blk(houseG, -18, 13, 36, 3, 'B');
+  blk(houseG, 54, -4, 3, 17, 'B'); blk(houseG, 49, -12, 13, 8, 'R'); blk(houseG, 51, -10, 4, 2, PW);
+  blk(houseG, -26, -74, 2, 12, 'B'); blk(houseG, -32, -72, 14, 2, 'B'); blk(houseG, -29, -68, 8, 2, 'B');
+  genGrass(rng('house-bush'), true).draw(el('g', { transform:'translate(-84 12)' }, houseG), 2.3); genTree(rng('house-tree')).draw(el('g', { transform:'translate(84 14) scale(.6)' }, houseG), 2.5);
   { const t = el('text', { y:27, 'text-anchor':'middle', 'font-size':11.5 }, houseG); t.textContent = '파프리 스튜디오'; }
   const houseHint = el('text', { y:41, 'text-anchor':'middle', 'font-size':10, style:'fill:#5C5B57' }, houseG);
   { const t = el('title', {}, houseG); t.textContent = '파프리 스튜디오 · 모든 산책이 시작되는 집'; }
@@ -521,58 +583,84 @@
   const P = (g, d, a = {}) => el('path', Object.assign({ d, fill:'none', stroke:C.ink, 'stroke-width':2, 'stroke-linecap':'round', 'stroke-linejoin':'round' }, a), g);
   const at = (g, x, y = 0, cls) => { const o = el('g', { transform:`translate(${x} ${y})` }, g); return cls ? el('g', { class:cls }, o) : o; };
   const person = (g, fill, o = {}) => { const u = o.u || 3.4, a = o.arms || 'down', sp = pix(g, SPR['p' + a[0].toUpperCase() + a.slice(1)], u, { c:fill }); if (o.bun) pix(el('g', { transform:`translate(0 ${(-16 * u).toFixed(1)})` }, g), ['.B.', 'BBB'], u); return sp; };
-  const cat = (g, x, fill, sc = 1, flip) => pix(el('g', { transform:`translate(${x} 0) scale(${flip ? -sc : sc} ${sc})` }, g), SPR.cat, 3, { c:fill });
-  const dogS = (g, x, fill, sc = 1) => pix(el('g', { transform:`translate(${x} 0) scale(${sc})` }, g), SPR.dog, 3, { c:fill });
+  const cat = (g, x, fill, sc = 1, flip, kind = '') => pix(el('g', { transform:`translate(${x} 0) scale(${flip ? -sc : sc} ${sc})` }, g), SPR['cat' + kind], 3, { c:fill });
+  const dogS = (g, x, fill, sc = 1, kind = '') => pix(el('g', { transform:`translate(${x} 0) scale(${sc})` }, g), SPR['dog' + kind], 3, { c:fill });
   const note = (g, x, y, fill, delay) => { const n = el('g', { class:'note', style:`animation-delay:${delay}s` }, g); pix(el('g', { transform:`translate(${x} ${y})` }, n), SPR.note, 2.6, { c:fill }); };
+  const ground = (g, r, x, w) => { let q = x; while (q < x + w) { const ww = Math.min(ri(r, 14, 46), x + w - q); blk(g, q, 1 + ri(r, 0, 1), ww, ri(r, 3, 5), 'd'); q += ww + (r() < .3 ? ri(r, 2, 5) : 0); } for (let i = 0, n = ri(r, 2, 5); i < n; i++) blk(g, x + ri(r, 0, w), 7 + ri(r, 0, 4), 2, 2, 'B'); };
   const ART = {
-    granny(g, m, fx) { blk(g, -72, 1, 144, 5, 'd');
-      pix(el('g', { transform:'translate(52 0)' }, g), SPR.radio, 3.4);
-      person(at(g, 4, 0, 'dance'), 'g', { arms:'up', bun:true });
+    granny(g, m, fx, r) { ground(g, r, -74, 148);
+      pix(el('g', { transform:'translate(52 0)' }, g), SPR.radio, 3.4); blk(g, 40, -34, 2, 2, 'R', { class:'twinkle' }); blk(g, 70, -28, 2, 2, 'R', { class:'twinkle' });
+      const gp = at(g, 4, 0, 'dance'); person(gp, 'g', { arms:'up', bun:true }); blk(gp, -11, -27, 22, 4, 'g'); blk(gp, -13, -23, 26, 4, 'g');
       if (m) { const o = fx ? at(g, -38, 0, 'walkin') : at(g, -38, 0), d = at(o, 0, 0, 'dance'); d.style.animationDelay = '-.35s'; person(d, 'B', { arms:'up', u:3.2 }); }
       note(g, -64, -60, 'B', 0); note(g, 34, -74, 'R', .7); note(g, 78, -44, 'B', 1.3); if (m) { note(g, -82, -34, 'R', .3); note(g, 8, -94, 'B', 1); } },
-    cats(g, m, fx) { const n = m === true ? 3 : (m || 0); blk(g, -88, -70, 176, 16, 'g'); blk(g, -88, 1, 176, 4, 'd');
-      [[-60, 'B', 1.1, false], [-8, 'd', 1, false], [62, 'R', 1.05, true]].forEach(([x, col, sc, fl], i) => { let par = g; if (fx === 'in') { par = at(g, 0, 0, 'walkin'); par.style.animationDelay = (i * .22) + 's'; } cat(par, x, col, sc, fl); });
+    cats(g, m, fx, r) { const n = m === true ? 3 : (m || 0); wall(g, r, -88, -72, 176); ground(g, r, -88, 176);
+      [[-60, 'B', 1.1, false, ''], [-8, 'd', 1, false, '2'], [62, 'R', 1.05, true, '3']].forEach(([x, col, sc, fl, kd], i) => { let par = g; if (fx === 'in') { par = at(g, 0, 0, 'walkin'); par.style.animationDelay = (i * .22) + 's'; } cat(par, x, col, sc, fl, kd); });
       [-36, 16, 38].forEach((x, i) => { if (i < n) pix(at(g, x, 0, fx && fx !== 'in' && i === n - 1 ? 'dropin' : ''), SPR.bowl, 3); });
-      const t = el('text', { x:-4, y:-80, 'font-size':11, 'text-anchor':'middle' }, g); t.textContent = n >= 3 ? '냠냠냠' : n ? '야옹!' : '야옹'; },
-    store(g, m, fx) { blk(g, -80, -76, 100, 76, 'W'); blk(g, -80, -76, 100, 76, 'h'); blk(g, -80, -98, 100, 22, 'B');
-      const t = el('text', { x:-30, y:-83, 'font-size':11, 'text-anchor':'middle', style:'fill:#fff' }, g); t.textContent = '24 편의점';
-      blk(g, -86, -76, 112, 12, 'g');
-      blk(g, -72, -56, 46, 32, 'W', { stroke:PB, 'stroke-width':2 }); [-67, -57, -47, -38].forEach((x, i) => blk(g, x, -52 + (i % 2) * 13, 6, 9, i % 2 ? 'R' : 'B'));
-      blk(g, -16, -52, 26, 52, 'B'); blk(g, -11, -46, 16, 22, 'W');
-      person(fx === 'in' ? at(at(g, 48, 0, 'walkin'), 0, 0) : at(g, 48), 'R', { arms:'wave' });
+      const t = el('text', { x:-4, y:-86, 'font-size':11, 'text-anchor':'middle' }, g); t.textContent = n >= 3 ? '냠냠냠' : n ? '야옹!' : '야옹'; },
+    store(g, m, fx, r) { ground(g, r, -90, 150); blk(g, -80, -76, 100, 76, 'W'); blk(g, -80, -76, 100, 76, 'h'); blk(g, -80, -98, 100, 22, 'B');
+      const t = el('text', { x:-30, y:-83, 'font-size':11, 'text-anchor':'middle', style:'fill:#F7F6F2' }, g); t.textContent = '24 편의점';
+      wall(g, r, -86, -78, 112);
+      blk(g, -72, -56, 46, 32, 'W', { stroke:PB, 'stroke-width':2 }); [-67, -57, -47, -38].forEach((x, i) => blk(g, x, -52 + (i % 2) * 13, 6, ri(r, 6, 10), i % 2 ? 'R' : 'B'));
+      blk(g, -16, -52, 26, 52, 'B'); blk(g, -11, -46, 16, 22, 'W'); blk(g, 4, -24, 3, 3, 'R');
+      blk(g, -84, -12, 10, 12, 'g'); blk(g, -82, -22, 6, 10, 'd');
+      const pg = fx === 'in' ? at(at(g, 48, 0, 'walkin'), 0, 0) : at(g, 48); person(pg, 'R', { arms:'wave' }); blk(pg, -5, -37, 10, 17, 'W'); blk(pg, -5, -37, 10, 2, 'B');
       const bb = at(g, 74, -94, fx ? 'popin' : ''); blk(bb, -24, -20, 48, 24, 'W', { stroke:PB, 'stroke-width':2 }); blk(bb, -14, 4, 7, 7, 'B'); const b = el('text', { x:0, y:-4, 'font-size':11, 'text-anchor':'middle' }, bb); b.textContent = m === true ? '또 와!' : ['학생!', '옛날엔', '내가!', '고양이', '또 와!'][m || 0]; },
-    dog(g, m, fx) { blk(g, -96, 1, 192, 4, 'd'); const r = fx ? at(g, 0, 0, 'cross') : g; person(at(r, -50), 'B', { arms:'fwd' }); el('path', { d:'M-35 -36 L6 -16 M-35 -36 L38 -18 M-35 -36 L68 -14', fill:'none', stroke:PB, 'stroke-width':1.4 }, r);
-      dogS(r, -2, 'R', .9); dogS(r, 30, 'B', 1); dogS(r, 62, 'd', .85); },
-    mirror(g, m, fx) { blk(g, -3, -50, 6, 50, 'B'); blk(g, -12, -4, 24, 4, 'B'); pix(el('g', { transform:'translate(0 -44)' }, g), SPR.mirror, 6.6);
-      pix(el('g', { transform:'translate(0 -58)' }, g), SPR.walk0, 2.6);
-      if (m === 1) { const v = at(g, 0, -74, fx ? 'popin' : ''); el('path', { d:'M-42 -24 V-38 H-28 M28 -38 H42 V-24 M42 24 V38 H28 M-28 38 H-42 V24', fill:'none', stroke:PR, 'stroke-width':3, 'shape-rendering':'crispEdges' }, v); blk(v, 30, -34, 6, 6, 'R', { class:'twinkle' }); }
+    dog(g, m, fx, r) { ground(g, r, -96, 192); const q = fx ? at(g, 0, 0, 'cross') : g, pp = at(q, -50); person(pp, 'B', { arms:'fwd' }); blk(pp, -7, -57, 14, 3, 'R'); blk(pp, 5, -55, 6, 2, 'R');
+      el('path', { d:'M-35 -36 L6 -16 M-35 -36 L38 -18 M-35 -36 L68 -14', fill:'none', stroke:PB, 'stroke-width':1.4, 'stroke-dasharray':'3 2' }, q);
+      const ds = [['R', .9, ''], ['B', 1.05, '2'], ['d', .8, '']].sort(() => r() - .5); ds.forEach(([c, sc, kd], i) => dogS(q, -2 + i * 32, c, sc, kd)); },
+    mirror(g, m, fx, r) { const ph = ri(r, 40, 58), mu = 5.8 + r() * 1.2; ground(g, r, -40, 80); blk(g, -3, -ph, 6, ph, 'B'); blk(g, -12, -4, 24, 4, 'B'); if (r() < .6) blk(g, -3, -ri(r, 14, 30), 6, 3, 'R');
+      pix(el('g', { transform:`translate(0 ${-ph + 6})` }, g), SPR.mirror, mu); pix(el('g', { transform:`translate(${ri(r, -3, 3)} ${-ph - mu * 2.2})` }, g), SPR.walk0, 2.6);
+      const cy = -ph + 6 - mu * 4.5;
+      if (m === 1) { const v = at(g, 0, cy, fx ? 'popin' : ''); el('path', { d:'M-42 -24 V-38 H-28 M28 -38 H42 V-24 M42 24 V38 H28 M-28 38 H-42 V24', fill:'none', stroke:PR, 'stroke-width':3, 'shape-rendering':'crispEdges' }, v); blk(v, 30, -34, 6, 6, 'R', { class:'twinkle' }); }
       if (m === true) { const q = el('g', { transform:'rotate(9)' }, at(g, 60, -34, fx ? 'dropin' : '')); blk(q, -21, -27, 42, 50, 'W', { stroke:PB, 'stroke-width':2 }); blk(q, -17, -23, 34, 30, 'h'); pix(el('g', { transform:'translate(0 4)' }, q), SPR.mirror, 2.8); const t = el('text', { x:0, y:19, 'font-size':8, 'text-anchor':'middle' }, q); t.textContent = '찰칵'; blk(q, -12, -33, 24, 8, 'g'); } },
-    poop(g, m, fx) { blk(g, -60, 1, 120, 4, 'd'); const pile = par => pix(par, SPR.pile, 5);
-      if (!m) { pile(g); [[-40, -22], [38, -18], [4, -40], [-28, -46], [26, -42]].forEach(([x, y], i) => blk(g, x, y, 4, 4, i < 3 ? 'B' : 'R', { class:'twinkle' })); }
+    poop(g, m, fx, r) { ground(g, r, -60, 120);
+      const pile = par => { const G = Grid(), h = ri(r, 5, 7); for (let j = 0; j < h; j++) { const hw = Math.round((h - j) * (1.1 + r() * .5)) + ri(r, 0, 1), sh = ri(r, -1, 1); for (let i = -hw; i <= hw; i++) G.set(i + sh, -1 - j, Math.abs(i) === hw || j === 0 ? 'R' : 'r'); } G.set(ri(r, -1, 1), -1 - h, 'R'); return G.draw(par, 4.4); };
+      if (!m) { pile(g); for (let i = 0, n = ri(r, 4, 7); i < n; i++) blk(g, ri(r, -44, 44), -ri(r, 16, 52), ri(r, 3, 4), ri(r, 3, 4), i % 3 ? 'B' : 'R', { class:'twinkle' }); }
       else { if (fx) { pile(at(g, 0, 0, 'shrinkout')); [[-18, -10, 0], [14, -16, .12], [0, -30, .22]].forEach(([x, y, d]) => { const c = blk(g, x - 10, y - 10, 20, 20, 'none', { stroke:PB, 'stroke-width':2, class:'puff' }); c.style.animationDelay = d + 's'; }); }
-        pix(fx ? at(g, 0, 0, 'growin') : g, SPR.flower, 6); [[-34, -14], [32, -22], [40, -52], [-40, -48]].forEach(([x, y]) => blk(g, x - 2, y - 2, 5, 5, 'R', { class:'twinkle' })); } },
-    park(g, m, fx) { blk(g, -92, 1, 184, 5, 'd');
-      blk(g, -47, -62, 6, 62, 'B'); pix(el('g', { transform:'translate(0 27.5)' }, at(g, -44, -62, m ? 'spinme' : '')), SPR.wheel, 5);
-      blk(g, 12, -42, 30, 6, 'B'); blk(g, 24, -42, 6, 42, 'B'); blk(g, 10, -9, 34, 9, 'g');
-      pix(el('g', { transform:'translate(74 0)' }, g), SPR.tree, 4.2);
+        const F = Grid(), sh = ri(r, 7, 10), bend = r() < .5 ? 1 : -1; let fx0 = 0; for (let j = 0; j < sh; j++) { if (j === Math.floor(sh / 2)) fx0 += bend; F.set(fx0, -1 - j); if (j === 2) F.rect(fx0 - 2 * bend, -1 - j, 2, 1).set(fx0 - 3 * bend, -2 - j); if (j === sh - 3) F.rect(fx0 + bend, -1 - j, 2, 1); }
+        const pc = ri(r, 4, 6); for (let k = 0; k < pc; k++) { const a = k / pc * Math.PI * 2 + r() * .4, px0 = fx0 + Math.round(Math.cos(a) * 2.4), py0 = -sh - 2 + Math.round(Math.sin(a) * 2.4); F.rect(px0 - 1, py0 - 1, 2, 2, 'R'); } F.rect(fx0 - 1, -sh - 3, 2, 2, 'W');
+        F.draw(fx ? at(g, 0, 0, 'growin') : g, 5); for (let i = 0, n = ri(r, 3, 6); i < n; i++) blk(g, ri(r, -46, 46), -ri(r, 10, 60), ri(r, 3, 5), ri(r, 3, 5), 'R', { class:'twinkle' }); genGrass(r).draw(el('g', { transform:`translate(${r() < .5 ? -48 : 26} 2)` }, g), 2); } },
+    park(g, m, fx, r) { ground(g, r, -92, 184);
+      blk(g, -47, -62, 6, 62, 'B'); blk(g, -54, -4, 20, 4, 'B'); pix(el('g', { transform:'translate(0 27.5)' }, at(g, -44, -62, m ? 'spinme' : '')), SPR.wheel, 5);
+      blk(g, 12, -42, 30, 6, 'B'); blk(g, 24, -42, 6, 42, 'B'); blk(g, 10, -9, 34, 9, 'g'); blk(g, 6, -3, 4, 4, 'R');
+      genTree(r).draw(el('g', { transform:'translate(76 0) scale(.62)' }, g), 2.5); genGrass(r).draw(el('g', { transform:'translate(-90 2)' }, g), 2);
       if (m) { const o = fx ? at(g, -10, 0, 'walkin') : at(g, -10, 0); person(at(o, 0, 0, 'dance'), 'R', { arms:'fwd', u:3.2 }); note(g, -80, -90, 'B', 0); note(g, -12, -100, 'R', .6); note(g, 36, -74, 'B', 1.2); note(g, 62, -94, 'R', 1.7); } },
   };
   const ARTVB = '-100 -116 200 134';
-  function drawHand(parent, type, m, fx) { const g = el('g', {}, parent); ART[type](g, m, fx); return g; }
+  function drawHand(parent, type, m, fx) { const own = parent.closest ? parent.closest('[data-id]') : null, g = el('g', {}, parent); ART[type](g, m, fx, rng('art-' + type + (own ? own.dataset.id : ''))); return g; }
 
   // ── 거점 표식 6종 ───────────────────────────────────
   const TOP = { tower:96, antenna:110, tank:70, windmill:92, lamp:80, sign:52 };
+  const crumbs = (G, r, hw) => { for (let i = 0, n = ri(r, 2, 6); i < n; i++) G.set(ri(r, -hw - 4, hw + 4), ri(r, -1, 1), r() < .5 ? 'R' : 'B'); };
+  const tuft = (g, r, hw, u) => { if (r() < .7) genGrass(r).draw(el('g', { transform:`translate(${Math.round((r() < .5 ? -1 : 1) * (hw * u + ri(r, 6, 22)) - 10)} 3)` }, g), 1.9 + r() * .5); };
   const MARK = {
-    tower: g => pix(g, SPR.tower, 4.4), antenna: g => pix(g, SPR.antenna, 5.6), tank: g => pix(g, SPR.tank, 5.4),
-    windmill: g => { pix(g, SPR.mill, 5.6); const b = el('g', {}, g); for (let k = 0; k < 4; k++) blk(b, -4, -92, 8, 30, k % 2 ? 'g' : 'R', { transform:`rotate(${k * 90} 0 -62)` }); if (!reduced) el('animateTransform', { attributeName:'transform', type:'rotate', from:'0 0 -62', to:'360 0 -62', dur:'9s', repeatCount:'indefinite' }, b); blk(g, -4, -66, 8, 8, 'B'); },
-    lamp: g => pix(g, SPR.lamp, 6), sign: g => pix(g, SPR.sign, 6),
+    tower(g, r) { const R = vary(SPR.tower, r, [9, 12, 15]), H = R.length, u = 4.4 * (.88 + r() * .24), G = Grid().rows(R).erode(r, .06);
+      [-1, 1].forEach(sd => { if (r() < .3) return; const y0 = -(H - 6) + 1, len = ri(r, 7, 15), sag = .02 + r() * .03, wy = k => y0 + Math.round(k * .35 + k * k * sag); for (let k = 1; k <= len; k++) G.set(sd * (5 + k * 2), wy(k)); if (r() < .45) { const k = ri(r, 3, len - 1), bx = sd * (5 + k * 2), by = wy(k) - 1; G.set(bx, by, 'R').set(bx - 1, by - 1, 'R').set(bx + 1, by - 1, 'R'); } });
+      crumbs(G, r, 6); G.draw(g, u); blk(g, -u / 2, -(H + 1) * u, u, u, 'R', { class:'twinkle' }); tuft(g, r, 6, u); },
+    antenna(g, r) { const R = vary(SPR.antenna, r, [10, 11, 12, 13]), H = R.length, u = 5.2 * (.88 + r() * .24), G = Grid().rows(R);
+      [-1, 1].forEach(sd => { if (r() < .25) return; const fy = -ri(r, 6, H - 8), fxe = sd * ri(r, 6, 10); for (let k = 0; k <= 8; k++) if (k % 2 === 0) G.set(Math.round(fxe * k / 8), Math.round(fy * (1 - k / 8)) - 1); });
+      for (let i = 0, n = ri(r, 1, 3); i < n; i++) { const rad = 3 + i * 3, sd = r() < .5 ? 1 : -1; for (let a = .2; a < 1.3; a += .32) G.set(sd * Math.round(Math.cos(a) * rad), -H - Math.round(Math.sin(a) * rad), 'R'); }
+      crumbs(G, r, 4); G.draw(g, u); tuft(g, r, 4, u); },
+    tank(g, r) { const R = vary(SPR.tank, r, [8, 10]), H = R.length, u = 5.2 * (.88 + r() * .24), G = Grid().rows(R).erode(r, .04), sd = r() < .5 ? 1 : -1;
+      for (let y = -1; y > -(H - 5); y -= 2) G.set(sd * 6, y); for (let i = 0, n = ri(r, 2, 4); i < n; i++) { const dx = ri(r, -2, 2); for (let q = 0, L = ri(r, 1, 3); q < L; q++) G.set(dx, -(H - 6) + q * 2 + 1); }
+      const py = -(H - 2); for (let q = 0; q < ri(r, 3, 5); q++) G.set(-sd * (5 + q), py); G.set(-sd * 8, py + 1).set(-sd * 8, py + 2);
+      crumbs(G, r, 5); G.draw(g, u); tuft(g, r, 5, u); },
+    windmill(g, r) { const R = vary(SPR.mill, r, [4, 7]), H = R.length, u = 5.4 * (.88 + r() * .24), G = Grid().rows(R), hy = -H * u; crumbs(G, r, 5); G.draw(g, u);
+      const b = el('g', {}, g), broke = ri(r, 0, 5); for (let k = 0; k < 4; k++) { const L = k === broke ? ri(r, 10, 16) : ri(r, 24, 36); blk(b, -4, hy - L, 8, L, k % 2 ? 'g' : 'R', { transform:`rotate(${k * 90 + ri(r, -6, 6)} 0 ${hy.toFixed(1)})` }); }
+      if (!reduced) el('animateTransform', { attributeName:'transform', type:'rotate', from:`0 0 ${hy.toFixed(1)}`, to:`${r() < .5 ? 360 : -360} 0 ${hy.toFixed(1)}`, dur:(7 + r() * 6).toFixed(1) + 's', repeatCount:'indefinite' }, b); blk(g, -4, hy - 4, 8, 8, 'B'); tuft(g, r, 5, u); },
+    lamp(g, r) { const R = vary(SPR.lamp, r, [4, 6, 8]), H = R.length, u = 5.6 * (.88 + r() * .24), G = Grid().rows(R), hx = R[1].indexOf('R') - 4;
+      for (let q = 1, n = ri(r, 4, 8); q <= n; q++) for (let e = 0; e < ri(r, 1, 2); e++) G.set(hx + 1 + ri(r, -Math.ceil(q * .6), Math.ceil(q * .6)), -(H - 3) + q, 'R');
+      crumbs(G, r, 4); G.draw(g, u); tuft(g, r, 4, u); },
+    sign(g, r) { const R = vary(SPR.sign, r, [5, 6, 7]), H = R.length, u = 5.6 * (.88 + r() * .24), G = Grid().rows(R);
+      G.set(-1, -(H - 3) - 1 + 1, 'W').set(0, -(H - 3), 'W').set(-2, -(H - 4), 'W'); if (r() < .5) { const y = -ri(r, 2, 3), sd = r() < .5 ? 1 : -1; G.rect(sd > 0 ? 1 : -4, y - 1, 4, 2, 'R'); }
+      crumbs(G, r, 5); G.draw(g, u); tuft(g, r, 5, u); },
   };
   const towerEls = {};
   TOWERS.forEach(t => {
     const g = el('g', { class:'tower', 'data-id':t.id, transform:`translate(${t.p[0]} ${t.p[1]})`, tabindex:'0', role:'button' }, map);
     for (let i = 0; i < 3; i++) el('circle', { r:110, class:'ring' }, g);
-    MARK[t.kind](g);
-    const tr = tree(-36, 6, .8, C.green2, g); tr.setAttribute('class', 'tree');
+    MARK[t.kind](g, rng('mark-' + t.id));
+    const tr = tree(-58, 2, .5, 0, g); tr.setAttribute('class', 'tree');
     const nm = el('text', { y:22, 'text-anchor':'middle', 'font-size':11.5 }, g); nm.textContent = `${t.n} ${t.name.replace('이태원 ', '')}`;
     const sub = el('text', { y:36, 'text-anchor':'middle', 'font-size':10, style:'fill:#5C5B57' }, g); sub.textContent = t.placeholder ? `${COHORTS[t.cohort].name} · 이름 미정` : `${COHORTS[t.cohort].name} · 〈${t.game.title}〉`;
     const tt = el('title', {}, g); tt.textContent = t.name;
@@ -806,7 +894,7 @@
   const cutEl = $('#cut');
   function cutOpen() { return cutEl.classList.contains('open'); }
   function typeInto(elm, text) { clearInterval(capT); let i = 0; elm.textContent = ''; capT = setInterval(() => { i++; elm.textContent = text.slice(0, i); if (i >= text.length) clearInterval(capT); }, reduced ? 0 : 22); }
-  function stageDraw(e, state, fx) { const st = $('#cutStage'); st.innerHTML = ''; const sv = el('svg', { viewBox:ARTVB }); st.appendChild(sv); stageG = drawHand(sv, e.type, state, fx); }
+  function stageDraw(e, state, fx) { const st = $('#cutStage'); st.innerHTML = ''; const sv = el('svg', { viewBox:ARTVB, 'data-id':e.id }); st.appendChild(sv); stageG = drawHand(sv, e.type, state, fx); }
   function cutUi(e, cap) { const T = ETYPE[e.type], m = isMet(e.id), acts = $('#cutActs'); let c = cap;
     if (m) acts.innerHTML = `<span class="lab g">만났다 · ${met.length} / ${ENC.length}</span><button class="lnk play" id="cutGo">계속 걷기 →</button>`;
     else if (e.type === 'cats') acts.innerHTML = `<button class="lnk play" id="encBtn">밥을 준다 (${encStep} / 3)</button>`;
@@ -865,7 +953,7 @@
   function saveImage() {
     const c = map.cloneNode(true); c.removeAttribute('id'); c.setAttribute('xmlns', NS); c.setAttribute('viewBox', `-20 -20 ${WW + 40} ${WH + 40}`); c.setAttribute('width', WW + 40); c.setAttribute('height', WH + 40);
     c.querySelectorAll('.rev:not(.on), .shortcut:not(.on), .ring, .smoke, .goal, animateTransform').forEach(n => n.remove());
-    const st = document.createElementNS(NS, 'style'); st.textContent = "text{font-family:'IBM Plex Mono',monospace;fill:#151515}.serif{font-family:'Times New Roman','Nanum Myeongjo',serif}.tree{opacity:0}.tower.done .tree{opacity:1}.win{fill:#fff}.house.lit .win{fill:#F2C94C}.shortcut{fill:none;stroke:#4F5CB8;stroke-width:3;stroke-dasharray:3 9;stroke-linecap:round}"; c.insertBefore(st, c.firstChild);
+    const st = document.createElementNS(NS, 'style'); st.textContent = "text{font-family:'IBM Plex Mono',monospace;fill:#151515}.serif{font-family:'Times New Roman','Nanum Myeongjo',serif}.tree{opacity:0}.tower.done .tree{opacity:1}.win{fill:#F7F6F2}.house.lit .win{fill:#F2C94C}.shortcut{fill:none;stroke:#4F5CB8;stroke-width:3;stroke-dasharray:3 9;stroke-linecap:round}"; c.insertBefore(st, c.firstChild);
     const bg = document.createElementNS(NS, 'rect'); bg.setAttribute('x', -20); bg.setAttribute('y', -20); bg.setAttribute('width', WW + 40); bg.setAttribute('height', WH + 40); bg.setAttribute('fill', C.paper); c.insertBefore(bg, st.nextSibling);
     const svgText = new XMLSerializer().serializeToString(c), url = URL.createObjectURL(new Blob([svgText], { type:'image/svg+xml;charset=utf-8' }));
     const dl = (href, name) => { const a = document.createElement('a'); a.href = href; a.download = name; document.body.appendChild(a); a.click(); a.remove(); };
@@ -1006,7 +1094,7 @@
   })();
   if (/[?&]sheet/.test(location.search)) { const sh = document.createElement('div'); sh.className = 'sheet'; sh.innerHTML = '<span class="lab">수상한 산책클럽 · 조우 도감</span><h1>지름길 밖에서 만나는 일곱 가지</h1><p>왼쪽이 만나기 전, 오른쪽이 만난 뒤입니다.</p><div class="sg"></div>'; document.body.appendChild(sh); const sg = sh.querySelector('.sg'); ETYPES.forEach(k => [false, true].forEach(m => { const d = document.createElement('div'); d.className = 'sc'; const sv = el('svg', { class:'art', viewBox:ARTVB }); d.appendChild(sv); drawHand(sv, k, m); d.insertAdjacentHTML('beforeend', `<b>${esc(ETYPE[k].name)}</b>${m ? esc(ETYPE[k].done) : esc(ETYPE[k].act)}`); sg.appendChild(d); })); $('#cover').classList.add('gone'); }
   requestAnimationFrame(loop);
-  window.__riso = { snd:SND, play, gait:() => GT.id, limb:() => 'frame ' + wfr + ' | ' + WKfig.getAttribute('transform'), bg:() => bgI, tick, start, plant, tune, setOverview, saveImage, meet, startCut, closeCut, encAct, startReplay: () => startReplay(), endReplay: () => endReplay(false), enc:ENC, lv:LV, curLv, goTo:(x, y) => { target = [x, y]; }, towers:TOWERS, state:() => ({ x:Math.round(me.x), y:Math.round(me.y), target, live: live && live.id, nearHouse, visited:visited.length, met:met.length, cut:cutOpen(), replay:replay ? replay.i : null, lv:curLv(), liveEnc: liveEnc && liveEnc.id, pts:pts.length / 2, trailLen:Math.round(trailLen), revealed:REV.filter(i => i.on).length, total:REV.length, overview, memo:memoOpen() }) };
+  window.__riso = { snd:SND, play, gen:{ tree:genTree, peaks:genPeaks, grass:genGrass, mark:MARK, rng, el }, gait:() => GT.id, limb:() => 'frame ' + wfr + ' | ' + WKfig.getAttribute('transform'), bg:() => bgI, tick, start, plant, tune, setOverview, saveImage, meet, startCut, closeCut, encAct, startReplay: () => startReplay(), endReplay: () => endReplay(false), enc:ENC, lv:LV, curLv, goTo:(x, y) => { target = [x, y]; }, towers:TOWERS, state:() => ({ x:Math.round(me.x), y:Math.round(me.y), target, live: live && live.id, nearHouse, visited:visited.length, met:met.length, cut:cutOpen(), replay:replay ? replay.i : null, lv:curLv(), liveEnc: liveEnc && liveEnc.id, pts:pts.length / 2, trailLen:Math.round(trailLen), revealed:REV.filter(i => i.on).length, total:REV.length, overview, memo:memoOpen() }) };
 })();
 </script>
 </html>
