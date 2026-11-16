@@ -154,7 +154,14 @@
   .dock .pal{position:relative;right:auto;top:auto;padding:0;background:none;display:block}
   .dock .cbtn{width:38px;height:38px;border-radius:0;border:2px solid var(--pb);box-shadow:3px 3px 0 rgba(64,89,196,.22)}
   .dock .cpop{right:calc(100% + 10px);top:-2px;border:2px solid var(--pb);box-shadow:4px 4px 0 rgba(64,89,196,.22)}
-  @media (max-width:760px){ .dock{right:8px;top:8px;gap:5px} .ib,.dock .cbtn{width:32px;height:32px} .plate{left:8px;top:8px} .ptitle b{font-size:14px} .keys{display:block;bottom:10px} }
+  @media (max-width:760px){ .dock{right:8px;top:8px;gap:5px} .ib,.dock .cbtn{width:34px;height:34px} .plate{left:8px;top:8px;gap:5px} .ptitle{padding:4px 8px 4px 6px;gap:7px} .ptitle b{font-size:14px} .ptitle em{font-size:10px}
+    .pstat{gap:4px;max-width:calc(100vw - 62px)} .pstat li{font-size:10.5px;padding:1px 5px 1px 4px;gap:4px}
+    .memo{width:calc(100vw - 20px);max-height:calc(100dvh - 24px)}
+    .donebar{bottom:8px;padding:7px 9px;gap:6px 8px;font-size:11px;width:calc(100vw - 22px);max-width:none} .donebar .lnk{font-size:11.5px;padding:3px 7px;gap:5px} .donebar #doneStat{flex-basis:100%;text-align:center;line-height:1.35}
+    .toast{max-width:calc(100vw - 24px);white-space:normal;text-align:center}
+    .cbar{padding:10px 12px} .ctop b{font-size:20px} .memo .planted{display:none} .memo-body > .lab:first-child{display:inline-block;max-width:calc(100% - 62px);white-space:normal;line-height:1.4} }
+  .ovhint{display:none;font-size:11px;color:var(--pb);flex-basis:100%;text-align:center}
+  body.ovpan .ovhint{display:block}
   .keys .k{border:1px solid var(--ink-2);padding:0 5px;font-size:10.5px;border-radius:3px}
   body.overview .signal,body.overview .keys{visibility:hidden}
   .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:20;background:var(--ink);color:var(--sheet);padding:6px 12px;border-radius:6px;opacity:0;transition:opacity .3s;pointer-events:none;font-size:12px;max-width:calc(100vw - 40px);text-align:center}
@@ -196,6 +203,10 @@
   .memo-body .meta{color:var(--ink-2);font-size:11.5px;margin-bottom:8px}
   .memo-body p{margin:0 0 8px;max-width:52ch}
   .gamebox{position:relative;aspect-ratio:4/3;border:1px solid var(--ink);background:repeating-linear-gradient(90deg,transparent 0 5px,rgba(78,156,72,.28) 5px 7px);margin:10px 0;display:grid;place-items:center;overflow:hidden}
+  .memo-body .more{font-size:12px}.memo-body .more .lnk{border-bottom:1px solid var(--pb);color:var(--pb)}
+  .memo-actions .lnk:not(.play){border-bottom:1px solid var(--ink)}
+  .gamebox .cta{max-width:calc(100% - 24px);box-sizing:border-box}.gamebox .cta .lnk.play{white-space:normal;max-width:100%;text-align:center;line-height:1.2}
+  @media (max-width:760px){.gamebox .cta .lnk.play{font-size:18px;padding:7px 12px}.gamebox{aspect-ratio:auto;min-height:150px}.gamebox:has(iframe){aspect-ratio:3/4}}
   .gamebox iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff}
   .gamebox .cta{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;font-size:11.5px;color:var(--ink-2);padding:12px;background:var(--sheet);border:1px solid var(--ink);margin:12px}
   .gamebox .cta .lnk.play{font-family:var(--f-serif);font-size:22px;padding:8px 16px;border-radius:8px}
@@ -274,28 +285,21 @@
   /* ── 인트로: 접힌 보물지도를 한 칸씩 천천히 편다 ───── */
   .cover.intro{overflow:hidden;cursor:pointer;background:#4059C4;background-image:repeating-conic-gradient(rgba(247,246,242,.09) 0 25%,transparent 0 50%);background-size:8px 8px;transition:opacity 1.6s ease}
   .fmap{position:absolute;inset:0;perspective:2400px;overflow:hidden}
-  .fsheet{position:absolute;inset:0;transform-style:preserve-3d;transform:translate(0,25%) scale(.78) rotate(-6deg);transition:transform 1.5s cubic-bezier(.45,.05,.25,1)}
-  .fmap.s1 .fsheet{transform:translate(-16.67%,25%) scale(.84) rotate(-3.5deg)}
-  .fmap.s2 .fsheet{transform:translate(0,25%) scale(.9) rotate(-1.5deg)}
-  .fmap.s3 .fsheet{transform:none;transition-duration:1.8s}
-  .fu,.fbot{position:absolute;top:0;transform-style:preserve-3d;transition:transform 1.5s cubic-bezier(.45,.05,.25,1)}
-  .fbot{top:100%;left:0;transform-origin:50% 0;transform:translateZ(-1px) rotateX(-180deg);transition-duration:1.8s}
-  .fuL{transform-origin:100% 50%;transform:translateZ(3px) rotateY(180deg)}
-  .fuR{transform-origin:0 50%;transform:translateZ(6px) rotateY(-180deg)}
-  .fmap.s1 .fuR,.fmap.s2 .fuL{transform:translateZ(0) rotateY(0deg)}
-  .fmap.s3 .fbot{transform:translateZ(0) rotateX(0deg)}
-  .fc{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;transition:filter 1.5s ease}
+  .fsheet{position:absolute;inset:0;transform-style:preserve-3d}
+  /* 가로로 세 번 접은 지도: 접힌 띠가 화면 가로를 꽉 채우고, 아래 칸과 위 칸이 차례로 펴진다 */
+  .fr{position:absolute;left:0;transform-style:preserve-3d;transition:transform 1.9s cubic-bezier(.45,.05,.25,1)}
+  .fr0{transform-origin:50% 100%;transform:translateZ(3px) rotateX(-180deg)}
+  .fr2{transform-origin:50% 0;transform:translateZ(6px) rotateX(180deg)}
+  .fmap.s1 .fr2,.fmap.s2 .fr0{transform:translateZ(0) rotateX(0deg)}
+  .fc{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;transition:filter 1.9s ease}
   .ff{background-image:var(--art);background-repeat:no-repeat;box-shadow:inset 0 0 0 1px rgba(64,89,196,.16)}
-  .ff,.fb,.fcov{image-rendering:pixelated;image-rendering:crisp-edges}
-  .fbot > .fcov{transform:rotate(180deg) translateZ(.6px);background-size:100% 100%;background-repeat:no-repeat;filter:none !important;box-shadow:inset 0 0 0 2px rgba(64,89,196,.5)}
-  .fmap.s1 .fcov{opacity:0;transition:opacity .01s linear .8s}
-  .fb{transform:rotateY(180deg);background-color:#F7F6F2;background-image:var(--back,none),linear-gradient(rgba(64,89,196,.13) 2px,transparent 2px),linear-gradient(90deg,rgba(64,89,196,.13) 2px,transparent 2px);background-size:100% 100%,16px 16px,16px 16px;background-repeat:no-repeat,repeat,repeat;box-shadow:inset 0 0 0 2px rgba(64,89,196,.5)}
-  .fuR > .fc,.fuL > .fc,.fbot > .fc{filter:brightness(.8)}
-  .fmap.s1 .fuR > .fc,.fmap.s2 .fuL > .fc,.fmap.s3 .fbot > .fc{filter:none}
-  .fmap.s1 .fuR .fbot > .fc,.fmap.s2 .fuL .fbot > .fc{filter:brightness(.8)}
-  .fmap.s3 .fbot > .fc{filter:none !important}
+  .ff,.fb{image-rendering:pixelated;image-rendering:crisp-edges}
+  .fb{transform:rotateX(180deg);background-color:#F7F6F2;background-image:linear-gradient(rgba(64,89,196,.13) 2px,transparent 2px),linear-gradient(90deg,rgba(64,89,196,.13) 2px,transparent 2px);background-size:16px 16px;box-shadow:inset 0 0 0 2px rgba(64,89,196,.5)}
+  .fb.fcv{background-repeat:no-repeat;background-position:0 0;box-shadow:none}
+  .fr0 > .ff,.fr2 > .ff{filter:brightness(.82)}
+  .fmap.s1 .fr2 > .ff,.fmap.s2 .fr0 > .ff{filter:none}
   .cover.wait .fmap{animation:fbob 2.6s ease-in-out infinite}
-  @keyframes fbob{50%{transform:translateY(-8px) rotate(.8deg)}}
+  @keyframes fbob{50%{transform:translateY(-7px)}}
   .ihint{position:absolute;left:50%;bottom:clamp(28px,9vh,90px);transform:translateX(-50%);font-family:var(--f-mono);font-size:13px;color:#151515;background:#F7F6F2;padding:5px 12px;border:2px solid #4059C4;box-shadow:4px 4px 0 rgba(21,21,21,.25);opacity:0;transition:opacity .5s;pointer-events:none;white-space:nowrap}
   .cover.wait .ihint{opacity:1;animation:ihint 1.6s ease-in-out infinite}
   @keyframes ihint{50%{transform:translateX(-50%) translateY(-5px)}}
@@ -323,14 +327,6 @@
   @media (max-width:760px){
     .side{width:min(340px,90vw)}
     .keys{display:none}
-    .plate p{font-size:10.5px}
-    .tools{top:auto;bottom:112px;right:12px}
-    .pal{top:auto;bottom:146px;right:12px}
-    .cpop{top:auto;bottom:calc(100% + 8px)}
-    .gait{top:auto;bottom:210px;right:12px}
-    .gait.sty{top:auto;bottom:178px}
-    .signal{width:calc(100vw - 36px);bottom:12px;left:18px}
-    .toast{bottom:150px}
   }
   /* ── 딱지 · 버튼 · 알림도 같은 결로 ───────── */
   .lab{background:var(--pb);border-radius:0}
@@ -412,7 +408,7 @@
   <div class="memo-foot" id="memoFoot"></div>
 </section>
 
-<div class="donebar card" id="done"><b id="doneTitle" role="heading" aria-level="2"></b><span id="doneStat"></span><button class="lnk on" id="saveBtn"><i class="pi" data-i="save" data-u="2"></i>지도 저장</button><button class="lnk" id="replayBtn" title="R"><i class="pi" data-i="play" data-u="2"></i><span>처음부터 다시 보기</span></button><button class="lnk" id="backBtn"><i class="pi" data-i="foot" data-u="2"></i>계속 걷기</button><a class="lnk play" id="zineLink" href="../zine/" hidden><i class="pi" data-i="book" data-u="2"></i>책장 넘기기</a></div>
+<div class="donebar card" id="done"><b id="doneTitle" role="heading" aria-level="2"></b><span id="doneStat"></span><span class="ovhint">좌우로 밀면 지도가 넘어간다</span><button class="lnk on" id="saveBtn"><i class="pi" data-i="save" data-u="2"></i>지도 저장</button><button class="lnk" id="replayBtn" title="R"><i class="pi" data-i="play" data-u="2"></i><span>처음부터 다시 보기</span></button><button class="lnk" id="backBtn"><i class="pi" data-i="foot" data-u="2"></i>계속 걷기</button><a class="lnk play" id="zineLink" href="../zine/" hidden><i class="pi" data-i="book" data-u="2"></i>책장 넘기기</a></div>
 <div class="toast" id="toast"></div>
 <div class="finale" id="finale" aria-live="polite"><div class="fconf" id="fconf"></div><div class="fcard"><span class="fk">수상한 산책클럽 · 에-움-길 우회로 404</span><div class="fmini" id="fmini"></div><div class="fttl" id="fttl" role="heading" aria-level="2" aria-label="나만의 에움길 완성"></div><ul class="fst" id="fst"></ul><p id="finSub"></p><span class="fgo">아무 곳이나 누르면 내 지도로</span></div></div>
 <div class="flash" id="flash"></div>
@@ -440,19 +436,26 @@
 
   // ── 데이터 ─────────────────────────────────────────────
   const WW = 3200, WH = 1800, HOUSE = [1600, 900], START = [1600, 952];
-  const G = (title, author, cohort, desc, rule, url) => ({ title, author, cohort, desc, rule, url });
+  const G = (title, author, cohort, desc, rule, url, opt) => Object.assign({ title, author, cohort, desc, rule, url }, opt || {});
   const COHORTS = { 1:{ name:'1기', who:'청소년 3명', when:'6/6 ~ 7/4 토 17:00', n:3 }, 3:{ name:'3기', who:'청년 6명', when:'6/6 ~ 7/4 토 14:00', n:6 }, 2:{ name:'2기', who:'청년 6명', when:'7/5 ~ 8/2 일 16:00', n:6 }, 4:{ name:'4기', who:'청년 6명', when:'7/5 ~ 8/2 일 19:00', n:6 } };
   const ORDER = [1, 3, 2, 4];
+  // 참여자가 메일로 보낸 결과물(2026.7~9 제출분). url이 없는 것은 파일로만 받아 아직 웹에 올리지 못한 작품이다
   const NAMED = {
-    3:[ { place:'이태원 비탈길', foot:'비탈길에서는 소리가 먼저 올라온다. 귀로 들은 단서를 따라 그림자를 추리했다.', g:G('비탈길의 그림자', '참여자 [확인]', '3기', '오디오 기반 야외 추리 게임. 골목을 오르내리며 들리는 소리로 장면을 짚는다.', '귀로 들은 단서를 따라 골목의 그림자를 추리한다', null) },
-        { place:'이태원 골목 안 연탄불', foot:'소음이 커질수록 불씨가 약해졌다. 조용한 곳을 찾아 골목 안으로 들어갔다.', g:G('연탄불', '참여자 [확인]', '3기', '주변 소음으로 불씨가 약해지는 마이크 게임.', '소음이 커질수록 불씨가 약해진다. 조용한 곳을 찾아라', null) } ],
-    2:[ { place:'회나무로 13나길', foot:'금 간 보도블록만 밟으며 골목 끝까지 갔다. 스튜디오 바로 앞 길이다.', g:G('회나무로 13나길 길제', '참여자 [확인]', '2기', '보도블록 균열을 따라 걷는 산책 의식 게임.', '금 간 보도블록만 밟으며 골목 끝까지 간다', null) } ],
-    4:[ { place:'이태원 KOHE 앞', foot:'KOHE 간판 아래에서 장소의 빈 곳을 기억으로 메웠다.', g:G('KOHE 장소 수리반', '참여자 [확인]', '4기', '기억으로 장소의 균열을 메우는 게임.', '장소의 빈 곳을 떠오르는 기억으로 채워 수리한다', null) } ],
+    3:[ { place:'이태원 비탈길', foot:'한 줄로 고갯길을 오르며 소리와 떨림으로 무리 속 요괴를 가려냈다.', g:G('비탈길의 그림자', '3기 참여자', '3기', '스마트폰과 이어폰으로 하는 오디오 기반 야외 추리 게임. 해가 넘어간 가파른 고갯길을 한 줄로 오르며 무리 속 요괴를 찾는다.', '뒤를 돌아볼 수 없다', null) },
+        { place:'남산 자락 폐카페', foot:'숨겨 둔 QR을 찍어 증거 소리를 모으고 서로를 취조했다.', g:G('남산 폐카페 살인사건', '3기 참여자', '3기', 'QR 단서를 찾아 소리를 모으는 사운드 추리 게임. 1993년 남산 자락 폐카페에서 일어난 사건의 범인을 형사 넷 가운데서 찾는다.', '열쇠 소리와 젖은 슬리퍼 소리가 단서다', null) },
+        { place:'회나무로 13나길', foot:'임시 제관이 되어 부정거리, 청신거리, 봉납거리를 차례로 치렀다. 스튜디오 바로 앞 길이다.', g:G('회나무로 13나길 길제', '3기 참여자', '3기', '모바일 웹으로 하는 산책 의식 게임(약 15분). 금기와 의례를 놀이 규칙으로 옮겨 길의 균열과 흔적을 다시 보게 한다.', '바닥의 금을 밟지 말 것', 'https://sfkim0.github.io/gilje/') },
+        { place:'이태원 골목 안 연탄불', foot:'소음이 커질수록 불씨가 약해졌다. 조용한 곳을 찾아 골목 안으로 들어갔다.', g:G('연탄불', '3기 참여자', '3기', '주변 소리 크기를 쓰는 마이크 게임. 겨울밤 윗집 할머니의 방이 식지 않게 연탄불을 새벽까지 지킨다.', '조용할수록 불씨가 살고, 시끄러우면 약해진다', null) },
+        { place:'이태원 KOHE 앞', foot:'내 기억으로 접착제를 만들어 조각이 머물 틈새를 찾았다.', g:G('KOHE 장소 수리반', '3기 참여자', '3기', '기억이 희미해지면 장소에서 조각이 흘러나온다. 일일 수리반이 되어 그 조각을 다시 붙인다.', '내 기억으로 기억 접착제를 만든다', 'https://guileless-clafoutis-97dd70.netlify.app/') },
+        { place:'이태원 마을숲소공원', foot:'해설을 듣고 음악에 맞춰 여섯 구간을 차례로 췄다.', g:G('핑크 비트 댄스', '3기 참여자', '3기', '해설 음성을 듣고 음악에 맞춰 여섯 구간을 추는 댄스 가이드 게임.', '구간마다 1분, 들리는 대로 춘다', null) } ],
+    2:[ { place:'기울어진 산책로', foot:'걷는 길의 경사가 그대로 가상 공간의 모양이 됐다.', g:G('산책자들 Walkers', '2기 참여자', '2기', 'GPS로 산책자의 경사도를 따라가며 3D 가상 공간을 만드는 모바일 게임.', '', 'https://walkers-app.vercel.app', { more:[['타임캡슐 산책로', 'https://timecapsule-walkway.vercel.app/'], ['산책 공간 생성기', 'https://walkers-zine-3d-update.vercel.app']] }) },
+        { place:'색을 줍는 길', foot:'앞선 산책자가 남긴 가장 짙은 색을 지금 걷는 길에서 찾아 이어 붙였다.', g:G('우연의 픽셀 : 산책 직조기', '2기 참여자', '2기', '앞선 산책자가 남긴 색을 길에서 찾아 카메라로 채집하고, 그 조각을 이어 한 장의 천처럼 짠다.', '가장 짙은 색을 찾아 채집한다', null) } ],
+    4:[ { place:'옥상 빨랫줄', foot:'동네가 벗어 놓은 하루를 찍고 녹음해 담아, 세탁하고 줄에 널어 소리로 들었다.', g:G('파프리 콤퓨타세탁소', '4기 참여자 3명 공동 제작', '4기', '동네가 벗어 놓은 하루를 사진과 녹음으로 담아 세탁하고, 빨랫줄에 널어 소리로 연주한다. 스마트폰으로 15분 안팎, 소리가 중요하다.', '오늘 하루만 영업합니다', 'https://warmdol.github.io/rooftop-score/?solo=1', { win:true, cta:'파프리 콤퓨타세탁소 출근하기' }) },
+        { place:'이태원 맨션', foot:'재개발 열기와 감정가 숫자가 오르내리는 맨션 앞에 섰다.', g:G('이태원 맨션', '4기 참여자', '4기', '재개발 열기와 감정가가 오르내리는 이태원 맨션을 다루는 게임. 소개 글은 수합 중이다.', '', 'https://hongdanaa.github.io/itaewon-mansion/') } ],
     1:[] };
   const PLACES = ['이태원 능선', '앤틱가구 거리', '녹사평 지하보도', '경리단길 계단', '회나무로 골목 끝', '이태원 시장 뒷골목', '기지 담장 아래', '보광동 언덕', '한강진 굴다리', '우사단로 옥상', '이슬람사원 앞 계단', '해방촌 오거리', '남산 둘레길 입구', '고양이 골목', 'CCTV 관제실', '이태원역 3번 출구', '꼼데가르송길', '보광초 담벼락'];
   const FOOTS = ['여기서 무슨 일이 있었는지는 산책자가 적어 줄 것이다.', '규칙 한 줄을 받으면 이 자리에 적힌다.', '이 골목에서 채집한 규칙은 수합 중이다.', '그날의 산책 기록이 여기 붙는다.'];
   const KINDS = ['tower', 'antenna', 'tank', 'windmill', 'lamp', 'sign'];
-  const TOWERS = []; { let pi = 0, gi = 0; ORDER.forEach(c => { const named = NAMED[c] || []; for (let i = 0; i < COHORTS[c].n; i++) { const nm = named[i], n = ++gi; TOWERS.push(nm ? { id:'g' + n, n, cohort:c, name:nm.place, foot:nm.foot, game:nm.g } : { id:'g' + n, n, cohort:c, name:PLACES[pi % PLACES.length], foot:FOOTS[n % FOOTS.length], placeholder:true, game:G('이름 미정', '참여자 [확인]', COHORTS[c].name, '게임 설명을 수합 중입니다.', '규칙 한 줄 [확인]', null) }); if (!nm) pi++; } }); }
+  const TOWERS = []; { let pi = 0, gi = 0; ORDER.forEach(c => { const named = NAMED[c] || []; for (let i = 0; i < COHORTS[c].n; i++) { const nm = named[i], n = ++gi; TOWERS.push(nm ? { id:'g' + n, n, cohort:c, name:nm.place, foot:nm.foot, game:nm.g } : { id:'g' + n, n, cohort:c, name:PLACES[pi % PLACES.length], foot:FOOTS[n % FOOTS.length], placeholder:true, game:G('이름 미정', COHORTS[c].name + ' 참여자', COHORTS[c].name, '게임 설명을 수합 중입니다.', '', null) }); if (!nm) pi++; } }); }
   const TOTAL = TOWERS.length;
   const TOOLS = [['사운드 저니', BASE], ['도형 카메라', BASE + 'camera/'], ['캐릭터 메이커', BASE + 'character.html'], ['산책 기록', BASE + 'walk.html'], ['관찰 빙고', BASE], ['산책 교향곡', BASE], ['옥상 파쿠르', BASE + 'parkour.html'], ['B-SCENE', BASE]];
   const INSTR = [['도시 해킹', BASE + 'games/itaewon/index.html'], ['감시 놀이', BASE + 'games/itaewon/cctv.html'], ['손동작 콜라주', BASE + 'games/itaewon/hand.html'], ['숲속 미생물 탐험기', BASE + 'games/itaewon/microbe.html'], ['초현실 카메라 놀이', BASE + 'games/surreal/index.html']];
@@ -898,7 +901,7 @@
   }
 
   // ── 매 프레임 ─────────────────────────────────────────
-  const viewW = () => innerWidth < 760 ? 620 : Math.min(1400, Math.max(900, innerWidth * .82));
+  const viewW = () => innerWidth < 760 ? Math.max(430, Math.min(620, innerWidth * 1.2)) : Math.min(1400, Math.max(900, innerWidth * .82));
   function tick(dt) {
     let moved = false; const mvx0 = me.x;
     if (!overview && !coverOn() && !cutOpen() && !memoOpen()) {
@@ -945,13 +948,19 @@
     else if (live && !planted(live.id) && free) { autoKey = key; openMemo(live); }                               // 거점도 닿으면 바로 열리고 기록된다
     else if (!moved && key && key !== autoKey && free) { autoKey = key; if (!liveEnc) { if (live) openMemo(live); else openHouse(); } }
     // 카메라
-    const asp = innerWidth / Math.max(1, innerHeight), tw = overview ? Math.max(WW * 1.06, WH * 1.1 * asp) : viewW(), tx = overview ? WW / 2 : me.x, ty = overview ? WH / 2 : me.y, k = reduced ? 1 : Math.min(1, (zoomT > 0 ? .04 : .12) * dt); if (zoomT > 0) zoomT -= dt;
+    const asp = innerWidth / Math.max(1, innerHeight), tw = overview ? ovW() : viewW(), tx = overview ? WW / 2 + (ovPan = Math.max(-ovMax(), Math.min(ovMax(), ovPan))) : me.x, ty = overview ? WH / 2 + (ovMax() > 0 ? 140 : 0) : me.y, k = reduced ? 1 : Math.min(1, (zoomT > 0 ? .04 : .12) * dt); if (zoomT > 0) zoomT -= dt;
     cam.x += (tx - cam.x) * k; cam.y += (ty - cam.y) * k; cam.w += (tw - cam.w) * k;
     const vh = cam.w / asp; map.setAttribute('viewBox', `${(cam.x - cam.w / 2).toFixed(1)} ${(cam.y - vh / 2).toFixed(1)} ${cam.w.toFixed(1)} ${vh.toFixed(1)}`);
     if (listDirty && document.body.classList.contains('sidebar-open')) renderList();
     if (++saveT > 150) { saveT = 0; save(); }
   }
   function loop(now) { const dt = Math.min(3, lastT ? (now - lastT) / 16.7 : 1); lastT = now; tick(dt); requestAnimationFrame(loop); }
+  // 세로 화면의 내 지도는 높이에 맞춰 키우고, 좌우로 밀어서 넘겨 본다
+  let ovPan = 0, ovDrag = null, ovMoved = false;
+  const ovW = () => { const asp = innerWidth / Math.max(1, innerHeight), full = Math.max(WW * 1.06, WH * 1.1 * asp); return asp < .9 ? Math.min(full, Math.max(WH * 1.12 * asp, 1300)) : full; }, ovMax = () => Math.max(0, (WW * 1.06 - ovW()) / 2);
+  map.addEventListener('pointerdown', e => { ovMoved = false; if (overview && ovMax() > 0) ovDrag = { x:e.clientX, p:ovPan }; });
+  addEventListener('pointermove', e => { if (!ovDrag) return; const dx = e.clientX - ovDrag.x; if (Math.abs(dx) > 6) ovMoved = true; if (ovMoved) { ovPan = Math.max(-ovMax(), Math.min(ovMax(), ovDrag.p - dx * cam.w / innerWidth)); cam.x = WW / 2 + ovPan; } });
+  addEventListener('pointerup', () => { ovDrag = null; }); addEventListener('pointercancel', () => { ovDrag = null; });
   const toWorld = e => { const asp = innerWidth / Math.max(1, innerHeight), vh = cam.w / asp; return [cam.x - cam.w / 2 + e.clientX / innerWidth * cam.w, cam.y - vh / 2 + e.clientY / innerHeight * vh]; };
 
   // ── 메모(게임 창) ───────────────────────────────────
@@ -963,9 +972,12 @@
       <h2>〈${esc(g.title)}〉</h2>
       <div class="meta">산책자 · ${esc(g.author)} · ${esc(COHORTS[t.cohort].who)} · ${esc(COHORTS[t.cohort].when)}</div>
       <p><b>게임 소개.</b> ${esc(g.desc)}</p>
-      <p style="font-family:var(--f-serif);font-size:15px">“${esc(g.rule)}”</p>
-      ${g.url ? `<div class="gamebox" id="gamebox"><div class="cta"><button class="lnk play" id="playBtn">게임 플레이 하기 ➹</button><span>이 자리에서 바로 열립니다.</span></div></div>` : `<p><span class="lab b">링크 수합 중</span> 참여자 게임 결과물을 받으면 여기서 바로 플레이할 수 있습니다.</p>`}
-      <div class="memo-actions"><button class="lnk play" id="memoGo">계속 걷기 →</button>${g.url ? `<a class="lnk" href="${g.url}" target="_blank" rel="noopener">새 창에서 열기 ↗</a>` : ''}</div>`;
+      ${g.rule ? `<p style="font-family:var(--f-serif);font-size:15px">“${esc(g.rule)}”</p>` : ''}
+      ${!g.url ? (t.placeholder ? `<p><span class="lab b">링크 수합 중</span> 참여자 게임 결과물을 받으면 여기서 바로 플레이할 수 있습니다.</p>` : `<p><span class="lab b">웹 게시 준비 중</span> 결과물은 파일로 받았고, 바로 플레이할 수 있는 주소를 준비하고 있습니다.</p>`)
+        : g.win ? `<div class="gamebox" id="gamebox"><div class="cta"><a class="lnk play" href="${g.url}" target="_blank" rel="noopener">${esc(g.cta || '게임 플레이 하기')}</a><span>카메라와 마이크를 쓰는 작품이라 새 창에서 열립니다.</span></div></div>`
+        : `<div class="gamebox" id="gamebox"><div class="cta"><button class="lnk play" id="playBtn">게임 플레이 하기</button><span>이 자리에서 바로 열립니다.</span></div></div>`}
+      ${g.more ? `<p class="more">함께 낸 작품 · ${g.more.map(([n, u]) => `<a class="lnk" href="${u}" target="_blank" rel="noopener">${esc(n)}</a>`).join(' · ')}</p>` : ''}
+      <div class="memo-actions"><button class="lnk play" id="memoGo">계속 걷기</button>${g.url && !g.win ? `<a class="lnk" href="${g.url}" target="_blank" rel="noopener">새 창에서 열기</a>` : ''}</div>`;
     $('#memoTree').hidden = false; memo.classList.add('open'); typewrite(`${t.n}번 자리에서는 무슨 일이 있었을까? ${t.foot}`);
     if (fresh) plant(t.id);
   }
@@ -1087,7 +1099,7 @@
   function doneTitle(t) { const b = $('#doneTitle'); if (b.dataset.t === t) return; b.dataset.t = t; b.innerHTML = ''; b.setAttribute('aria-label', t); b.appendChild(pxCanvas(t, 18, PB, 2)); }
   function replayBtn(on) { const b = $('#replayBtn'), sv = b.querySelector('svg'), n = ico(on ? 'stop' : 'play', 2); if (sv) sv.replaceWith(n); b.querySelector('span').textContent = on ? '멈추기' : '처음부터 다시 보기'; b.classList.toggle('on', on); }
   // 모든 거점을 돌았을 때: 지도가 가운데부터 번져 나가며 다 드러나고, 내가 걸은 길을 담은 '나만의 에움길 완성' 카드가 찍힌다
-  let fin = false, finT = 0, finAt = 0;
+  let fin = false, finSeen = false, finT = 0, finAt = 0;
   // 내가 걸은 길만 작게 줄여 찍은 픽셀 지도
   function miniMap() { const MW = 132, MH = Math.round(MW * WH / WW), cv = document.createElement('canvas'), c = cv.getContext('2d'), k = MW / WW; cv.width = MW; cv.height = MH; c.fillStyle = '#EDEBE5'; c.fillRect(0, 0, MW, MH);
     c.fillStyle = 'rgba(64,89,196,.16)'; for (let y = 3; y < MH; y += 6) for (let x = 3; x < MW; x += 6) c.fillRect(x, y, 1, 1);
@@ -1111,7 +1123,7 @@
   function setOverview(on) {
     if (!on && replay) endReplay(false);
     overview = on; document.body.classList.toggle('overview', on); closeMemo(); target = null; $('#mapBtn').dataset.tip = on ? '가까이 보기 (M)' : '내 지도 보기 (M)'; $('#mapBtn').classList.toggle('on', on);
-    if (!on) return; renderLegend(); renderCart(); const sc = shortcut(), st = Math.round(trailLen / 8), d = new Date(), ds = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+    document.body.classList.toggle('ovpan', on && ovMax() > 0); if (!on) return; ovPan = fin && !finSeen ? 0 : me.x - WW / 2; finSeen = fin; renderLegend(); renderCart(); const sc = shortcut(), st = Math.round(trailLen / 8), d = new Date(), ds = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
     cartL1.textContent = `${ds} · 거점 ${visited.length} / ${TOTAL} · 조우 ${met.length} / ${ENC.length} · ${st.toLocaleString()} 걸음`;
     cartL2.textContent = sc > 0 ? `지름길 ${Math.round(sc / 8).toLocaleString()} 걸음 → 내 에움길 ${st.toLocaleString()} 걸음 (×${(trailLen / sc).toFixed(1)})` : '아직 찾은 거점이 없다. 걸은 길만 그려져 있다';
     doneTitle(visited.length >= TOTAL ? '나만의 에움길 완성' : '지금까지의 에움길'); $('#doneStat').textContent = `거점 ${visited.length} / ${TOTAL} · 조우 ${met.length} / ${ENC.length} · ${st.toLocaleString()} 걸음${sc > 0 ? ' · 에움 ×' + (trailLen / sc).toFixed(1) : ''}`; $('#zineLink').hidden = visited.length < TOTAL; save(true);
@@ -1148,7 +1160,7 @@
   // ── 입력 ─────────────────────────────────────────────
   function coverOn() { return !$('#cover').classList.contains('gone'); }
   map.addEventListener('click', e => {
-    if (overview) { setOverview(false); return; }
+    if (overview) { if (ovMoved) { ovMoved = false; return; } setOverview(false); return; }
     const tw = e.target.closest('.tower'), hs = e.target.closest('.house'), en = e.target.closest('.enc');
     if (en) { const x = ENC.find(q => q.id === en.dataset.id); if (liveEnc && liveEnc.id === x.id) startCut(x); else if (x.type === 'dog') toast('도그워커는 멈추지 않는다. 가까이 가면 스쳐 지나간다'); else { autoKey = null; target = [x.x, x.y + 30]; } return; }
     if (tw) { const t = TOWERS.find(x => x.id === tw.dataset.id); if (live && live.id === t.id) openMemo(t); else { autoKey = null; target = [t.p[0], t.p[1] + 54]; } return; }
@@ -1254,8 +1266,8 @@
     fly('styBtn', 'sty', () => 'sty_' + roadSty); fly('gaitBtn', 'gait', () => 'gait_' + GT.id);
     addEventListener('pointerdown', e => { if (!e.target.closest('.fly')) document.querySelectorAll('.flyout').forEach(f => { f.hidden = true; }); }); }
   let introT = 0, going = false, introTap = () => {};
-  function start() { const c = $('#cover'); if (c.classList.contains('gone')) return; clearTimeout(introT); c.classList.remove('wait'); c.classList.add('out', 'gone'); cam.w = Math.max(cam.w, 2700); zoomT = 220; kick(); toast(resumed ? '걷던 자리에서 이어서' : '종이를 누르면 그곳까지 걷는다. 걸은 자리가 길이 된다'); }
-  // 인트로: 포스터 빛깔의 지도를 여섯 칸으로 접어 두고, 보물지도처럼 한 칸씩 천천히 편다
+  function start() { const c = $('#cover'); if (c.classList.contains('gone')) return; clearTimeout(introT); c.classList.remove('wait'); c.classList.add('out', 'gone'); cam.w = Math.max(cam.w, Math.min(2700, viewW() * 3)); zoomT = 220; kick(); toast(resumed ? '걷던 자리에서 이어서' : '종이를 누르면 그곳까지 걷는다. 걸은 자리가 길이 된다'); }
+  // 인트로: 픽셀 지도를 가로로 세 번 접어 두고, 보물지도처럼 한 칸씩 천천히 편다
   (function intro() { const cover = $('#cover'), fm = $('#fmap'), sheet = $('#fsheet');
     if (reduced || /[?&]sheet/.test(location.search)) { start(); return; }
     const W = Math.max(1, innerWidth), Hh = Math.max(1, innerHeight), S = Math.min(W, Hh), U = Math.max(3, Math.min(6, Math.round(S / 190))), LW = Math.ceil(W / U), LH = Math.ceil(Hh / U);
@@ -1295,19 +1307,28 @@
       for (let x = x0 + sb.w + 12; x < x0 + tw; x += 4) B.rect(x, ys + sb.h, 2, 2, 'B');
       return B.url(); }
     // 접힌 겉면: 지도 이름표
-    function paintBack(w, h) { const B = Board(w, h); frame(B, 3); let hT = Math.max(11, Math.min(20, Math.round(h * .16))), a, b; for (;;) { a = pxBits('수상한', hT); b = pxBits('산책클럽', hT); if (Math.max(a.w, b.w) <= w - 16 || hT <= 9) break; hT--; }
-      const sb = pxBits('우회로 404', Math.max(8, Math.round(hT * .6)), false), tot = 30 + a.h + 3 + b.h + 6 + sb.h + 6; let y = Math.max(8, Math.round((h - tot) / 2));
-      B.rows(ICO.house, Math.round(w / 2), y + 24, Math.max(2, Math.min(3, Math.floor(w / 22)))); y += 30; B.text(a, Math.round((w - a.w) / 2), y, 'B'); y += a.h + 3; B.text(b, Math.round((w - b.w) / 2), y, 'B'); y += b.h + 6;
-      B.rect(Math.round((w - sb.w) / 2) - 4, y - 3, sb.w + 8, sb.h + 6, 'R').text(sb, Math.round((w - sb.w) / 2), y, 'W'); return B.url(); }
+    function paintBack(w, h) { const B = Board(w, h), aw = w - 18, ah = h - 12, sub = hT => pxBits('에-움-길 우회로 404', Math.max(8, Math.round(hT * .42)), false); frame(B, 2);
+      // 한 줄(집 아이콘 + 제목, 아래 붉은 띠)과 두 줄 가운데 맞춤 중 글씨가 더 커지는 쪽을 고른다
+      let A = null, Bm = null;
+      for (let hT = 44; hT >= 12 && !A; hT--) { const t = pxBits('수상한 산책클럽', hT), sb = sub(hT), k = Math.max(2, Math.round(hT / 9)), iw = 11 * k + Math.round(hT * .35); if (t.w + iw <= aw && Math.max(t.h, 9 * k) + 4 + sb.h + 6 <= ah) A = { hT, t, sb, k, iw }; }
+      for (let hT = 44; hT >= 12 && !Bm; hT--) { const a = pxBits('수상한', hT), b = pxBits('산책클럽', hT), sb = sub(hT); if (Math.max(a.w, b.w) <= aw && a.h + 3 + b.h + 5 + sb.h + 6 <= ah) Bm = { hT, a, b, sb }; }
+      if (A && (!Bm || A.hT >= Bm.hT * .8)) { const { t, sb, k, iw } = A, gw = t.w + iw, gh = Math.max(t.h, 9 * k) + 4 + sb.h + 6, x = Math.round((w - gw) / 2), y = Math.round((h - gh) / 2), th = Math.max(t.h, 9 * k);
+        B.rows(ICO.house, x + Math.round(11 * k / 2), y + th, k); B.text(t, x + iw, y + th - t.h, 'B'); B.rect(x + iw, y + th + 4, sb.w + 8, sb.h + 6, 'R').text(sb, x + iw + 4, y + th + 7, 'W'); for (let q = x + iw + sb.w + 12; q < x + gw - 1; q += 4) B.rect(q, y + th + 4 + sb.h + 2, 2, 2, 'B'); }
+      else if (Bm) { const { a, b, sb } = Bm, gh = a.h + 3 + b.h + 5 + sb.h + 6; let y = Math.round((h - gh) / 2); B.text(a, Math.round((w - a.w) / 2), y, 'B'); y += a.h + 3; B.text(b, Math.round((w - b.w) / 2), y, 'B'); y += b.h + 5; B.rect(Math.round((w - sb.w) / 2) - 4, y, sb.w + 8, sb.h + 6, 'R').text(sb, Math.round((w - sb.w) / 2), y + 3, 'W'); }
+      return B.url(); }
+    // 위 칸 뒷면: 빗금으로 찍은 큰 '우회로 404'와 붉은 점선
+    function paintInner(w, h) { const B = Board(w, h); frame(B, 2); let t = null; for (let hT = 60; hT >= 12; hT -= 2) { const q = pxBits('우회로 404', hT); if (q.w <= w - 24 && q.h <= h - 22) { t = q; break; } }
+      if (t) { const x = Math.round((w - t.w) / 2), y = Math.round((h - t.h) / 2) - 2; B.text(t, x, y, 'h'); for (let q = x; q < x + t.w - 2; q += 6) B.rect(q, y + t.h + 4, 3, 2, 'R'); } return B.url(); }
     let built = false;
-    function build() { const cw = W / 3, ch = Hh / 2; fm.style.setProperty('--art', `url(${paint()})`);
-      const mk = (cls, par, col, row) => { const d = document.createElement('div'); d.className = cls; d.style.width = (cw + .6) + 'px'; d.style.height = (ch + .6) + 'px'; const f = document.createElement('div'); f.className = 'fc ff'; f.style.backgroundSize = `${LW * U}px ${LH * U}px`; f.style.backgroundPosition = `${-col * cw}px ${-row * ch}px`; const b = document.createElement('div'); b.className = 'fc fb'; d.append(f, b); par.appendChild(d); return d; };
-      [['C', 1], ['L', 0], ['R', 2]].forEach(([n, col]) => { const u = mk('fu fu' + n, sheet, col, 0); u.style.left = (col * cw) + 'px'; const bt = mk('fbot', u, col, 1); if (n === 'R') { const cvr = document.createElement('div'); cvr.className = 'fc fcov'; cvr.style.backgroundImage = `url(${paintBack(Math.ceil(cw / U), Math.ceil(ch / U))})`; bt.appendChild(cvr); } }); built = true; }
-    const T1 = 400, T2 = 2150, T3 = 3900, TEND = 6500; let timers = [];
-    function go() { if (going || !built) return; going = true; cover.classList.remove('wait'); kick(); timers = [setTimeout(() => fm.classList.add('s1'), T1), setTimeout(() => fm.classList.add('s2'), T2), setTimeout(() => { fm.classList.add('s3'); play('paper'); }, T3)]; introT = setTimeout(start, TEND); }
+    function build() { const ch = Hh / 3, bh = Math.ceil(ch / U); fm.style.setProperty('--art', `url(${paint()})`);
+      [1, 0, 2].forEach(row => { const d = document.createElement('div'), f = document.createElement('div'), b = document.createElement('div'); d.className = 'fr fr' + row; d.style.cssText = `top:${row * ch}px;width:${W}px;height:${ch + .6}px`;
+        f.className = 'fc ff'; f.style.backgroundSize = `${LW * U}px ${LH * U}px`; f.style.backgroundPosition = `0 ${-row * ch}px`; b.className = 'fc fb';
+        if (row !== 1) { b.classList.add('fcv'); b.style.backgroundImage = `url(${row === 2 ? paintBack(LW, bh) : paintInner(LW, bh)})`; b.style.backgroundSize = `${LW * U}px ${bh * U}px`; } d.append(f, b); sheet.appendChild(d); }); built = true; }
+    const T1 = 500, T2 = 2800, TEND = 5600; let timers = [];
+    function go() { if (going || !built) return; going = true; cover.classList.remove('wait'); kick(); timers = [setTimeout(() => fm.classList.add('s1'), T1), setTimeout(() => { fm.classList.add('s2'); play('paper'); }, T2)]; introT = setTimeout(start, TEND); }
     introTap = () => { if (!built) return; if (!going) { play('paper'); go(); } else { timers.forEach(clearTimeout); start(); } };
     cover.addEventListener('pointerdown', introTap);
-    window.__intro = { step:n => { fm.classList.toggle('s1', n >= 1); fm.classList.toggle('s2', n >= 2); fm.classList.toggle('s3', n >= 3); }, go, tap:() => introTap() };
+    window.__intro = { step:n => { fm.classList.toggle('s1', n >= 1); fm.classList.toggle('s2', n >= 2); }, go, tap:() => introTap() };
     const fontReady = document.fonts && document.fonts.load ? document.fonts.load('80px "Black Han Sans"', '수상한 산책클럽 에-움-길 우회로 404').catch(() => {}) : Promise.resolve();
     Promise.race([fontReady, new Promise(z => setTimeout(z, 1500))]).then(() => { build();
       // 소리와 함께 바로 펴 보고, 브라우저가 소리를 막으면 한 번 눌러 달라고 한다
