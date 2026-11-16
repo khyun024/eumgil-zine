@@ -62,6 +62,8 @@
   .plate{position:fixed;left:18px;top:16px;z-index:5;display:flex;flex-direction:column;gap:6px;align-items:flex-start;pointer-events:none}
   .plate p{margin:0;color:var(--ink-2);font-size:11.5px;background:var(--paper);padding:0 4px}
   .pal{position:fixed;right:18px;top:46px;z-index:5;display:flex;gap:7px;align-items:center;background:var(--paper);padding:4px 8px;font-size:11.5px}
+  .gait{position:fixed;right:18px;top:78px;z-index:5;display:flex;gap:4px 10px;flex-wrap:wrap;justify-content:flex-end;align-items:center;background:var(--paper);padding:3px 8px;font-size:11.5px;max-width:calc(100vw - 36px)}
+  .gait .lnk{font-size:11.5px}
   .pal button{appearance:none;-webkit-appearance:none;width:18px;height:18px;border-radius:50%;border:1px solid var(--ink);padding:0;cursor:pointer}
   .pal button.on{outline:2px solid var(--ink);outline-offset:2px}
   .pal input{appearance:none;-webkit-appearance:none;width:20px;height:20px;padding:0;border:1px dashed var(--ink);border-radius:50%;background:none;cursor:pointer;overflow:hidden}
@@ -245,6 +247,7 @@
     .plate p{font-size:10.5px}
     .tools{top:auto;bottom:112px;right:12px}
     .pal{top:auto;bottom:146px;right:12px}
+    .gait{top:auto;bottom:178px;right:12px}
     .signal{width:calc(100vw - 36px);bottom:12px;left:18px}
     .toast{bottom:150px}
   }
@@ -265,6 +268,7 @@
   <button class="lnk" id="resetBtn">새 종이</button>
 </nav>
 <div class="pal" id="pal" role="group" aria-label="길 색 고르기"><span>길 색</span></div>
+<div class="gait" id="gait" role="group" aria-label="걸음걸이 고르기"><span>걸음</span></div>
 
 <div class="signal card" id="signal">
   <svg class="compass" viewBox="-30 -30 60 60" aria-hidden="true">
@@ -543,7 +547,23 @@
   const encG = el('g', {}, map);
   ENC.forEach(e => { const g = el('g', { class:'enc', 'data-id':e.id, transform:`translate(${e.x} ${e.y}) scale(.9)`, tabindex:'0', role:'button' }, encG); e.g = g; const tt = el('title', {}, g); tt.textContent = ETYPE[e.type].name; e.art = el('g', {}, g); drawHand(e.art, e.type, false); if (e.type === 'dog') g.classList.add('rev'); else reg(g, e.x, e.y, 45, { enc:e }); });
   const WK = el('g', {}, map), WKin = el('g', {}, WK);
-  el('circle', { r:13, fill:'none', stroke:C.ink, 'stroke-width':1, 'stroke-dasharray':'3 3' }, WKin); el('use', { href:'#walkfig' }, WKin);
+  el('circle', { r:13, fill:'none', stroke:C.ink, 'stroke-width':1, 'stroke-dasharray':'3 3' }, WKin);
+  const WKfig = el('g', {}, WKin), WKhead = el('circle', { cy:-9, r:4, fill:C.ink }, WKfig), WKlimb = el('path', { fill:'none', stroke:C.ink, 'stroke-width':2.4, 'stroke-linecap':'round', 'stroke-linejoin':'round' }, WKfig);
+  // 걸음걸이: 속도, 발 내딛는 빠르기, 보폭, 통통 튐, 몸 기울기, 좌우 흔들림, 발소리 빠르기
+  const GAITS = [
+    { id:'stroll', name:'산책', sp:1, cad:.13, amp:.6, bounce:1.3, lean:0, sway:0, rate:1 },
+    { id:'quick', name:'총총', sp:1.35, cad:.27, amp:.36, bounce:.9, lean:7, sway:0, rate:1.7 },
+    { id:'stride', name:'성큼성큼', sp:1.2, cad:.1, amp:1, bounce:2.2, lean:5, sway:0, rate:.8 },
+    { id:'saunter', name:'어슬렁', sp:.68, cad:.075, amp:.5, bounce:.6, lean:-3, sway:8, rate:.62 },
+    { id:'hop', name:'깡충깡충', sp:1.1, cad:.12, amp:.22, bounce:7, lean:0, sway:0, rate:1, hop:true },
+  ];
+  let GT = GAITS[0], gph = 0, gamp = 0, gdir = 1; try { const g = GAITS.find(x => x.id === localStorage.getItem('eumgil-gait')); if (g) GT = g; } catch (e) {}
+  function pose(dt, moved, mvx) { if (moved) { gph += GT.cad * dt; gamp += (1 - gamp) * Math.min(1, .2 * dt); if (Math.abs(mvx) > .3) gdir = mvx > 0 ? 1 : -1; } else gamp += (0 - gamp) * Math.min(1, .16 * dt);
+    const sw = Math.sin(gph), rest = .5 * (1 - gamp), A = GT.amp * gamp, hopK = Math.abs(sw), L = 10.3, R = 7.6, ab = .3 + .95 * (1 - gamp);
+    const aL = GT.hop ? -rest - A : -rest + A * sw, aR = GT.hop ? rest + A : rest - A * sw, bL = GT.hop ? -ab - 1.1 * hopK * gamp : -ab - A * .9 * sw, bR = GT.hop ? ab + 1.1 * hopK * gamp : ab + A * .9 * sw, f = v => v.toFixed(1);
+    WKlimb.setAttribute('d', `M0 -5 V6 M0 6 L${f(Math.sin(aL) * L)} ${f(6 + Math.cos(aL) * L)} M0 6 L${f(Math.sin(aR) * L)} ${f(6 + Math.cos(aR) * L)} M0 -2 L${f(Math.sin(bL) * R)} ${f(-2 + Math.cos(bL) * R)} M0 -2 L${f(Math.sin(bR) * R)} ${f(-2 + Math.cos(bR) * R)}`);
+    WKfig.setAttribute('transform', `translate(0 ${f(-GT.bounce * hopK * gamp)}) rotate(${f((GT.lean * gdir + GT.sway * sw) * gamp)} 0 14)`); }
+  pose(1, false, 0);
 
   // ── 완성 지도 표제(내 지도 보기에서만) ─────────────────
   let cartKey = null;
@@ -611,13 +631,14 @@
   // ── 매 프레임 ─────────────────────────────────────────
   const viewW = () => innerWidth < 760 ? 620 : Math.min(1400, Math.max(900, innerWidth * .82));
   function tick(dt) {
-    let moved = false;
+    let moved = false; const mvx0 = me.x;
     if (!overview && !coverOn() && !cutOpen()) {
-      const sp = 3.8 * dt, dx = keys.r - keys.l, dy = keys.d - keys.u;
+      const sp = 3.8 * dt * GT.sp, dx = keys.r - keys.l, dy = keys.d - keys.u;
       if (dx || dy) { const m = Math.hypot(dx, dy); me.x += dx / m * sp; me.y += dy / m * sp; target = null; moved = true; }
       else if (target) { const ddx = target[0] - me.x, ddy = target[1] - me.y, m = Math.hypot(ddx, ddy); if (m <= sp) { me.x = target[0]; me.y = target[1]; target = null; } else { me.x += ddx / m * sp; me.y += ddy / m * sp; } moved = true; }
       me.x = Math.max(24, Math.min(WW - 24, me.x)); me.y = Math.max(40, Math.min(WH - 24, me.y));
     }
+    pose(dt, moved, me.x - mvx0);
     goal.classList.toggle('on', !!target); if (target) goal.setAttribute('transform', `translate(${target[0]} ${target[1]})`);
     if (moved) { if (Math.hypot(me.x - pts[pts.length - 2], me.y - pts[pts.length - 1]) > 7) { trailTo(me.x, me.y); renderHud(); } revealAround(me.x, me.y, 190); closeMemo(); walking = performance.now(); }
     WK.setAttribute('transform', `translate(${me.x.toFixed(1)} ${me.y.toFixed(1)})`);
@@ -714,7 +735,7 @@
     if (!bgm.bad) { if (!mon) { if (!bgm.paused) bgm.pause(); } else { if (bgm.paused) { const pr = bgm.play(); if (pr && pr.catch) pr.catch(() => {}); }
       const d = bgm.duration || 60, t = bgm.currentTime, env = Math.max(0, Math.min(1, t / 2.5, (d - t) / 3)), duck = busy('dance') || busy('park') ? 0 : busy('level') ? .25 : cutOpen() ? .45 : replay ? 1.25 : 1;
       bgm.volume = Math.max(0, Math.min(1, bgm.volume + (BGM_VOL * env * duck - bgm.volume) * .18)); } }
-    if (!pen.bad) { const tv = on && performance.now() - walking < 220 && !cutOpen() ? PEN_VOL : 0; pen.volume = Math.max(0, Math.min(1, pen.volume + (tv - pen.volume) * .3)); if (tv && pen.paused) { const pr = pen.play(); if (pr && pr.catch) pr.catch(() => {}); } else if (!tv && pen.volume < .01 && !pen.paused) pen.pause(); }
+    if (!pen.bad) { try { pen.playbackRate = GT.rate; } catch (e) {} const tv = on && performance.now() - walking < 220 && !cutOpen() ? PEN_VOL : 0; pen.volume = Math.max(0, Math.min(1, pen.volume + (tv - pen.volume) * .3)); if (tv && pen.paused) { const pr = pen.play(); if (pr && pr.catch) pr.catch(() => {}); } else if (!tv && pen.volume < .01 && !pen.paused) pen.pause(); }
   }, 80);
   function setSound(on, quiet) { soundOn = on; try { localStorage.setItem('eumgil-sound', on ? '1' : '0'); } catch (e) {} const b = $('#sndBtn'); b.textContent = on ? '효과음 ♪' : '효과음 끔'; b.setAttribute('aria-pressed', on); b.classList.toggle('off', !on); if (!on) Object.keys(SND).forEach(n => { if (n !== 'bgm') { clearInterval(SND[n].fadeT); SND[n].pause(); } }); else if (!quiet) { kick(); play('pop'); } }
   function setMusic(on, quiet) { musicOn = on; try { localStorage.setItem('eumgil-music', on ? '1' : '0'); } catch (e) {} const b = $('#musBtn'); b.textContent = on ? '음악 ♪' : '음악 끔'; b.setAttribute('aria-pressed', on); b.classList.toggle('off', !on); if (!on) bgm.pause(); else if (!quiet) { audioKick = false; kick(); } }
@@ -861,6 +882,8 @@
     const setRoad = (c, quiet) => { roadCol = c; const i = pts.length / 2, last = colLog[colLog.length - 1]; if (last[0] === i) last[1] = c; else colLog.push([i, c]); try { localStorage.setItem('eumgil-road', c); } catch (e) {} mark(); if (!quiet) toast('지금부터 걷는 길이 이 색으로 그려진다'); };
     SW.forEach(c => { const b = document.createElement('button'); b.type = 'button'; b.dataset.c = c; b.style.background = c; b.title = '길 색 ' + c; b.setAttribute('aria-label', '길 색 ' + c); b.addEventListener('click', () => setRoad(c)); pal.appendChild(b); });
     inp.addEventListener('input', () => setRoad(inp.value, true)); inp.addEventListener('change', () => setRoad(inp.value)); pal.appendChild(inp); mark(); window.__setRoad = setRoad; }
+  { const box = $('#gait'), mark = () => box.querySelectorAll('button').forEach(b => { const on = b.dataset.g === GT.id; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+    GAITS.forEach(g => { const b = document.createElement('button'); b.type = 'button'; b.className = 'lnk'; b.dataset.g = g.id; b.textContent = g.name; b.addEventListener('click', () => { GT = g; try { localStorage.setItem('eumgil-gait', g.id); } catch (e) {} mark(); toast(`걸음걸이 · ${g.name}`); }); box.appendChild(b); }); mark(); }
   let introT = 0, going = false, introTap = () => {};
   function start() { const c = $('#cover'); if (c.classList.contains('gone')) return; clearTimeout(introT); c.classList.remove('wait'); c.classList.add('out', 'gone'); cam.w = Math.max(cam.w, 2700); zoomT = 220; kick(); toast(resumed ? '걷던 자리에서 이어서' : '종이를 누르면 그곳까지 걷는다. 걸은 자리가 길이 된다'); }
   // 인트로: 포스터 빛깔의 지도를 여섯 칸으로 접어 두고, 보물지도처럼 한 칸씩 천천히 편다
@@ -905,7 +928,7 @@
   })();
   if (/[?&]sheet/.test(location.search)) { const sh = document.createElement('div'); sh.className = 'sheet'; sh.innerHTML = '<span class="lab">수상한 산책클럽 · 조우 도감</span><h1>지름길 밖에서 만나는 일곱 가지</h1><p>왼쪽이 만나기 전, 오른쪽이 만난 뒤입니다.</p><div class="sg"></div>'; document.body.appendChild(sh); const sg = sh.querySelector('.sg'); ETYPES.forEach(k => [false, true].forEach(m => { const d = document.createElement('div'); d.className = 'sc'; const sv = el('svg', { class:'art', viewBox:ARTVB }); d.appendChild(sv); drawHand(sv, k, m); d.insertAdjacentHTML('beforeend', `<b>${esc(ETYPE[k].name)}</b>${m ? esc(ETYPE[k].done) : esc(ETYPE[k].act)}`); sg.appendChild(d); })); $('#cover').classList.add('gone'); }
   requestAnimationFrame(loop);
-  window.__riso = { snd:SND, play, tick, start, plant, tune, setOverview, saveImage, meet, startCut, closeCut, encAct, startReplay: () => startReplay(), endReplay: () => endReplay(false), enc:ENC, lv:LV, curLv, goTo:(x, y) => { target = [x, y]; }, towers:TOWERS, state:() => ({ x:Math.round(me.x), y:Math.round(me.y), target, live: live && live.id, nearHouse, visited:visited.length, met:met.length, cut:cutOpen(), replay:replay ? replay.i : null, lv:curLv(), liveEnc: liveEnc && liveEnc.id, pts:pts.length / 2, trailLen:Math.round(trailLen), revealed:REV.filter(i => i.on).length, total:REV.length, overview, memo:memoOpen() }) };
+  window.__riso = { snd:SND, play, gait:() => GT.id, limb:() => WKlimb.getAttribute('d') + ' | ' + WKfig.getAttribute('transform'), tick, start, plant, tune, setOverview, saveImage, meet, startCut, closeCut, encAct, startReplay: () => startReplay(), endReplay: () => endReplay(false), enc:ENC, lv:LV, curLv, goTo:(x, y) => { target = [x, y]; }, towers:TOWERS, state:() => ({ x:Math.round(me.x), y:Math.round(me.y), target, live: live && live.id, nearHouse, visited:visited.length, met:met.length, cut:cutOpen(), replay:replay ? replay.i : null, lv:curLv(), liveEnc: liveEnc && liveEnc.id, pts:pts.length / 2, trailLen:Math.round(trailLen), revealed:REV.filter(i => i.on).length, total:REV.length, overview, memo:memoOpen() }) };
 })();
 </script>
 </html>
