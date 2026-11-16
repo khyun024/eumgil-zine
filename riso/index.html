@@ -62,7 +62,8 @@
   .plate{position:fixed;left:18px;top:16px;z-index:5;display:flex;flex-direction:column;gap:6px;align-items:flex-start;pointer-events:none}
   .plate p{margin:0;color:var(--ink-2);font-size:11.5px;background:var(--paper);padding:0 4px}
   .pal{position:fixed;right:18px;top:46px;z-index:5;display:flex;gap:7px;align-items:center;background:var(--paper);padding:4px 8px;font-size:11.5px}
-  .gait{position:fixed;right:18px;top:78px;z-index:5;display:flex;gap:4px 10px;flex-wrap:wrap;justify-content:flex-end;align-items:center;background:var(--paper);padding:3px 8px;font-size:11.5px;max-width:calc(100vw - 36px)}
+  .gait.sty{top:76px}
+  .gait{position:fixed;right:18px;top:106px;z-index:5;display:flex;gap:4px 10px;flex-wrap:wrap;justify-content:flex-end;align-items:center;background:var(--paper);padding:3px 8px;font-size:11.5px;max-width:calc(100vw - 36px)}
   .gait .lnk{font-size:11.5px}
   .pal button{appearance:none;-webkit-appearance:none;width:18px;height:18px;border-radius:50%;border:1px solid var(--ink);padding:0;cursor:pointer}
   .pal button.on{outline:2px solid var(--ink);outline-offset:2px}
@@ -247,7 +248,8 @@
     .plate p{font-size:10.5px}
     .tools{top:auto;bottom:112px;right:12px}
     .pal{top:auto;bottom:146px;right:12px}
-    .gait{top:auto;bottom:178px;right:12px}
+    .gait{top:auto;bottom:210px;right:12px}
+    .gait.sty{top:auto;bottom:178px}
     .signal{width:calc(100vw - 36px);bottom:12px;left:18px}
     .toast{bottom:150px}
   }
@@ -268,6 +270,7 @@
   <button class="lnk" id="resetBtn">새 종이</button>
 </nav>
 <div class="pal" id="pal" role="group" aria-label="길 색 고르기"><span>길 색</span></div>
+<div class="gait sty" id="sty" role="group" aria-label="길 모양 고르기"><span>길 모양</span></div>
 <div class="gait" id="gait" role="group" aria-label="걸음걸이 고르기"><span>걸음</span></div>
 
 <div class="signal card" id="signal">
@@ -401,6 +404,7 @@
   const DIAG = pat('diag', 8, 8, p => el('path', { d:'M0 8 L8 0', stroke:C.olive, 'stroke-width':1.6 }, p));
   const OLIVE = pat('oliveh', 5, 5, p => { el('rect', { width:5, height:5, fill:C.olive }, p); el('rect', { width:5, height:1.6, fill:'#6E6A22' }, p); });
   const HOUSEH = pat('househ', 4, 4, p => { el('rect', { width:4, height:4, fill:'#8C8C8C' }, p); el('path', { d:'M0 2 H4', stroke:'#4b4b4b', 'stroke-width':1 }, p); });
+  const TAPEP = [pat('tp0', 9, 9, p => el('path', { d:'M-2 9 L9 -2 M3 12 L12 3 M-4 4 L4 -4', stroke:'#fff', 'stroke-width':2.4 }, p)), pat('tp1', 10, 10, p => el('circle', { cx:5, cy:5, r:2, fill:'#fff' }, p)), pat('tp2', 8, 8, p => el('path', { d:'M0 4 H8 M4 0 V8', stroke:'#fff', 'stroke-width':1.2 }, p)), 'none'];
   const GRID = pat('grid', 40, 40, p => el('circle', { cx:20, cy:20, r:1.1, fill:'#CFCCC2' }, p));
   const CPAT = { 1:CROSS, 3:CROSSL, 2:DOTS, 4:CROSS };
   // 손그림: 선을 흔드는 필터 3장(번갈아 쓰면 선이 떨린다)과 색연필 채움
@@ -583,9 +587,27 @@
   // 길 색: 고른 뒤부터 걷는 길이 그 색으로 그려진다(한 지도에 여러 색이 남는다)
   let roadCol = C.grey; try { const c = localStorage.getItem('eumgil-road'); if (/^#[0-9a-f]{6}$/i.test(c || '')) roadCol = c; } catch (e) {}
   const colLog = [[0, roadCol]], colAt = i => { let c = colLog[0][1]; for (const q of colLog) { if (q[0] <= i) c = q[1]; else break; } return c; };
-  function newChunk(x, y, col) { chunk = { d:`M${x} ${y}`, n:0, col, a:el('path', { stroke:col }, trailA), b:el('path', {}, trailB) }; }
-  function inkTo(x, y, px, py, col = roadCol) { if (!chunk || chunk.n >= 160 || chunk.col !== col) newChunk(px, py, col); chunk.d += ` L${x} ${y}`; chunk.n++; chunk.a.setAttribute('d', chunk.d); chunk.b.setAttribute('d', chunk.d); }
-  function clearInk() { trailA.innerHTML = ''; trailB.innerHTML = ''; chunk = null; }
+  // 길 모양: 발자국 · 마스킹 테이프 · 점선 · 기호 · 굵은 길. 고른 뒤부터 걷는 길에 적용된다
+  const STYLES = [['foot', '발자국'], ['tape', '마스킹 테이프'], ['dash', '점선'], ['stamp', '기호'], ['road', '굵은 길']];
+  let roadSty = 'foot'; try { const v = localStorage.getItem('eumgil-trail'); if (STYLES.some(q => q[0] === v)) roadSty = v; } catch (e) {}
+  const styLog = [[0, roadSty]], styAt = i => { let c = styLog[0][1]; for (const q of styLog) { if (q[0] <= i) c = q[1]; else break; } return c; };
+  let ink = null;
+  function newChunk(x, y, col, sty) { chunk = { d:`M${x} ${y}`, n:0, col, sty, a:el('path', sty === 'dash' ? { stroke:col, 'stroke-width':5.5, 'stroke-dasharray':'12 11' } : { stroke:col }, trailA), b:sty === 'road' ? el('path', {}, trailB) : null }; }
+  const FOOT = 'M-1 -2.8 C2.2 -3.6 6.8 -2.7 6.8 0 C6.8 2.7 2.2 3.6 -1 2.8 C-2.3 1.7 -2.3 -1.7 -1 -2.8 Z M-7 0 a2.4 2.3 0 1 0 4.8 0 a2.4 2.3 0 1 0 -4.8 0 Z';
+  const GLYPH = [c => ({ d:'M-3.4 0 a3.4 3.4 0 1 0 6.8 0 a3.4 3.4 0 1 0 -6.8 0 Z', fill:c, stroke:'none' }), c => ({ d:'M-3.6 -3.6 L3.6 3.6 M3.6 -3.6 L-3.6 3.6', fill:'none', stroke:c, 'stroke-width':2.4, 'stroke-linecap':'round' }), c => ({ d:'M0 -4.4 L4.2 3.2 H-4.2 Z', fill:'none', stroke:c, 'stroke-width':2, 'stroke-linejoin':'round' }), c => ({ d:'M-3.1 -3.1 H3.1 V3.1 H-3.1 Z', fill:c, stroke:'none' })];
+  const tapePath = (len, h) => { const a = -7, b = len + 7, q = h / 2, t = 2.6, f = v => v.toFixed(1); return `M${a} ${-h} L${f(b)} ${-h} L${f(b - t)} ${-q} L${f(b)} 0 L${f(b - t)} ${q} L${f(b)} ${h} L${a} ${h} L${a + t} ${q} L${a} 0 L${a + t} ${-q} Z`; };
+  function inkTo(x, y, px, py, col = roadCol, sty = roadSty) {
+    if (sty === 'road' || sty === 'dash') { ink = null; if (!chunk || chunk.n >= 160 || chunk.col !== col || chunk.sty !== sty) newChunk(px, py, col, sty); chunk.d += ` L${x} ${y}`; chunk.n++; chunk.a.setAttribute('d', chunk.d); if (chunk.b) chunk.b.setAttribute('d', chunk.d); return; }
+    chunk = null; if (!ink || ink.sty !== sty || ink.col !== col) ink = { sty, col, acc:0, n:ink ? ink.n + 1 : 0, ax:px, ay:py, live:null };
+    const dx = x - px, dy = y - py, d = Math.hypot(dx, dy); if (!d) return;
+    if (sty === 'tape') { const lx = x - ink.ax, ly = y - ink.ay, len = Math.hypot(lx, ly), k = ink.n; if (!ink.live) { const g = el('g', {}, trailA); ink.live = { g, p1:el('path', { fill:col, stroke:'none', opacity:.82 }, g), p2:el('path', { fill:TAPEP[k % TAPEP.length], stroke:'none', opacity:.5 }, g), h:9.5 + (k * 7 % 5) * .6, jit:((k * 37 % 9) - 4) * .9 }; }
+      const L = ink.live, dd = tapePath(len, L.h); L.p1.setAttribute('d', dd); L.p2.setAttribute('d', dd); L.g.setAttribute('transform', `translate(${ink.ax} ${ink.ay}) rotate(${(Math.atan2(ly, lx) * 180 / Math.PI + L.jit).toFixed(1)})`);
+      if (len >= 54) { ink.live = null; ink.ax = x; ink.ay = y; ink.n++; } return; }
+    const step = sty === 'foot' ? 15 : 22, deg = Math.atan2(dy, dx) * 180 / Math.PI; ink.acc += d;
+    while (ink.acc >= step) { ink.acc -= step; const sx = (x - dx / d * ink.acc).toFixed(1), sy = (y - dy / d * ink.acc).toFixed(1), k = ink.n++;
+      if (sty === 'foot') el('path', { d:FOOT, fill:col, stroke:'none', transform:`translate(${sx} ${sy}) rotate(${(deg + (k % 2 ? 9 : -9)).toFixed(0)}) translate(0 ${k % 2 ? 5.2 : -5.2})` }, trailA);
+      else el('path', Object.assign({ transform:`translate(${sx} ${sy}) rotate(${(k * 23 % 30 - 15)})` }, GLYPH[k % GLYPH.length](col)), trailA); } }
+  function clearInk() { trailA.innerHTML = ''; trailB.innerHTML = ''; chunk = null; ink = null; }
   function trailTo(x, y) { const px = pts[pts.length - 2], py = pts[pts.length - 1]; x = Math.round(x); y = Math.round(y); trailLen += Math.hypot(x - px, y - py); pts.push(x, y); inkTo(x, y, px, py); dirty = true; }
   function revealAround(x, y, R) { for (const it of REV) { if (it.on) continue; if (Math.hypot(it.x - x, it.y - y) < R + it.r) { it.on = true; it.n.classList.add('on'); if (it.tower) { it.tower.seen = true; listDirty = true; } if (it.enc) it.enc.seen = true; } } }
   const shortcut = () => TOWERS.reduce((a, t) => a + (planted(t.id) ? t.seg : 0), 0);
@@ -642,7 +664,7 @@
     goal.classList.toggle('on', !!target); if (target) goal.setAttribute('transform', `translate(${target[0]} ${target[1]})`);
     if (moved) { if (Math.hypot(me.x - pts[pts.length - 2], me.y - pts[pts.length - 1]) > 7) { trailTo(me.x, me.y); renderHud(); } revealAround(me.x, me.y, 190); closeMemo(); walking = performance.now(); }
     WK.setAttribute('transform', `translate(${me.x.toFixed(1)} ${me.y.toFixed(1)})`);
-    if (replay) { replay.acc += replay.per * dt; while (replay.acc >= 1 && replay.i < replay.n) { replay.acc -= 1; const i = replay.i++, x = pts[i * 2], y = pts[i * 2 + 1]; inkTo(x, y, pts[i * 2 - 2], pts[i * 2 - 1], colAt(i)); revealDom(x, y, 190); while (replay.k < replay.ev.length && replay.ev[replay.k].i <= i) replayEv(replay.ev[replay.k++]); }
+    if (replay) { replay.acc += replay.per * dt; while (replay.acc >= 1 && replay.i < replay.n) { replay.acc -= 1; const i = replay.i++, x = pts[i * 2], y = pts[i * 2 + 1]; inkTo(x, y, pts[i * 2 - 2], pts[i * 2 - 1], colAt(i), styAt(i)); revealDom(x, y, 190); while (replay.k < replay.ev.length && replay.ev[replay.k].i <= i) replayEv(replay.ev[replay.k++]); }
       const j = Math.min(replay.n - 1, replay.i - 1); WK.setAttribute('transform', `translate(${pts[j * 2]} ${pts[j * 2 + 1]})`); $('#doneStat').textContent = `다시 보는 중 · ${Math.round(replay.i / replay.n * 100)}%`; if (replay.i >= replay.n) endReplay(true); }
     // 신호
     let near = null, nd = 1e9, sig = null, sd = 1e9;
@@ -827,7 +849,7 @@
     document.body.classList.add('replaying'); $('#replayBtn').textContent = '■ 멈추기'; $('#replayBtn').classList.add('on'); toast('빈 종이에서부터, 걸은 순서대로 다시 그린다'); }
   function endReplay(done) { if (!replay) return; replay = null; document.body.classList.remove('replaying'); $('#replayBtn').textContent = '처음부터 다시 보기 ▶'; $('#replayBtn').classList.remove('on');
     REV.forEach(it => it.n.classList.toggle('on', it.on)); TOWERS.forEach(t => towerEls[t.id].classList.toggle('done', planted(t.id))); ENC.forEach(drawSprite); refreshShortcuts();
-    clearInk(); for (let i = 2; i < pts.length; i += 2) inkTo(pts[i], pts[i + 1], pts[i - 2], pts[i - 1], colAt(i / 2));
+    clearInk(); for (let i = 2; i < pts.length; i += 2) inkTo(pts[i], pts[i + 1], pts[i - 2], pts[i - 1], colAt(i / 2), styAt(i / 2));
     const sc = shortcut(), st = Math.round(trailLen / 8); $('#doneStat').textContent = `신호 ${visited.length} / ${TOTAL} · 조우 ${met.length} / ${ENC.length} · ${st.toLocaleString()} 걸음${sc > 0 ? ' · 에움 ×' + (trailLen / sc).toFixed(1) : ''}`; if (done) toast('여기까지가 당신이 걸은 순서다'); }
   $('#replayBtn').addEventListener('click', () => { if (replay) endReplay(false); else startReplay(); });
 
@@ -882,6 +904,8 @@
     const setRoad = (c, quiet) => { roadCol = c; const i = pts.length / 2, last = colLog[colLog.length - 1]; if (last[0] === i) last[1] = c; else colLog.push([i, c]); try { localStorage.setItem('eumgil-road', c); } catch (e) {} mark(); if (!quiet) toast('지금부터 걷는 길이 이 색으로 그려진다'); };
     SW.forEach(c => { const b = document.createElement('button'); b.type = 'button'; b.dataset.c = c; b.style.background = c; b.title = '길 색 ' + c; b.setAttribute('aria-label', '길 색 ' + c); b.addEventListener('click', () => setRoad(c)); pal.appendChild(b); });
     inp.addEventListener('input', () => setRoad(inp.value, true)); inp.addEventListener('change', () => setRoad(inp.value)); pal.appendChild(inp); mark(); window.__setRoad = setRoad; }
+  { const box = $('#sty'), mark = () => box.querySelectorAll('button').forEach(b => { const on = b.dataset.s === roadSty; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+    STYLES.forEach(([id, name]) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'lnk'; b.dataset.s = id; b.textContent = name; b.addEventListener('click', () => { roadSty = id; const i = pts.length / 2, last = styLog[styLog.length - 1]; if (last[0] === i) last[1] = id; else styLog.push([i, id]); try { localStorage.setItem('eumgil-trail', id); } catch (e) {} mark(); toast(`지금부터 걷는 길이 ${name}(으)로 남는다`); }); box.appendChild(b); }); mark(); }
   { const box = $('#gait'), mark = () => box.querySelectorAll('button').forEach(b => { const on = b.dataset.g === GT.id; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
     GAITS.forEach(g => { const b = document.createElement('button'); b.type = 'button'; b.className = 'lnk'; b.dataset.g = g.id; b.textContent = g.name; b.addEventListener('click', () => { GT = g; try { localStorage.setItem('eumgil-gait', g.id); } catch (e) {} mark(); toast(`걸음걸이 · ${g.name}`); }); box.appendChild(b); }); mark(); }
   let introT = 0, going = false, introTap = () => {};
