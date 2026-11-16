@@ -97,13 +97,13 @@
   .tools{position:fixed;right:18px;top:16px;z-index:5;display:flex;gap:6px 14px;flex-wrap:wrap;justify-content:flex-end;align-items:center;background:var(--paper);padding:2px 6px}
   .signal{position:fixed;left:18px;bottom:18px;z-index:5;padding:10px 12px;width:268px;display:grid;grid-template-columns:58px 1fr;gap:4px 12px;align-items:center}
   .signal .compass{grid-row:1 / span 2;width:58px;height:58px}
-  .signal .bars{display:flex;gap:3px;align-items:flex-end;height:18px}
+  .signal .bars{display:none}
   .signal .bars i{width:9px;background:#D5D3CC;display:block}
   .signal .bars i.on{background:var(--green-2)}
   .signal .bars i:nth-child(1){height:5px}.signal .bars i:nth-child(2){height:8px}.signal .bars i:nth-child(3){height:11px}.signal .bars i:nth-child(4){height:14px}.signal .bars i:nth-child(5){height:18px}
   .signal .t{font-size:11px;color:var(--ink-2);line-height:1.4}
   .signal .t b{color:var(--ink);font-weight:500}
-  .signal .tune{grid-column:1 / -1;display:none;justify-self:start;margin-top:4px}
+  .signal .tune{display:none !important}
   .signal.can .tune{display:inline-block}
   .keys{position:fixed;right:18px;bottom:18px;z-index:5;color:var(--ink-2);font-size:11px;background:var(--paper);padding:2px 6px}
   .keys .k{border:1px solid var(--ink-2);padding:0 5px;font-size:10.5px;border-radius:3px}
@@ -283,7 +283,7 @@
 
 <header class="plate">
   <span class="lab">수상한 산책클럽 <span style="opacity:.85">✶ 에-움-길 우회로 404</span></span>
-  <p><b id="lvText" style="color:var(--ink);font-weight:500">레벨 1 / 4</b> · <span id="steps">0</span> 걸음 · 신호 <span id="foundCnt">0</span> / 21 · 조우 <span id="metCnt">0</span> / <span id="metTot">0</span> · 에움 ×<span id="ratio">1.0</span></p>
+  <p><b id="lvText" style="color:var(--ink);font-weight:500">레벨 1 / 4</b> · <span id="steps">0</span> 걸음 · 거점 <span id="foundCnt">0</span> / 21 · 조우 <span id="metCnt">0</span> / <span id="metTot">0</span> · 에움 ×<span id="ratio">1.0</span></p>
 </header>
 <nav class="tools" aria-label="도구">
   <button class="lnk" id="mapBtn" title="M">내 지도 보기 ⤢</button>
@@ -303,10 +303,10 @@
     <g id="needle2" style="display:none"><circle cy="-23" r="3.6" fill="#B84A2A"/></g><g id="needle"><path d="M0 -20 L7 6 L0 2 L-7 6 Z" fill="#4F5CB8"/><circle r="2.4" fill="#151515"/></g>
   </svg>
   <div class="bars"><i></i><i></i><i></i><i></i><i></i></div>
-  <div class="t" id="sigText">신호를 찾는 중</div>
-  <button class="lnk on tune" id="tuneBtn">주파수 맞추기 ↵</button>
+  <div class="t" id="sigText">거점을 찾는 중</div>
+  <button class="lnk on tune" id="tuneBtn">열기 ↵</button>
 </div>
-<div class="keys"><span class="k">클릭</span> 그곳까지 걷기 · <span class="k">방향키</span> 직접 걷기 · <span class="k">Enter</span> 주파수 · <span class="k">M</span> 내 지도</div>
+<div class="keys"><span class="k">클릭</span> 그곳까지 걷기 · <span class="k">방향키</span> 직접 걷기 · <span class="k">M</span> 내 지도</div>
 
 <aside class="side" id="side">
   <div class="inner">
@@ -783,17 +783,17 @@
     const L = LV[t.lv - 1], doneLv = L.towers.every(x => planted(x.id));
     if (doneLv && lvWalk[t.lv - 1] == null) { lvWalk[t.lv - 1] = Math.round(trailLen - lvStart); lvStart = trailLen; renderHud(); }
     if (!silent) { log.push({ k:'t', id, i:pts.length / 2 - 1 }); SFX.signal(); }
-    if (!silent) { $('#memoTree').hidden = false; toast(doneLv ? `레벨 ${t.lv} 완료 · 신호 ${visited.length} / ${TOTAL}` : `지도 조각이 찍혔다 · 신호 ${visited.length} / ${TOTAL}`); if (doneLv) pendingLv = L; }
+    if (!silent) { $('#memoTree').hidden = false; toast(doneLv ? `레벨 ${t.lv} 완료 · 거점 ${visited.length} / ${TOTAL}` : `지도 조각이 찍혔다 · 거점 ${visited.length} / ${TOTAL}`); if (doneLv) pendingLv = L; }
   }
   function renderHud() {
     const lv = curLv(); $('#lvText').textContent = lv > 4 ? '완주' : `레벨 ${lv} / 4 · ${COHORTS[ORDER[lv - 1]].name}`;
     $('#foundCnt').textContent = visited.length; $('#metCnt').textContent = met.length; $('#metTot').textContent = ENC.length; $('#steps').textContent = Math.round(trailLen / 8).toLocaleString();
     const sc = shortcut(); $('#ratio').textContent = sc > 0 ? (trailLen / sc).toFixed(1) : '1.0';
-    houseG.classList.toggle('lit', visited.length >= TOTAL); houseHint.textContent = visited.length >= TOTAL ? '불이 켜졌다 ✶ 안내서가 열린다' : `신호 ${visited.length} / ${TOTAL}`; refreshShortcuts();
+    houseG.classList.toggle('lit', visited.length >= TOTAL); houseHint.textContent = visited.length >= TOTAL ? '불이 켜졌다 ✶ 안내서가 열린다' : `거점 ${visited.length} / ${TOTAL}`; refreshShortcuts();
   }
   function renderList() {
     listDirty = false; const ul = $('#trail');
-    ul.innerHTML = TOWERS.map(t => `<li class="${t.seen ? '' : 'unseen'}"><span class="chk ${planted(t.id) ? 'on' : ''}"></span><button data-go="${t.id}">${t.n} · ${t.seen ? esc(t.name) : '아직 찾지 못한 신호'}</button><span style="color:var(--ink-2)">레벨 ${t.lv}</span></li>`).join('');
+    ul.innerHTML = TOWERS.map(t => `<li class="${t.seen ? '' : 'unseen'}"><span class="chk ${planted(t.id) ? 'on' : ''}"></span><button data-go="${t.id}">${t.n} · ${t.seen ? esc(t.name) : '아직 찾지 못한 거점'}</button><span style="color:var(--ink-2)">레벨 ${t.lv}</span></li>`).join('');
     const J = $('#journal'); J.innerHTML = ''; let kinds = 0;
     ETYPES.forEach(k => { const all = ENC.filter(e => e.type === k), m = all.filter(e => isMet(e.id)).length; if (m) kinds++; const d = document.createElement('div'); d.className = 'j' + (m ? '' : ' unmet'); const sv = el('svg', { viewBox:ARTVB }); d.appendChild(sv); drawHand(sv, k, !!m); d.insertAdjacentHTML('beforeend', `<b>${m ? esc(ETYPE[k].name) : '아직 못 만남'}</b><span>${m ? esc(ETYPE[k].act) + ' · ' + m + '/' + all.length : '지름길 밖 어딘가'}</span>`); J.appendChild(d); });
     $('#jCnt').textContent = `${kinds} / ${ETYPES.length}`;
@@ -814,7 +814,7 @@
   const viewW = () => innerWidth < 760 ? 620 : Math.min(1400, Math.max(900, innerWidth * .82));
   function tick(dt) {
     let moved = false; const mvx0 = me.x;
-    if (!overview && !coverOn() && !cutOpen()) {
+    if (!overview && !coverOn() && !cutOpen() && !memoOpen()) {
       const sp = 3.8 * dt * GT.sp, dx = keys.r - keys.l, dy = keys.d - keys.u;
       if (dx || dy) { const m = Math.hypot(dx, dy); me.x += dx / m * sp; me.y += dy / m * sp; target = null; moved = true; }
       else if (target) { const ddx = target[0] - me.x, ddy = target[1] - me.y, m = Math.hypot(ddx, ddy); if (m <= sp) { me.x = target[0]; me.y = target[1]; target = null; } else { me.x += ddx / m * sp; me.y += ddy / m * sp; } moved = true; }
@@ -826,11 +826,11 @@
     WK.setAttribute('transform', `translate(${me.x.toFixed(1)} ${me.y.toFixed(1)})`);
     if (replay) { replay.acc += replay.per * dt; while (replay.acc >= 1 && replay.i < replay.n) { replay.acc -= 1; const i = replay.i++, x = pts[i * 2], y = pts[i * 2 + 1]; inkTo(x, y, pts[i * 2 - 2], pts[i * 2 - 1], colAt(i), styAt(i)); revealDom(x, y, 190); while (replay.k < replay.ev.length && replay.ev[replay.k].i <= i) replayEv(replay.ev[replay.k++]); }
       const j = Math.min(replay.n - 1, replay.i - 1); WK.setAttribute('transform', `translate(${pts[j * 2]} ${pts[j * 2 + 1]})`); $('#doneStat').textContent = `다시 보는 중 · ${Math.round(replay.i / replay.n * 100)}%`; if (replay.i >= replay.n) endReplay(true); }
-    // 신호
+    // 거점
     let near = null, nd = 1e9, sig = null, sd = 1e9;
     for (const t of TOWERS) { const d = Math.hypot(t.p[0] - me.x, t.p[1] - me.y); if (d < nd && t.seen) { nd = d; near = t; } if (!sig && !planted(t.id)) { sd = d; sig = t; } }
     if (beacon && !planted(beacon.id)) { sig = beacon; sd = Math.hypot(sig.p[0] - me.x, sig.p[1] - me.y); } else beacon = null;
-    const nl = nd < 120 ? near : null;
+    const nl = nd < 105 ? near : null;
     if (nl !== live) { live = nl; Object.values(towerEls).forEach(g => g.classList.toggle('live', !!live && g.dataset.id === live.id)); }
     nearHouse = Math.hypot(HOUSE[0] - me.x, HOUSE[1] - me.y) < 110;
     // 조우
@@ -849,12 +849,13 @@
     const dist = sig ? sd : Math.hypot(HOUSE[0] - me.x, HOUSE[1] - me.y), bars = Math.max(0, Math.min(5, 5 - Math.floor(dist / 190)));
     document.querySelectorAll('.signal .bars i').forEach((b, i) => b.classList.toggle('on', i < bars));
     const lvn = Math.min(4, lvNow);
-    $('#sigText').innerHTML = liveEnc ? `<b>${esc(ETYPE[liveEnc.type].name)}</b><br>${esc(ETYPE[liveEnc.type].act)}` : live ? `<b>${esc(live.name)}</b><br>주파수 ${live.freq} · ${planted(live.id) ? '찾은 신호' : live.lv > lvNow ? '레벨 ' + live.lv + '에서 열림' : '새 신호'}` : nearHouse ? '<b>파프리 스튜디오</b><br>도구와 이끔이 게임' : sig ? `${beacon ? '목표' : '레벨 ' + lvn + ' 다음 신호'} ${sig.n}번 · 약 <b>${Math.round(dist / 8)}</b>걸음<br>${hintOn ? '<span style="color:#B84A2A">● 지름길 밖에 인기척</span>' : '파란 점선이 지름길'}` : '<b>모든 신호를 찾았다</b><br>집으로 돌아가 보세요';
-    $('#signal').classList.toggle('can', !!liveEnc || !!live || nearHouse); $('#tuneBtn').textContent = liveEnc ? (isMet(liveEnc.id) ? '다시 본다 ↵' : '다가간다 ↵') : live ? (planted(live.id) ? '다시 열기 ↵' : '주파수 맞추기 ↵') : '집 열기 ↵';
+    $('#sigText').innerHTML = liveEnc ? `<b>${esc(ETYPE[liveEnc.type].name)}</b><br>${esc(ETYPE[liveEnc.type].act)}` : live ? `<b>${esc(live.name)}</b><br>${planted(live.id) ? '찾은 거점' : '참여자 결과물'}` : nearHouse ? '<b>파프리 스튜디오</b><br>교육 안내' : sig ? `${beacon ? '목표' : '다음 거점'} ${sig.n}번 · 약 <b>${Math.round(dist / 8)}</b>걸음<br>${hintOn ? '<span style="color:#B84A2A">● 지름길 밖에 인기척</span>' : '파란 점선이 지름길'}` : '<b>모든 거점을 찾았다</b><br>집으로 돌아가 보세요';
+    $('#signal').classList.toggle('can', !!liveEnc || !!live || nearHouse); $('#tuneBtn').textContent = liveEnc ? (isMet(liveEnc.id) ? '다시 본다 ↵' : '다가간다 ↵') : live ? (planted(live.id) ? '다시 열기 ↵' : '열기 ↵') : '집 열기 ↵';
     // 멈추면 자동으로 열린다
     const key = liveEnc ? 'e' + liveEnc.id : live ? live.id : nearHouse ? 'house' : null; if (!key) autoKey = null;
     const free = !memoOpen() && !cutOpen() && !overview && !coverOn();
     if (liveEnc && !isMet(liveEnc.id) && key !== autoKey && free) { autoKey = key; startCut(liveEnc); }      // 마주치면 바로 컷씬
+    else if (live && !planted(live.id) && free) { autoKey = key; openMemo(live); }                               // 거점도 닿으면 바로 열리고 기록된다
     else if (!moved && key && key !== autoKey && free) { autoKey = key; if (!liveEnc) { if (live) openMemo(live); else openHouse(); } }
     // 카메라
     const asp = innerWidth / Math.max(1, innerHeight), tw = overview ? Math.max(WW * 1.06, WH * 1.1 * asp) : viewW(), tx = overview ? WW / 2 : me.x, ty = overview ? WH / 2 : me.y, k = reduced ? 1 : Math.min(1, (zoomT > 0 ? .04 : .12) * dt); if (zoomT > 0) zoomT -= dt;
@@ -869,17 +870,17 @@
   // ── 메모(게임 창) ───────────────────────────────────
   const memo = $('#memo'), body = $('#memoBody'), foot = $('#memoFoot'); let cur = null, typeT = null;
   function memoOpen() { return memo.classList.contains('open'); }
-  function openMemo(t) {
-    cur = t; const g = t.game; SFX.page();
-    body.innerHTML = `<span class="lab">레벨 ${t.lv} · 거점 ${t.n} · ${COHORTS[t.cohort].name} · ${esc(t.name)} · 주파수 ${t.freq}</span>
+  function openMemo(t) {   // 거점에 닿으면 바로 열리고, 열리는 순간 찾은 것으로 기록된다
+    cur = t; const g = t.game, fresh = !planted(t.id); SFX.page(); target = null; keys = { l:0, r:0, u:0, d:0 };
+    body.innerHTML = `<span class="lab">참여자 결과물 ${t.n} / ${TOTAL} · ${COHORTS[t.cohort].name} · ${esc(t.name)}</span>
       <h2>〈${esc(g.title)}〉</h2>
       <div class="meta">산책자 · ${esc(g.author)} · ${esc(COHORTS[t.cohort].who)} · ${esc(COHORTS[t.cohort].when)}</div>
       <p><b>게임 소개.</b> ${esc(g.desc)}</p>
       <p style="font-family:var(--f-serif);font-size:15px">“${esc(g.rule)}”</p>
-      <div class="gamebox" id="gamebox">${g.url ? `<div class="cta"><button class="lnk play" id="playBtn">게임 플레이 하기 ➹</button><span>이 자리에서 바로 열립니다. 주변 지도가 찍히고 나무가 자랍니다.</span></div>` : `<div class="cta"><span class="lab b">링크 수합 중</span><span>참여자 게임 결과물을 받으면 여기서 바로 플레이할 수 있습니다.</span><button class="lnk on" id="playBtn">${planted(t.id) ? '이미 찾은 신호' : '신호 기록하기'}</button></div>`}</div>
-      <div class="memo-actions">${g.url ? `<a class="lnk" href="${g.url}" target="_blank" rel="noopener">새 창에서 열기 ↗</a>` : ''}<button class="lnk" id="memoGo">닫고 계속 걷기</button></div>`;
-    if (t.lv > curLv() && !planted(t.id)) $('#gamebox').innerHTML = `<div class="cta"><span class="lab">잠긴 신호</span><span>레벨 ${t.lv}의 신호입니다. 레벨 ${curLv()}의 신호를 모두 찾으면 주파수가 잡힙니다.</span></div>`;
-    $('#memoTree').hidden = !planted(t.id); memo.classList.add('open'); typewrite(`거점 ${t.n}에서는 무슨 일이 있었을까? ${t.foot}`);
+      ${g.url ? `<div class="gamebox" id="gamebox"><div class="cta"><button class="lnk play" id="playBtn">게임 플레이 하기 ➹</button><span>이 자리에서 바로 열립니다.</span></div></div>` : `<p><span class="lab b">링크 수합 중</span> 참여자 게임 결과물을 받으면 여기서 바로 플레이할 수 있습니다.</p>`}
+      <div class="memo-actions"><button class="lnk play" id="memoGo">계속 걷기 →</button>${g.url ? `<a class="lnk" href="${g.url}" target="_blank" rel="noopener">새 창에서 열기 ↗</a>` : ''}</div>`;
+    $('#memoTree').hidden = false; memo.classList.add('open'); typewrite(`${t.n}번 자리에서는 무슨 일이 있었을까? ${t.foot}`);
+    if (fresh) plant(t.id);
   }
   function openHouse() {   // 가운데 집: 교육 프로그램에 관한 것을 모두 모아 둔다
     cur = null; const all = visited.length >= TOTAL;
@@ -972,14 +973,14 @@
   });
   // 레벨 완료 카드
   function openLevel(L) { cur = null; curEnc = null; const walk = lvWalk[L.n - 1] || 0, encs = ENC.filter(e => e.lv === L.n), em = encs.filter(e => isMet(e.id)).length, r = walk / L.len, last = L.n === 4;
-    body.innerHTML = `<span class="lab b">레벨 ${L.n} / 4 완료 · ${COHORTS[L.cohort].name} 고리</span><h2>${last ? '스물한 신호를 모두 찾았다' : r < 1.25 ? '거의 지름길로 왔다' : '돌아온 만큼 만났다'}</h2>
+    body.innerHTML = `<span class="lab b">레벨 ${L.n} / 4 완료 · ${COHORTS[L.cohort].name} 고리</span><h2>${last ? '스물한 거점을 모두 찾았다' : r < 1.25 ? '거의 지름길로 왔다' : '돌아온 만큼 만났다'}</h2>
       <table class="lvt"><tr><td>앱이 알려준 지름길</td><td>${Math.round(L.len / 8).toLocaleString()} 걸음</td></tr><tr><td>내가 걸은 길</td><td>${Math.round(walk / 8).toLocaleString()} 걸음</td></tr><tr><td>에움</td><td>×${r.toFixed(1)}</td></tr><tr><td>이 고리에서 만난 것</td><td>${em} / ${encs.length}</td></tr></table>
       <p>${em < encs.length ? `지름길 밖에 아직 ${encs.length - em}번의 만남이 남아 있다. 나침반의 붉은 점이 인기척이다. 지나간 레벨로 돌아가도 된다.` : '이 고리의 만남을 모두 겪었다.'}</p>
       <div class="memo-actions">${last ? '<button class="lnk play" id="lvMap">완성된 지도 보기 ⤢</button>' : `<button class="lnk play" id="memoGo">레벨 ${L.n + 1} 걷기 →</button>`}</div>`;
     $('#memoTree').hidden = true; memo.classList.add('open'); SFX.level(); autoKey = live ? live.id : autoKey;
     typewrite(last ? '창문에 불이 켜졌다. 걸어온 길이 한 장의 지도가 됐다.' : `레벨 ${L.n + 1}의 지름길이 파란 점선으로 그려졌다. 따라가도 되고, 벗어나도 된다.`); }
   body.addEventListener('click', e => {
-    if (e.target.closest('#playBtn') && cur) { const g = cur.game; if (g.url) $('#gamebox').innerHTML = `<iframe src="${g.url}" allow="camera; microphone; accelerometer; gyroscope; autoplay" title="${esc(g.title)}"></iframe>`; else $('#gamebox .cta').innerHTML = '<span class="lab g">신호를 기록했다</span><span>주변 지도가 찍혔습니다.</span>'; plant(cur.id); }
+    if (e.target.closest('#playBtn') && cur) { const g = cur.game; if (g.url) $('#gamebox').innerHTML = `<iframe src="${g.url}" allow="camera; microphone; accelerometer; gyroscope; autoplay" title="${esc(g.title)}"></iframe>`; }
     if (e.target.closest('#encBtn') && curEnc) encAct(curEnc);
     if (e.target.closest('#encFlee') && curEnc) { autoKey = 'e' + curEnc.id; closeMemo(); SFX.talk(); toast('“학생! 얘기 아직 안 끝났는데!”'); }
     if (e.target.closest('#lvMap')) { closeMemo(); setOverview(true); }
@@ -987,7 +988,7 @@
     if (e.target.closest('#memoGo')) closeMemo();
   });
   $('#memoClose').addEventListener('click', closeMemo);
-  function tune() { if (liveEnc) startCut(liveEnc); else if (live) openMemo(live); else if (nearHouse) openHouse(); else toast('수신이 약하다. 나침반을 따라 더 가까이'); }
+  function tune() { if (liveEnc) startCut(liveEnc); else if (live) openMemo(live); else if (nearHouse) openHouse(); }
 
   // ── 내 지도 보기 · 저장 ───────────────────────────────
   // 지도 전체 보기에서만 보이는 참여자 결과물 목록
@@ -1008,9 +1009,9 @@
     if (!on && replay) endReplay(false);
     overview = on; document.body.classList.toggle('overview', on); closeMemo(); target = null; $('#mapBtn').textContent = on ? '가까이 보기 ⤡' : '내 지도 보기 ⤢'; $('#mapBtn').classList.toggle('on', on);
     if (!on) return; renderLegend(); const sc = shortcut(), st = Math.round(trailLen / 8), d = new Date(), ds = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
-    cartL1.textContent = `${ds} · 신호 ${visited.length} / ${TOTAL} · 조우 ${met.length} / ${ENC.length} · ${st.toLocaleString()} 걸음`;
-    cartL2.textContent = sc > 0 ? `지름길 ${Math.round(sc / 8).toLocaleString()} 걸음 → 내 에움길 ${st.toLocaleString()} 걸음 (×${(trailLen / sc).toFixed(1)})` : '아직 찾은 신호가 없다. 걸은 길만 그려져 있다';
-    $('#doneTitle').textContent = visited.length >= TOTAL ? '지도 완성' : '지금까지의 지도'; $('#doneStat').textContent = `신호 ${visited.length} / ${TOTAL} · 조우 ${met.length} / ${ENC.length} · ${st.toLocaleString()} 걸음${sc > 0 ? ' · 에움 ×' + (trailLen / sc).toFixed(1) : ''}`; $('#zineLink').hidden = visited.length < TOTAL; save(true);
+    cartL1.textContent = `${ds} · 거점 ${visited.length} / ${TOTAL} · 조우 ${met.length} / ${ENC.length} · ${st.toLocaleString()} 걸음`;
+    cartL2.textContent = sc > 0 ? `지름길 ${Math.round(sc / 8).toLocaleString()} 걸음 → 내 에움길 ${st.toLocaleString()} 걸음 (×${(trailLen / sc).toFixed(1)})` : '아직 찾은 거점이 없다. 걸은 길만 그려져 있다';
+    $('#doneTitle').textContent = visited.length >= TOTAL ? '지도 완성' : '지금까지의 지도'; $('#doneStat').textContent = `거점 ${visited.length} / ${TOTAL} · 조우 ${met.length} / ${ENC.length} · ${st.toLocaleString()} 걸음${sc > 0 ? ' · 에움 ×' + (trailLen / sc).toFixed(1) : ''}`; $('#zineLink').hidden = visited.length < TOTAL; save(true);
   }
   function saveImage() {
     const c = map.cloneNode(true); c.removeAttribute('id'); c.setAttribute('xmlns', NS); c.setAttribute('viewBox', `-20 -20 ${WW + 40} ${WH + 40}`); c.setAttribute('width', WW + 40); c.setAttribute('height', WH + 40);
@@ -1038,7 +1039,7 @@
   function endReplay(done) { if (!replay) return; replay = null; document.body.classList.remove('replaying'); $('#replayBtn').textContent = '처음부터 다시 보기 ▶'; $('#replayBtn').classList.remove('on');
     REV.forEach(it => it.n.classList.toggle('on', it.on)); TOWERS.forEach(t => towerEls[t.id].classList.toggle('done', planted(t.id))); ENC.forEach(drawSprite); refreshShortcuts();
     clearInk(); for (let i = 2; i < pts.length; i += 2) inkTo(pts[i], pts[i + 1], pts[i - 2], pts[i - 1], colAt(i / 2), styAt(i / 2));
-    const sc = shortcut(), st = Math.round(trailLen / 8); $('#doneStat').textContent = `신호 ${visited.length} / ${TOTAL} · 조우 ${met.length} / ${ENC.length} · ${st.toLocaleString()} 걸음${sc > 0 ? ' · 에움 ×' + (trailLen / sc).toFixed(1) : ''}`; if (done) toast('여기까지가 당신이 걸은 순서다'); }
+    const sc = shortcut(), st = Math.round(trailLen / 8); $('#doneStat').textContent = `거점 ${visited.length} / ${TOTAL} · 조우 ${met.length} / ${ENC.length} · ${st.toLocaleString()} 걸음${sc > 0 ? ' · 에움 ×' + (trailLen / sc).toFixed(1) : ''}`; if (done) toast('여기까지가 당신이 걸은 순서다'); }
   $('#replayBtn').addEventListener('click', () => { if (replay) endReplay(false); else startReplay(); });
 
   // ── 입력 ─────────────────────────────────────────────
@@ -1058,8 +1059,8 @@
     if (e.target.matches && e.target.matches('input,textarea')) return;
     if (coverOn()) { if (e.key !== 'Tab') { e.preventDefault(); introTap(); } return; }
     if (cutOpen()) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); const b = $('#encBtn') || $('#cutGo'); if (b) b.click(); } else if (e.key === 'Escape') closeCut(); else if (KEY[e.key]) e.preventDefault(); return; }
-    if (KEY[e.key]) { if (overview) setOverview(false); keys[KEY[e.key]] = 1; e.preventDefault(); return; }
-    if (e.key === 'Enter') { if (overview) setOverview(false); else if (!memoOpen()) tune(); }
+    if (KEY[e.key]) { e.preventDefault(); if (memoOpen()) return; if (overview) setOverview(false); keys[KEY[e.key]] = 1; return; }
+    if (e.key === 'Enter') { if (memoOpen()) closeMemo(); else if (overview) setOverview(false); else tune(); }
     else if (e.key === 'Escape') { if (memoOpen()) closeMemo(); else if (overview) setOverview(false); else document.body.classList.remove('sidebar-open'); }
     else if (e.key === 'm' || e.key === 'M') setOverview(!overview);
     else if (e.key === 'r' || e.key === 'R') { if (replay) endReplay(false); else startReplay(); }
@@ -1073,7 +1074,7 @@
   $('#listBtn').addEventListener('click', () => toggleSide());
   $('#sideClose').addEventListener('click', () => toggleSide(false));
   $('#moreBtn').addEventListener('click', () => { const s = $('#side'); s.classList.toggle('expanded'); $('#moreBtn').textContent = s.classList.contains('expanded') ? '접기 ▴' : '프로그램 소개 ▾'; });
-  $('#trail').addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (!b) return; const t = TOWERS.find(x => x.id === b.dataset.go); if (planted(t.id)) { toast(`${t.n}번은 이미 찾은 신호`); return; } beacon = t; toast(`나침반이 ${t.n}번 신호를 가리킨다`); if (innerWidth < 900) toggleSide(false); });
+  $('#trail').addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (!b) return; const t = TOWERS.find(x => x.id === b.dataset.go); if (planted(t.id)) { toast(`${t.n}번은 이미 찾은 거점`); return; } beacon = t; toast(`나침반이 ${t.n}번 거점을 가리킨다`); if (innerWidth < 900) toggleSide(false); });
   $('#saveBtn').addEventListener('click', saveImage);
   $('#backBtn').addEventListener('click', () => setOverview(false));
   let resetArm = 0;
